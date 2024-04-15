@@ -44,13 +44,17 @@ class Player(pygame.sprite.Sprite): # dziedziczenie po sprite
         self.spd = vector2d(0,0)
         self.acc = vector2d(0,0)
     def move(self):
+         # wstepnie ustawia acc na 0
         self.acc = vector2d(0,0)
         key = pygame.key.get_pressed()
+         # ustawia sie acc zaleznie od 
         if key[K_LEFT] or key[K_a]:
             self.acc.x = -self.SPEED
         if key[K_RIGHT] or key[K_d]:
             self.acc.x = self.SPEED
+         # tarcie powoduje hamowanie bo acc bedzie ujemne caly czas (dodatnie tylko w chwili nacisniecia klawisza)
         self.acc -= self.FRICTION*self.spd
+         # reszta to fizyka lore
         self.spd += self.acc
         self.pos += self.spd + self.acc/2
         self.shape.midbottom = self.pos
