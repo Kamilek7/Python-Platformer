@@ -14,7 +14,7 @@ class PhysicsComponent:
         pass
     def move(self, move_vec, other_entities = None):
         self.accel.x = self.def_speed*move_vec.x
-        pass
+
     def update_pos(self, other_entities = None):
         # tarcie powoduje hamowanie bo acc bedzie ujemne caly czas (dodatnie tylko w chwili nacisniecia klawisza)
         self.accel -= self.friction*self.speed
@@ -33,5 +33,9 @@ class InputComponent:
             direction.x = -1
         if key[K_RIGHT] or key[K_d]:
              direction.x = 1
+        if key[K_UP] or key[K_w]:
+            direction.y = 1
+        if key[K_DOWN] or key[K_s]:
+            direction.y = -1
         return direction
         
