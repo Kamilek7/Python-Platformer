@@ -2,6 +2,12 @@ import pygame
 from pygame.locals import *
 from game_components import PhysicsComponent, InputComponent
 vector2d = pygame.math.Vector2
+
+
+APP_HEIGHT = 600
+APP_WIDTH = 800
+
+ # klasy w grze
 class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
      # test wiarygodnosci argumentow
     def __new__(cls, _x,_y):
@@ -27,9 +33,9 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
          # definiowanie elementow obiektu
         self.area = pygame.Surface((self.WIDTH, self.HEIGHT))
         self.area.fill(self.COLOR)
-        self.shape = self.area.get_rect(center = (_x,600-_y))
+        self.shape = self.area.get_rect(center = (_x,APP_HEIGHT-_y))
          # fizyka
-        self.pos = vector2d((_x,600 - _y))
+        self.pos = vector2d((_x,APP_HEIGHT - _y))
         self.physics_component.speed = vector2d(0,0)
 
         #dodać grawitacje później !!!!!!
@@ -43,3 +49,13 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
                 
             self.physics_component.move(move_vec)
             self.physics_component.update_pos()
+
+class Player(Entity): # dziedziczenie po entity
+    def __init__(self,_x,_y):
+         # X, Y, WYSOKOSC, SZEROKOSC, KOLOR, PED PRZY RUCHU, TARCIE, RUCHOME, MOZNA STEROWAC
+        super().__init__(_x, _y, 60, 30, (210,60,60), 1, 0.16, True, True)
+
+class Grounds(Entity):
+    def __init__(self,_x,_y):
+         # X, Y, WYSOKOSC, SZEROKOSC, KOLOR, PED PRZY RUCHU, TARCIE, RUCHOME, MOZNA STEROWAC
+        super().__init__(_x, _y, 60, APP_WIDTH, (60,60,210), 0, 0.16, False, False)
