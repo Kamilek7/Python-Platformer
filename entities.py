@@ -1,6 +1,6 @@
 import pygame
 from pygame.locals import *
-from game_components import PhysicsComponent
+from game_components import PhysicsComponent, InputComponent
 vector2d = pygame.math.Vector2
 class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
      # test wiarygodnosci argumentow
@@ -14,6 +14,7 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
         super().__init__()
         #komponent odpowiedzialny za fizykę
         self.physics_component = PhysicsComponent(self)
+        self.input_component = InputComponent()
         self.physics_component.friction = _friction
         # "stałe" dla klasy
         self.HEIGHT = _height
@@ -34,9 +35,11 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
         #dodać grawitacje później !!!!!!
         self.physics_component.accel = vector2d(0,0)
 
-        #dać do Phys. comp. i input comp.
     def move(self):
         if self.MOVEABLE:
-             # wstepnie ustawia acc na 0
+            # wstepnie ustawia acc na 0
+            move_vec = self.input_component.get_movement_vec()
             self.physics_component.accel = vector2d(0,0)
+                
+            self.physics_component.move(move_vec)
             self.physics_component.update_pos()
