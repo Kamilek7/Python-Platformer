@@ -1,4 +1,6 @@
 import pygame
+from pygame.locals import *
+from game_components import PhysicsComponent
 vector2d = pygame.math.Vector2
 class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
      # test wiarygodnosci argumentow
@@ -10,36 +12,31 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
         return super(Entity, cls).__new__(cls)
     def __init__(self,_x,_y, _height, _width, _color, _speed, _friction, _control,_moveable):
         super().__init__()
-         # "stałe" dla klasy
+        #komponent odpowiedzialny za fizykę
+        self.physics_component = PhysicsComponent(self)
+        self.physics_component.friction = _friction
+        # "stałe" dla klasy
         self.HEIGHT = _height
         self.WIDTH = _width
         self.COLOR = _color   # potem sie zrobi slownik z kolorami, wszystko jest w RGB
-        self.SPEED = _speed
-        self.FRICTION = _friction
+        # self.input_component = _speed
+        
         self.MOVEABLE = _moveable
         self.CONTROL = _control
          # definiowanie elementow obiektu
         self.area = pygame.Surface((self.WIDTH, self.HEIGHT))
         self.area.fill(self.COLOR)
-        self.shape = self.area.get_rect(center = (_x,APP_HEIGHT- _y))
+        self.shape = self.area.get_rect(center = (_x,600-_y))
          # fizyka
-        self.pos = vector2d((_x,APP_HEIGHT- _y))
-        self.spd = vector2d(0,0)
-        self.acc = vector2d(0,0)
+        self.pos = vector2d((_x,600 - _y))
+        self.physics_component.speed = vector2d(0,0)
+
+        #dodać grawitacje później !!!!!!
+        self.physics_component.accel = vector2d(0,0)
+
+        #dać do Phys. comp. i input comp.
     def move(self):
         if self.MOVEABLE:
              # wstepnie ustawia acc na 0
-            self.acc = vector2d(0,0)
-            if self.CONTROL:
-                key = pygame.key.get_pressed()
-                 # ustawia sie acc zaleznie od klawisza
-                if key[K_LEFT] or key[K_a]:
-                    self.acc.x = -self.SPEED
-                if key[K_RIGHT] or key[K_d]:
-                    self.acc.x = self.SPEED
-             # tarcie powoduje hamowanie bo acc bedzie ujemne caly czas (dodatnie tylko w chwili nacisniecia klawisza)
-            self.acc -= self.FRICTION*self.spd
-             # reszta to fizyka lore
-            self.spd += self.acc
-            self.pos += self.spd + self.acc/2
-            self.shape.midbottom = self.pos
+            self.physics_component.accel = vector2d(0,0)
+            self.physics_component.update_pos()
