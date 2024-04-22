@@ -1,5 +1,6 @@
 from tkinter import *
-from tkinter.ttk import * 
+from tkinter.ttk import *
+import xml.etree.cElementTree as ET
 
  # Funkcje do wykorzystania
 
@@ -14,10 +15,7 @@ def donothing():
 
 root = Tk()
 root.title("Edytor")
-s = Style()
-s.configure('My.TFrame', background='white')
-canvasFrame = Frame(root,style='My.TFrame')
-canvasFrame.config()
+canvasFrame = Frame(root)
 canvasFrame.pack()
 
  # Menu (pasek u gory)
@@ -55,7 +53,7 @@ elements.append(Label(root, text ="Tutaj cos bedzie."))
 
  # canvas
 
-canvas = Canvas (canvasFrame, bg="#FFFFFF",height=500,width=500, scrollregion=(0,0,600,600))
+canvas = Canvas (canvasFrame, bg="#FFFFFF",height=500,width=500, scrollregion=(0,0,600,600), relief=SUNKEN, bd=3)
 hbar=Scrollbar(canvasFrame,orient=HORIZONTAL)
 hbar.pack(side=BOTTOM,fill=X)
 hbar.config(command=canvas.xview)
