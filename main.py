@@ -1,6 +1,6 @@
 
  # wszystkie definicje i wstepne wartosci
-
+# meow
 import pygame
 from pygame.locals import *
 pygame.init()
