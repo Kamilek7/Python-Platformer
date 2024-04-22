@@ -16,17 +16,9 @@ window = pygame.display.set_mode((APP_WIDTH, APP_HEIGHT))
 pygame.display.set_caption("Test")
 running = True
 
- # klasy w grze
 
-class Player(Entity): # dziedziczenie po entity
-    def __init__(self,_x,_y):
-         # X, Y, WYSOKOSC, SZEROKOSC, KOLOR, PED PRZY RUCHU, TARCIE, RUCHOME, MOZNA STEROWAC
-        super().__init__(_x, _y, 60, 30, (210,60,60), 1, 0.16, True, True)
 
-class Grounds(Entity):
-    def __init__(self,_x,_y):
-         # X, Y, WYSOKOSC, SZEROKOSC, KOLOR, PED PRZY RUCHU, TARCIE, RUCHOME, MOZNA STEROWAC
-        super().__init__(_x, _y, 60, APP_WIDTH, (60,60,210), 0, 0.16, False, False)
+
 
  # elementy gry
 
