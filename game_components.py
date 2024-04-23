@@ -18,6 +18,9 @@ class PhysicsComponent:
         if self.entity.pos.y > APP_HEIGHT - self.entity.HEIGHT:
             self.entity.pos.y = APP_HEIGHT - self.entity.HEIGHT
             self.speed.y = 0
+            self.is_coliding = True
+        else:
+            self.is_coliding = False
         
     def move(self, move_vec, other_entities = None):
         self.accel.x += self.def_speed*move_vec.x
@@ -34,17 +37,17 @@ class PhysicsComponent:
 
 class InputComponent:
     def __init__(self) -> None:
-        self.move_direction = vector2d(0,0)
+        self.move_vec = vector2d(0,0)
     def get_movement_vec(self, is_colliding = False):
-        direction = vector2d(0,0)
+        move_vec = vector2d(0,0)
         key = pygame.key.get_pressed()
         if key[K_LEFT] or key[K_a]:
-            direction.x = -1
+            move_vec.x = -1
         if key[K_RIGHT] or key[K_d]:
-             direction.x = 1
-        if key[K_UP] or key[K_w] or key[K_SPACE] and not is_colliding:
-            direction.y = -10
+             move_vec.x = 1
+        if key[K_UP] or key[K_w] or key[K_SPACE] and is_colliding:
+            move_vec.y = -20
         if key[K_DOWN] or key[K_s]:
-            direction.y = 1
-        return direction
+            move_vec.y = 1
+        return move_vec
         

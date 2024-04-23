@@ -44,9 +44,10 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
     def update(self):
         if self.MOVEABLE:
             # wstepnie ustawia acc na 0
-            move_vec = self.input_component.get_movement_vec()
+            move_vec = self.input_component.get_movement_vec(self.physics_component.is_coliding)
             if move_vec != vector2d(0,0):
-                print("pos: ",self.pos,"accel: ", self.physics_component.accel, "speed: ", self.physics_component.speed)
+                pass
+                # debug print("pos: ",self.pos,"accel: ", self.physics_component.accel, "speed: ", self.physics_component.speed)
             self.physics_component.accel.x = 0
                 
             self.physics_component.move(move_vec)
