@@ -6,7 +6,7 @@ class PhysicsComponent:
     def __init__(self, entity) -> None:
         self.def_speed = 1
         self.speed = vector2d(0,0)
-        self.accel = vector2d(0,-0.9)
+        self.accel = vector2d(0,0.9)
         self.friction = vector2d(-0.1,0)
         self.entity = entity
         pass
