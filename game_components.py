@@ -45,7 +45,7 @@ class InputComponent:
             move_vec.x = -1
         if key[K_RIGHT] or key[K_d]:
              move_vec.x = 1
-        if key[K_UP] or key[K_w] or key[K_SPACE] and is_colliding:
+        if (key[K_UP] or key[K_w] or key[K_SPACE]) and is_colliding:
             move_vec.y = -30
         if key[K_DOWN] or key[K_s]:
             move_vec.y = 1
