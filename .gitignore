@@ -1,2 +1,4 @@
 __pycache__/entities.cpython-312.pyc
 __pycache__/game_components.cpython-312.pyc
+game/data/__pycache__/entities.cpython-312.pyc
+game/data/__pycache__/game_components.cpython-312.pyc
