@@ -17,7 +17,7 @@ APP_WIDTH = 800
 MAX_FPS = 60
  # definicje dla okna
 current_fps = pygame.time.Clock()
-window = pygame.display.set_mode((APP_WIDTH, APP_HEIGHT))
+window = pygame.display.set_mode((APP_WIDTH, APP_HEIGHT), RESIZABLE)
 pygame.display.set_caption("Test")
 running = True
 
@@ -36,6 +36,8 @@ while running:
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.quit()
+        elif event.type == VIDEORESIZE:
+            pass
     window.fill((0,0,0))
     for entity in moveables:
         entity.move()
