@@ -39,21 +39,20 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
         self.physics_component.speed = vector2d(0,0)
 
         #dodać grawitacje później !!!!!!
-        self.physics_component.accel = vector2d(0,0)
+        self.physics_component.accel = vector2d(0,1)
 
     def update(self):
         if self.MOVEABLE:
             # wstepnie ustawia acc na 0
             move_vec = self.input_component.get_movement_vec()
+            if move_vec != vector2d(0,0):
+                print("pos: ",self.pos,"accel: ", self.physics_component.accel, "speed: ", self.physics_component.speed)
             self.physics_component.accel.x = 0
                 
             self.physics_component.move(move_vec)
             self.physics_component.update_pos()
 
-            #temp. colision remove later
-            if self.pos.y > APP_HEIGHT - self.HEIGHT:
-                self.pos.y = APP_HEIGHT - self.HEIGHT
-                self.physics_component.speed.y = 0
+
 
 class Player(Entity): # dziedziczenie po entity
     def __init__(self,_x,_y):
