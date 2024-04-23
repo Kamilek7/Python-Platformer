@@ -6,15 +6,15 @@ class PhysicsComponent:
     def __init__(self, entity) -> None:
         self.def_speed = 1
         self.speed = vector2d(0,0)
-        self.accel = vector2d(0,-0.1)
+        self.accel = vector2d(0,-0.9)
         self.friction = vector2d(-0.1,0)
         self.entity = entity
         pass
     def check_colision(self, other_entities):
         pass
     def move(self, move_vec, other_entities = None):
-        self.accel.x = self.def_speed*move_vec.x
-        self.accel.y = self.def_speed*move_vec.y
+        self.accel.x += self.def_speed*move_vec.x
+        self.speed.y += self.def_speed*move_vec.y
 
     def update_pos(self, other_entities = None):
         # tarcie powoduje hamowanie bo acc bedzie ujemne caly czas (dodatnie tylko w chwili nacisniecia klawisza)

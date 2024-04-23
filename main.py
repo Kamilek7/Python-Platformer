@@ -39,6 +39,7 @@ while running:
     window.fill((0,0,0))
     for entity in moveables:
         entity.update()
+        print("pos: ",entity.pos,"accel: ", entity.physics_component.accel, "speed: ", entity.physics_component.speed)
     for entity in sprites:
         window.blit(entity.area, entity.shape)
     pygame.display.update()
