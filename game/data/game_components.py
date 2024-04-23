@@ -15,8 +15,8 @@ class PhysicsComponent:
 
     def check_colision(self, other_entities = None):
         #temp. colision remove later
-        if self.entity.pos.y > APP_HEIGHT - self.entity.HEIGHT:
-            self.entity.pos.y = APP_HEIGHT - self.entity.HEIGHT
+        if self.entity.pos.y > self.entity.window.get_height() - self.entity.HEIGHT:
+            self.entity.pos.y = self.entity.window.get_height() - self.entity.HEIGHT
             self.speed.y = 0
             self.is_coliding = True
         else:
