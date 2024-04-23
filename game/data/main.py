@@ -3,6 +3,10 @@
 # meow
 
 from entities import *
+from os import *
+BIDEN_CHECK = path.dirname(path.abspath(__file__)))
+if not path.isfile(BIDEN_CHECK):
+    raise ImportError("GDZIE JEST BIDEN")
 pygame.init()
  # definicja dla wektora, dla latwych przeksztalcen
 vector2d = pygame.math.Vector2
