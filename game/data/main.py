@@ -4,10 +4,11 @@
 
 from entities import *
 from os import *
-BIDEN_CHECK = path.dirname(path.abspath(__file__)))
+BIDEN_CHECK = path.join(path.dirname(path.abspath(__file__)), "joe_mama.jpg")
 if not path.isfile(BIDEN_CHECK):
     raise ImportError("GDZIE JEST BIDEN")
-pygame.init()
+else:
+    pygame.init()
  # definicja dla wektora, dla latwych przeksztalcen
 vector2d = pygame.math.Vector2
  # stałe
