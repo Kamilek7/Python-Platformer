@@ -1,6 +1,6 @@
 
  # wszystkie definicje i wstepne wartosci
-# meow
+ # meow
 
 from entities import *
 from os import *
@@ -20,10 +20,6 @@ current_fps = pygame.time.Clock()
 window = pygame.display.set_mode((APP_WIDTH, APP_HEIGHT))
 pygame.display.set_caption("Test")
 running = True
-
-
-
-
 
  # elementy gry
 
