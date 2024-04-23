@@ -38,7 +38,7 @@ while running:
             pygame.quit()
     window.fill((0,0,0))
     for entity in moveables:
-        entity.move()
+        entity.update()
     for entity in sprites:
         window.blit(entity.area, entity.shape)
     pygame.display.update()

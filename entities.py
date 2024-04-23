@@ -41,7 +41,7 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
         #dodać grawitacje później !!!!!!
         self.physics_component.accel = vector2d(0,0)
 
-    def move(self):
+    def update(self):
         if self.MOVEABLE:
             # wstepnie ustawia acc na 0
             move_vec = self.input_component.get_movement_vec()
