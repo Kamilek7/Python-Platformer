@@ -24,8 +24,8 @@ running = True
  # elementy gry
 
  # !!! początek ukladu wspolrzednych ustalamy w lewym dolnym rogu, a nie lewym gornym jak np w html !!!
-player = Player(window, APP_WIDTH/5,60)
-p1 = Grounds(window, APP_WIDTH/2,30)
+player = Player(window, APP_WIDTH/2,200)
+p1 = Grounds(window, APP_WIDTH,30)
 sprites = pygame.sprite.Group()
 sprites.add(player)
 sprites.add(p1)
@@ -41,9 +41,9 @@ while running:
             pass
     window.fill((0,0,0))
     for entity in moveables:
-        entity.update()
+        entity.update([p1])
         
     for entity in sprites:
-        window.blit(entity.area, entity.shape)
+        window.blit(entity.area, entity.shape,special_flags= BLEND_ADD)
     pygame.display.update()
     current_fps.tick(MAX_FPS)

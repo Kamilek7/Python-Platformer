@@ -36,13 +36,17 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
         self.area.fill(self.COLOR)
         self.shape = self.area.get_rect(center = (_x,self.window.get_height()-_y))
          # fizyka
-        self.pos = vector2d((_x,self.window.get_width() - _y))
+        self.pos = vector2d((_x,self.window.get_height() - _y))
         self.physics_component.speed = vector2d(0,0)
 
-        #dodać grawitacje później !!!!!!
+        #grawitacja
         self.physics_component.accel = vector2d(0,1)
+        self.physics_component.accel.y = 0
 
-    def update(self):
+    def get_height(self):
+        return self.area.get_height()
+
+    def update(self, in_other_entities = []):
         if self.MOVEABLE:
             # wstepnie ustawia acc na 0
             move_vec = self.input_component.get_movement_vec(self.physics_component.is_coliding)
@@ -52,7 +56,7 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
             self.physics_component.accel.x = 0
                 
             self.physics_component.move(move_vec)
-            self.physics_component.update_pos()
+            self.physics_component.update_pos(in_other_entities)
 
 
 
