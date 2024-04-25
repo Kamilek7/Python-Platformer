@@ -64,7 +64,7 @@ class Player(Entity): # dziedziczenie po entity
         #self.physics_component.accel.y = 0
 
         self.physics_component.speed = vector2d(0,0)
-        self.physics_component.friction = 0.08
+        self.physics_component.friction = 0.10
 
         #input handling
         self.input_component = InputComponent()
