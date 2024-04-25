@@ -34,9 +34,9 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
          # definiowanie elementow obiektu
         self.area = pygame.Surface((self.WIDTH, self.HEIGHT))
         self.area.fill(self.COLOR)
-        self.shape = self.area.get_rect(center = (_x,self.window.get_height()-_y))
+        self.shape = self.area.get_rect(center = (_x,_y))
          # fizyka
-        self.pos = vector2d((_x,self.window.get_height() - _y))
+        self.pos = vector2d((_x,_y))
         self.physics_component.speed = vector2d(0,0)
 
         #grawitacja

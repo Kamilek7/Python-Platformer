@@ -23,9 +23,8 @@ running = True
 
  # elementy gry
 
- # !!! początek ukladu wspolrzednych ustalamy w lewym dolnym rogu, a nie lewym gornym jak np w html !!!
-player = Player(window, APP_WIDTH/2,200)
-p1 = Grounds(window, APP_WIDTH,30)
+player = Player(APP_WIDTH/5,60)
+p1 = Grounds(APP_WIDTH/2,APP_HEIGHT-30)
 sprites = pygame.sprite.Group()
 sprites.add(player)
 sprites.add(p1)
