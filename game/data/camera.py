@@ -12,4 +12,10 @@ class Camera:
             entity.move_by(vector2d((move_vec.x), (move_vec.y)))
             print(entity.pos)
     def centre_camera(self, window_dimensions):
-        pass
+        window_centre = window_dimensions/2
+
+        move_vec = window_centre - self.focus_object.pos
+        self.focus_object.move_by(move_vec)
+        for entity in self.other_objects:
+            entity.move_by(vector2d((move_vec.x), (move_vec.y)))
+            print(entity.pos)

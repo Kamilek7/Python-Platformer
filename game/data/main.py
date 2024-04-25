@@ -36,13 +36,13 @@ platforms = [p1]
 main_camera = Camera(player, platforms)
 
  # game loop
-
+main_camera.centre_camera(vector2d(window.get_width(), window.get_height()))
 while running:
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.quit()
         elif event.type == VIDEORESIZE:
-            Camera.centre_camera()
+            main_camera.centre_camera(vector2d(window.get_width(), window.get_height()))
             pass
     window.fill((0,0,0))
     for entity in moveables:
