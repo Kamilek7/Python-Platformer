@@ -18,7 +18,7 @@ class PhysicsComponent:
         for col_entity in other_entities:
             if self.entity.pos.y > col_entity.pos.y - col_entity.get_height():
                 self.entity.pos.y = col_entity.pos.y - col_entity.get_height()
-                print(self.entity.pos.y)
+                #print(self.entity.pos.y)
                 #self.entity.pos.y > self.entity.window.get_height()
                 self.speed.y = 0
                 self.is_coliding = True
@@ -36,7 +36,8 @@ class PhysicsComponent:
         self.speed += self.accel
         self.entity.pos += self.speed + self.accel/2
         
-        print(self.entity.pos)
+        #
+        # (self.entity.pos)
         self.check_colision(in_other_entities)
         self.entity.shape.topleft = self.entity.pos
 
