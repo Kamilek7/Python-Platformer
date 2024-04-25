@@ -3,20 +3,33 @@ from tkinter.ttk import *
 import xml.etree.cElementTree as ET
 
  # Funkcje do wykorzystania
-head = ET.Element('map')
+timer = 0
+map = ET.Element('map')
 def donothing():
    filewin = Toplevel(root)
    button = Button(filewin, text="Do nothing button")
    button.pack()
 
 def addTerrain(type):
-   temp = ET.SubElement(head, type)
+   temp = ET.SubElement(map, type)
    temp.set("x", "0")
    temp.set("y", "0")
    temp.set("width", "120")
    temp.set("height", "80")
-   ET.dump(head)
+   ET.dump(map)
 
+def canvasUpdate():
+   global timer
+   timer+=10
+   canvas.delete("all")
+   for child in map:
+      attribs = child.attrib
+      if child.tag == "mayo":
+         canvas.create_rectangle(attribs["x"], attribs["y"], attribs["x"] + attribs["width"], attribs["y"] + attribs["height"], fill='yellow')
+      if child.tag == "ketchup":
+         canvas.create_rectangle(attribs["x"], attribs["y"], attribs["x"] + attribs["width"], attribs["y"] + attribs["height"], fill='red')
+   canvas.after(50, canvasUpdate)
+   
 
  # Budowa aplikacji
 
@@ -65,6 +78,12 @@ vbar=Scrollbar(canvasFrame,orient=VERTICAL)
 vbar.pack(side=RIGHT,fill=Y)
 vbar.config(command=canvas.yview)
 canvas.config(xscrollcommand=hbar.set, yscrollcommand=vbar.set)
+def motion(event):
+   _x = hbar.get()[0]*canvas.winfo_width()
+   _y = vbar.get()[0]*canvas.winfo_height()
+   print("Mouse position: (%s %s)" % (event.x + _x,event.y + _y ))
+canvas.bind('<Motion>',motion)
+canvas.pack()
 
 Terrains= Menubutton (root, text="Terrains",width=30)
 Terrains.grid(row = 0, column=2,sticky="nsew")
@@ -84,14 +103,9 @@ ketchVar = IntVar()
 Edit.menu.add_checkbutton (label="mayo", variable=mayoVar)
 Edit.menu.add_checkbutton (label="ketchup", variable=ketchVar)
 
-canvas.pack()
-
-line = canvas.create_line(150,200,300,100)
 root.columnconfigure(0, weight=1)
 root.columnconfigure(1, weight=1)
 root.columnconfigure(2, weight=1)
-root.rowconfigure(0, weight=0) # not needed, this is the default behavior
-root.rowconfigure(1, weight=1)
-root.rowconfigure(2, weight=1)
 root.geometry('800x600')
+canvas.after(50, canvasUpdate)
 root.mainloop()
