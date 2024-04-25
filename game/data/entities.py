@@ -62,18 +62,24 @@ class Player(Entity): # dziedziczenie po entity
         #gravity
         self.physics_component.accel = vector2d(0,1)
         #self.physics_component.accel.y = 0
-        self.input_component = InputComponent()
+
         self.physics_component.speed = vector2d(0,0)
         self.physics_component.friction = 0.16
+
+        #input handling
+        self.input_component = InputComponent()
         
 
     def update(self, in_other_entities = []):
+            #get input from player
             move_vec = self.input_component.get_movement_vec(self.physics_component.is_coliding)
+            #debug
             if move_vec != vector2d(0,0):
                 pass
                 # debug print("pos: ",self.pos,"accel: ", self.physics_component.accel, "speed: ", self.physics_component.speed)
+            
             self.physics_component.accel.x = 0
-                
+            
             self.physics_component.move(move_vec)
             self.physics_component.update_pos(in_other_entities)
 
