@@ -41,6 +41,7 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
         self.shape.topleft = self.pos
     def move_by(self, movement_vec):
         self.pos += movement_vec
+        self.shape.topleft = self.pos
 
 
     def get_height(self):
@@ -63,7 +64,6 @@ class Player(Entity): # dziedziczenie po entity
         self.physics_component = PhysicsComponent(self)
         #gravity
         self.physics_component.accel = vector2d(0,2)
-        #self.physics_component.accel.y = 0
 
         self.physics_component.speed = vector2d(0,0)
         self.physics_component.friction = 0.10

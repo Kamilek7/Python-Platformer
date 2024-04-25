@@ -42,14 +42,15 @@ while running:
         if event.type == QUIT:
             pygame.quit()
         elif event.type == VIDEORESIZE:
+            Camera.centre_camera()
             pass
     window.fill((0,0,0))
     for entity in moveables:
         entity.update(platforms)
         
+    main_camera.update()
     for entity in sprites:
         #,special_flags= BLEND_ADD'
         window.blit(entity.area, entity.shape)
-    main_camera.update()
     pygame.display.update()
     current_fps.tick(MAX_FPS)
