@@ -4,6 +4,7 @@
 
 from entities import *
 from os import *
+from camera import Camera
 BIDEN_CHECK = path.join(path.dirname(path.abspath(__file__)), "joe_mama.jpg")
 if not path.isfile(BIDEN_CHECK):
     raise ImportError("GDZIE JEST BIDEN")
@@ -32,18 +33,22 @@ moveables = [player]
 
 platforms = [p1]
 
- # game loop
+main_camera = Camera(player, platforms)
 
+ # game loop
+main_camera.centre_camera(vector2d(window.get_width(), window.get_height()))
 while running:
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.quit()
         elif event.type == VIDEORESIZE:
+            main_camera.centre_camera(vector2d(window.get_width(), window.get_height()))
             pass
     window.fill((0,0,0))
     for entity in moveables:
         entity.update(platforms)
         
+    main_camera.update()
     for entity in sprites:
         #,special_flags= BLEND_ADD'
         window.blit(entity.area, entity.shape)
