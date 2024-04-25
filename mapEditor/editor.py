@@ -3,14 +3,21 @@ from tkinter.ttk import *
 import xml.etree.cElementTree as ET
 
  # Funkcje do wykorzystania
-
+head = ET.Element('map')
 def donothing():
    filewin = Toplevel(root)
    button = Button(filewin, text="Do nothing button")
    button.pack()
 
 def addTerrain(type):
-   print(type)
+   temp = ET.SubElement(head, type)
+   temp.set("x", "0")
+   temp.set("y", "0")
+   temp.set("width", "120")
+   temp.set("height", "80")
+   ET.dump(head)
+
+
  # Budowa aplikacji
 
 
