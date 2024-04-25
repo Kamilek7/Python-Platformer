@@ -4,6 +4,7 @@
 
 from entities import *
 from os import *
+from camera import Camera
 BIDEN_CHECK = path.join(path.dirname(path.abspath(__file__)), "joe_mama.jpg")
 if not path.isfile(BIDEN_CHECK):
     raise ImportError("GDZIE JEST BIDEN")
@@ -32,6 +33,8 @@ moveables = [player]
 
 platforms = [p1]
 
+main_camera = Camera(player, platforms)
+
  # game loop
 
 while running:
@@ -47,5 +50,6 @@ while running:
     for entity in sprites:
         #,special_flags= BLEND_ADD'
         window.blit(entity.area, entity.shape)
+    main_camera.update()
     pygame.display.update()
     current_fps.tick(MAX_FPS)

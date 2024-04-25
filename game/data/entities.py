@@ -39,6 +39,8 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
     def move_to_pos(self, in_pos):
         self.pos = in_pos
         self.shape.topleft = self.pos
+    def move_by(self, movement_vec):
+        self.pos += movement_vec
 
 
     def get_height(self):
@@ -57,7 +59,7 @@ class Player(Entity): # dziedziczenie po entity
          # X, Y, WYSOKOSC, SZEROKOSC, KOLOR, PED PRZY RUCHU, TARCIE, RUCHOME, MOZNA STEROWAC
                  #grawitacja
         super().__init__(window,_x, _y, 60, 30, (210,60,60), True, True)
-
+        self.last_movement = vector2d(0,0)
         self.physics_component = PhysicsComponent(self)
         #gravity
         self.physics_component.accel = vector2d(0,2)
@@ -69,18 +71,22 @@ class Player(Entity): # dziedziczenie po entity
         #input handling
         self.input_component = InputComponent()
         
+        
 
     def update(self, in_other_entities = []):
+            prev_pos = vector2d(self.pos.x, self.pos.y)
             #get input from player
-            move_vec = self.input_component.get_movement_vec(self.physics_component.is_coliding)
+            move_input = self.input_component.get_movement_vec(self.physics_component.is_coliding)
             #debug
-            if move_vec != vector2d(0,0):
+            if move_input != vector2d(0,0):
                 pass
                 # debug print("pos: ",self.pos,"accel: ", self.physics_component.accel, "speed: ", self.physics_component.speed)
             
             
-            self.physics_component.move(move_vec)
+            self.physics_component.move(move_input)
             self.physics_component.update_pos(in_other_entities)
+            self.last_movement = self.pos - prev_pos
+
 
 class Grounds(Entity):
     def __init__(self,window,_x,_y):
