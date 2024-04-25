@@ -40,9 +40,10 @@ while running:
             pass
     window.fill((0,0,0))
     for entity in moveables:
-        entity.update()
+        entity.update([p1])
         
     for entity in sprites:
+        #,special_flags= BLEND_ADD'
         window.blit(entity.area, entity.shape)
     pygame.display.update()
     current_fps.tick(MAX_FPS)
