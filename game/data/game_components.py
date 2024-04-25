@@ -16,8 +16,8 @@ class PhysicsComponent:
     def check_colision(self, other_entities = []):
         #temp. colision
         for col_entity in other_entities:
-            if self.entity.pos.y > col_entity.pos.y - col_entity.get_height() - self.entity.get_height() or True:
-                self.entity.pos.y = col_entity.pos.y - col_entity.get_height() - self.entity.get_height()
+            if self.entity.pos.y > col_entity.pos.y - col_entity.get_height():
+                self.entity.pos.y = col_entity.pos.y - col_entity.get_height()
                 print(self.entity.pos.y)
                 #self.entity.pos.y > self.entity.window.get_height()
                 self.speed.y = 0
