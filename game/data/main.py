@@ -23,8 +23,8 @@ running = True
 
  # elementy gry
 
-player = Player(APP_WIDTH/5,60)
-p1 = Grounds(APP_WIDTH/2,APP_HEIGHT-30)
+player = Player(window, APP_WIDTH/5,60)
+p1 = Grounds(window, APP_WIDTH/2,APP_HEIGHT-30)
 sprites = pygame.sprite.Group()
 sprites.add(player)
 sprites.add(p1)
@@ -40,9 +40,9 @@ while running:
             pass
     window.fill((0,0,0))
     for entity in moveables:
-        entity.update()
+        entity.update([p1])
         
     for entity in sprites:
-        window.blit(entity.area, entity.shape)
+        window.blit(entity.area, entity.shape,special_flags= BLEND_ADD)
     pygame.display.update()
     current_fps.tick(MAX_FPS)
