@@ -13,7 +13,7 @@ class PhysicsComponent:
         self.entity = entity
         self.is_coliding = False
 
-    def check_colision(self, other_entities = []):
+    def check_colision(self, moved_by_vec, other_entities = []):
         #temp. colision
         for col_entity in other_entities:
             if self.entity.pos.y > col_entity.pos.y - col_entity.get_height():
@@ -30,15 +30,17 @@ class PhysicsComponent:
         self.speed.y += self.def_speed*move_vec.y
 
     def update_pos(self, in_other_entities = None):
+        prev_pos = vector2d(self.entity.pos.x, self.entity.pos.y)
         # tarcie powoduje hamowanie bo acc bedzie ujemne caly czas (dodatnie tylko w chwili nacisniecia klawisza)
         self.speed.x -= self.friction*self.speed.x
          # reszta to fizyka lore
         self.speed += self.accel
         self.entity.pos += self.speed + self.accel/2
+        moved_by_vec = self.entity.pos - prev_pos
         
         #
         # (self.entity.pos)
-        self.check_colision(in_other_entities)
+        self.check_colision(moved_by_vec, in_other_entities)
         self.entity.shape.topleft = self.entity.pos
 
 class InputComponent:
