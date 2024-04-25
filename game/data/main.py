@@ -30,6 +30,8 @@ sprites.add(player)
 sprites.add(p1)
 moveables = [player]
 
+platforms = [p1]
+
  # game loop
 
 while running:
@@ -40,7 +42,7 @@ while running:
             pass
     window.fill((0,0,0))
     for entity in moveables:
-        entity.update([p1])
+        entity.update(platforms)
         
     for entity in sprites:
         #,special_flags= BLEND_ADD'
