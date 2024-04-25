@@ -16,7 +16,7 @@ def donothing():
 root = Tk()
 root.title("Edytor")
 canvasFrame = Frame(root)
-canvasFrame.pack()
+canvasFrame.grid(row = 1, column = 1)
 
  # Menu (pasek u gory)
 menu = Menu(root)
@@ -47,10 +47,6 @@ helpMenu.add_command(label="About...", command=donothing)
 menu.add_cascade(label="Help", menu=helpMenu)
 root.config(menu=menu)
 
- # grupa na "anonimowe" elementy
-elements = []
-elements.append(Label(root, text ="Tutaj cos bedzie."))
-
  # canvas
 
 canvas = Canvas (canvasFrame, bg="#FFFFFF",height=500,width=500, scrollregion=(0,0,600,600), relief=SUNKEN, bd=3)
@@ -62,9 +58,26 @@ vbar.pack(side=RIGHT,fill=Y)
 vbar.config(command=canvas.yview)
 canvas.config(xscrollcommand=hbar.set, yscrollcommand=vbar.set)
 
-for element in elements:
-    element.pack()
+Terrains= Menubutton (root, text="Terrains" )
+Terrains.grid(row = 0, column=2)
+Terrains.menu = Menu ( Terrains, tearoff = 0 )
+Terrains["menu"] = Terrains.menu
+mayoVar = IntVar()
+ketchVar = IntVar()
+Terrains.menu.add_checkbutton (label="mayo", variable=mayoVar)
+Terrains.menu.add_checkbutton (label="ketchup", variable=ketchVar)
+
+Edit= Menubutton (root, text="Edit" )
+Edit.grid(row = 0, column=0)
+Edit.menu = Menu ( Edit, tearoff = 0 )
+Edit["menu"] = Edit.menu
+mayoVar = IntVar()
+ketchVar = IntVar()
+Edit.menu.add_checkbutton (label="mayo", variable=mayoVar)
+Edit.menu.add_checkbutton (label="ketchup", variable=ketchVar)
+
 canvas.pack()
+
 line = canvas.create_line(150,200,300,100)
 
 root.geometry('800x600')
