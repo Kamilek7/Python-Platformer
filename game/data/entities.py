@@ -42,6 +42,12 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
         #grawitacja
         self.physics_component.accel = vector2d(0,1)
         #self.physics_component.accel.y = 0
+        self.shape.topleft = self.pos
+
+    def move_to_pos(self, in_pos):
+        self.pos = in_pos
+        self.shape.topleft = self.pos
+
 
     def get_height(self):
         return self.area.get_height()
