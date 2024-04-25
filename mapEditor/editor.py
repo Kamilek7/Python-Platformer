@@ -9,7 +9,8 @@ def donothing():
    button = Button(filewin, text="Do nothing button")
    button.pack()
 
-
+def addTerrain(type):
+   print(type)
  # Budowa aplikacji
 
 
@@ -58,17 +59,17 @@ vbar.pack(side=RIGHT,fill=Y)
 vbar.config(command=canvas.yview)
 canvas.config(xscrollcommand=hbar.set, yscrollcommand=vbar.set)
 
-Terrains= Menubutton (root, text="Terrains" )
-Terrains.grid(row = 0, column=2)
+Terrains= Menubutton (root, text="Terrains",width=30)
+Terrains.grid(row = 0, column=2,sticky="nsew")
 Terrains.menu = Menu ( Terrains, tearoff = 0 )
 Terrains["menu"] = Terrains.menu
 mayoVar = IntVar()
 ketchVar = IntVar()
-Terrains.menu.add_checkbutton (label="mayo", variable=mayoVar)
-Terrains.menu.add_checkbutton (label="ketchup", variable=ketchVar)
+Terrains.menu.add_checkbutton (label="mayo", command=lambda: addTerrain("mayo"))
+Terrains.menu.add_checkbutton (label="ketchup", command=lambda: addTerrain("ketchup"))
 
-Edit= Menubutton (root, text="Edit" )
-Edit.grid(row = 0, column=0)
+Edit= Menubutton (root, text="Edit",width=30)
+Edit.grid(row = 0, column=0,sticky="nsew")
 Edit.menu = Menu ( Edit, tearoff = 0 )
 Edit["menu"] = Edit.menu
 mayoVar = IntVar()
@@ -79,6 +80,11 @@ Edit.menu.add_checkbutton (label="ketchup", variable=ketchVar)
 canvas.pack()
 
 line = canvas.create_line(150,200,300,100)
-
+root.columnconfigure(0, weight=1)
+root.columnconfigure(1, weight=1)
+root.columnconfigure(2, weight=1)
+root.rowconfigure(0, weight=0) # not needed, this is the default behavior
+root.rowconfigure(1, weight=1)
+root.rowconfigure(2, weight=1)
 root.geometry('800x600')
 root.mainloop()
