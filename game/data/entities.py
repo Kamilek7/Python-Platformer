@@ -60,11 +60,11 @@ class Player(Entity): # dziedziczenie po entity
 
         self.physics_component = PhysicsComponent(self)
         #gravity
-        self.physics_component.accel = vector2d(0,1)
+        self.physics_component.accel = vector2d(0,2)
         #self.physics_component.accel.y = 0
 
         self.physics_component.speed = vector2d(0,0)
-        self.physics_component.friction = 0.16
+        self.physics_component.friction = 0.08
 
         #input handling
         self.input_component = InputComponent()
@@ -78,7 +78,6 @@ class Player(Entity): # dziedziczenie po entity
                 pass
                 # debug print("pos: ",self.pos,"accel: ", self.physics_component.accel, "speed: ", self.physics_component.speed)
             
-            self.physics_component.accel.x = 0
             
             self.physics_component.move(move_vec)
             self.physics_component.update_pos(in_other_entities)

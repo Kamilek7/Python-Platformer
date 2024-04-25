@@ -43,7 +43,7 @@ while running:
         entity.update([p1])
         
     for entity in sprites:
-        #,special_flags= BLEND_ADD
+        #,special_flags= BLEND_ADD'
         window.blit(entity.area, entity.shape)
     pygame.display.update()
     current_fps.tick(MAX_FPS)
