@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter.ttk import *
 from os import *
 import xml.etree.cElementTree as ET
+from xml.dom import minidom
 
  # Funkcje do wykorzystania
 class VisibleGround:
@@ -34,6 +35,32 @@ def saveFile():
    plik = ET.ElementTree(map)
    filename = path.join(path.dirname(path.abspath(__file__)), "mapa.xml")
    plik.write(filename)
+
+def reset():
+   global grounds, selected
+   grounds = []
+   selected = False
+
+def loadfile(_filename):
+   global grounds, selected
+   grounds = []
+   selected = False
+   filename = _filename.get(1.0, "end-1c")
+   filename = path.join(path.dirname(path.abspath(__file__)), filename)
+   plik = minidom.parse(filename)
+   mapa = plik.getElementsByTagName('map')[0]
+   for child in mapa.childNodes:
+      grounds.append(VisibleGround(int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName))
+
+def load():
+   filewin = Toplevel(root)
+   label = Label(filewin, text="Type in the filename")
+   filename = Text(filewin, height = 1,  width = 20) 
+   button = Button(filewin, text="Load", command= lambda: loadfile(filename))
+   label.pack()
+   filename.pack()
+   button.pack()
+
 def addTerrain(type):
    grounds.append(VisibleGround(0,0,120,80,type))
 
@@ -47,6 +74,7 @@ def moveBlocks(event):
          selected.y -=1
       if event.keysym == "s" or event.keysym == "Down":
          selected.y +=1
+
 def canvasUpdate():
    global timer
    timer+=10
@@ -74,10 +102,9 @@ canvasFrame.grid(row = 1, column = 1)
 menu = Menu(root)
  # zakladka file
 fileMenu = Menu(menu, tearoff=0)
-fileMenu.add_command(label="New", command=donothing)
-fileMenu.add_command(label="Open", command=donothing)
+fileMenu.add_command(label="New", command=reset)
+fileMenu.add_command(label="Open", command=load)
 fileMenu.add_command(label="Save", command=saveFile)
-fileMenu.add_command(label="Close", command=donothing)
 fileMenu.add_separator()
 fileMenu.add_command(label="Exit", command=root.quit)
 menu.add_cascade(label="File", menu=fileMenu)
