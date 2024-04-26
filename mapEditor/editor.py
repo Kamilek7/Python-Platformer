@@ -1,35 +1,66 @@
 from tkinter import *
 from tkinter.ttk import *
+from os import *
 import xml.etree.cElementTree as ET
 
  # Funkcje do wykorzystania
+class VisibleGround:
+   z = 0
+   def __init__(self, _x,_y,_width,_height, _type):
+      VisibleGround.z+=1
+      self.z = VisibleGround.z
+      self.x = _x
+      self.y = _y
+      self.width = _width
+      self.height = _height
+      self.type = _type
 timer = 0
+selected = False
+grounds = []
 map = ET.Element('map')
 def donothing():
    filewin = Toplevel(root)
    button = Button(filewin, text="Do nothing button")
    button.pack()
 
-def addTerrain(type):
-   temp = ET.SubElement(map, type)
-   temp.set("x", "0")
-   temp.set("y", "0")
-   temp.set("width", "120")
-   temp.set("height", "80")
+def saveFile():
+   for ground in grounds:
+      temp = ET.SubElement(map, ground.type)
+      temp.set("x", str(ground.x))
+      temp.set("y", str(ground.y))
+      temp.set("width", str(ground.width))
+      temp.set("height",str(ground.height))
    ET.dump(map)
+   plik = ET.ElementTree(map)
+   filename = path.join(path.dirname(path.abspath(__file__)), "mapa.xml")
+   plik.write(filename)
+def addTerrain(type):
+   grounds.append(VisibleGround(0,0,120,80,type))
 
+def moveBlocks(event):
+   if selected!=False:
+      if event.keysym == "a" or event.keysym == "Left":
+         selected.x -=1
+      if event.keysym == "d" or event.keysym == "Right":
+         selected.x +=1
+      if event.keysym == "w" or event.keysym == "Up":
+         selected.y -=1
+      if event.keysym == "s" or event.keysym == "Down":
+         selected.y +=1
 def canvasUpdate():
    global timer
    timer+=10
    canvas.delete("all")
-   for child in map:
-      attribs = child.attrib
-      if child.tag == "mayo":
-         canvas.create_rectangle(attribs["x"], attribs["y"], attribs["x"] + attribs["width"], attribs["y"] + attribs["height"], fill='yellow')
-      if child.tag == "ketchup":
-         canvas.create_rectangle(attribs["x"], attribs["y"], attribs["x"] + attribs["width"], attribs["y"] + attribs["height"], fill='red')
+   for ground in grounds:
+      width = 2
+      if ground==selected:
+         width=4
+      if ground.type == "mayo":
+         canvas.create_rectangle(ground.x, ground.y, ground.x + ground.width, ground.y + ground.height, fill='yellow', width=width)
+      if ground.type == "ketchup":
+         canvas.create_rectangle(ground.x, ground.y, ground.x + ground.width, ground.y + ground.height, fill='red',width=width)
    canvas.after(50, canvasUpdate)
-   
+
 
  # Budowa aplikacji
 
@@ -45,8 +76,7 @@ menu = Menu(root)
 fileMenu = Menu(menu, tearoff=0)
 fileMenu.add_command(label="New", command=donothing)
 fileMenu.add_command(label="Open", command=donothing)
-fileMenu.add_command(label="Save", command=donothing)
-fileMenu.add_command(label="Save as...", command=donothing)
+fileMenu.add_command(label="Save", command=saveFile)
 fileMenu.add_command(label="Close", command=donothing)
 fileMenu.add_separator()
 fileMenu.add_command(label="Exit", command=root.quit)
@@ -79,10 +109,21 @@ vbar.pack(side=RIGHT,fill=Y)
 vbar.config(command=canvas.yview)
 canvas.config(xscrollcommand=hbar.set, yscrollcommand=vbar.set)
 def motion(event):
-   _x = hbar.get()[0]*canvas.winfo_width()
-   _y = vbar.get()[0]*canvas.winfo_height()
-   print("Mouse position: (%s %s)" % (event.x + _x,event.y + _y ))
-canvas.bind('<Motion>',motion)
+   global selected
+   x = event.x + hbar.get()[0]*canvas.winfo_width()
+   y = event.y + vbar.get()[0]*canvas.winfo_height()
+   if len(grounds)>0:
+      zs = {}
+      for ground in grounds:
+         if (x <= ground.x + ground.width and x >= ground.x) and (y <= ground.y + ground.height and y >= ground.y):
+            zs[ground.z] = ground
+      if len(zs)>0:
+         selected = zs[max(zs.keys())]
+      else:
+         selected = False
+canvas.bind("<Button-1>", motion)
+canvas.bind("<Key>", moveBlocks)
+canvas.focus_set()
 canvas.pack()
 
 Terrains= Menubutton (root, text="Terrains",width=30)
