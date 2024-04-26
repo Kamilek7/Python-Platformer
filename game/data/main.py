@@ -19,21 +19,22 @@ MAX_FPS = 60
  # definicje dla okna
 current_fps = pygame.time.Clock()
 window = pygame.display.set_mode((APP_WIDTH, APP_HEIGHT), RESIZABLE)
-pygame.display.set_caption("Test")
 running = True
 
  # elementy gry
 
 player = Player(window,APP_WIDTH/5,60)
 p1 = Grounds(window,APP_WIDTH/6 ,APP_HEIGHT-30)
-p2 = Grounds(window,APP_WIDTH/3 ,APP_HEIGHT-120,30)
+p2 = Grounds(window,APP_WIDTH/2 ,APP_HEIGHT-120,120,80)
+p3 = Grounds(window,APP_WIDTH/1.5 ,APP_HEIGHT-220,120,80)
 sprites = pygame.sprite.Group()
 sprites.add(player)
 sprites.add(p1)
 sprites.add(p2)
+sprites.add(p3)
 moveables = [player]
 
-platforms = [p1,p2]
+platforms = [p1,p2,p3]
 
 main_camera = Camera(player, platforms)
 
