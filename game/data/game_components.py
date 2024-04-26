@@ -32,15 +32,23 @@ class PhysicsComponent:
                     if pos_to_check.y > col_entity.pos.y - self.entity.get_height() and pos_to_check.y < col_entity.pos.y + col_entity.get_height():
                         if pos_to_check.x + self.entity.get_width()> col_entity.pos.x and pos_to_check.x < col_entity.pos.x + col_entity.get_width():
                             
-                            self.entity.move_by(-temp_moved_vec)
 
                             #self.entity.pos.y = col_entity.pos.y - self.entity.get_height()
                             if i == 0:
                                 self.speed.y = 0
                                 if temp_moved_vec.y > 0:
+                                    #going down
                                     self.is_on_ground = True
+                                    self.entity.move_to_pos(vector2d(self.entity.pos.x, col_entity.pos.y - self.entity.get_height()))
+                                else:
+                                    self.entity.move_to_pos(vector2d(self.entity.pos.x, col_entity.pos.y + col_entity.get_height()))
                             elif i == 1:
                                 self.speed.x = 0
+                                if temp_moved_vec.x > 0:
+                                    self.entity.move_to_pos(vector2d(col_entity.pos.x - self.entity.get_width(), self.entity.pos.y))
+                                else:
+                                    self.entity.move_to_pos(vector2d(col_entity.pos.x + col_entity.get_width(), self.entity.pos.y))
+
                                 print("x")
                             
             #else:
