@@ -52,10 +52,13 @@ def canvasUpdate():
    timer+=10
    canvas.delete("all")
    for ground in grounds:
+      width = 2
+      if ground==selected:
+         width=4
       if ground.type == "mayo":
-         canvas.create_rectangle(ground.x, ground.y, ground.x + ground.width, ground.y + ground.height, fill='yellow')
+         canvas.create_rectangle(ground.x, ground.y, ground.x + ground.width, ground.y + ground.height, fill='yellow', width=width)
       if ground.type == "ketchup":
-         canvas.create_rectangle(ground.x, ground.y, ground.x + ground.width, ground.y + ground.height, fill='red')
+         canvas.create_rectangle(ground.x, ground.y, ground.x + ground.width, ground.y + ground.height, fill='red',width=width)
    canvas.after(50, canvasUpdate)
 
 
