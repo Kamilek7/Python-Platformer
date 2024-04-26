@@ -24,6 +24,11 @@ def donothing():
    button = Button(filewin, text="Do nothing button")
    button.pack()
 
+def reset():
+   global grounds, selected
+   grounds = []
+   selected = False
+
 def saveFile():
    for ground in grounds:
       temp = ET.SubElement(map, ground.type)
@@ -36,11 +41,6 @@ def saveFile():
    fileNum = len(listdir(path.dirname(path.abspath(__file__))))
    filename = path.join(path.dirname(path.abspath(__file__)), "mapa" + str(fileNum) +".xml")
    plik.write(filename)
-
-def reset():
-   global grounds, selected
-   grounds = []
-   selected = False
 
 def loadfile(_filename,filewin):
    filename = _filename.get(1.0, "end-1c")
@@ -142,6 +142,7 @@ vbar=Scrollbar(canvasFrame,orient=VERTICAL)
 vbar.pack(side=RIGHT,fill=Y)
 vbar.config(command=canvas.yview)
 canvas.config(xscrollcommand=hbar.set, yscrollcommand=vbar.set)
+# obsluga przyciskow myszy (musialem tutaj dac zeby wszystko bylo "swieze")
 def motion(event):
    global selected
    x = event.x + hbar.get()[0]*canvas.winfo_width()
@@ -160,23 +161,25 @@ canvas.bind("<Key>", moveBlocks)
 canvas.focus_set()
 canvas.pack()
 
+# Zakladka "Tereny" (po prawej)
+
 Terrains= Menubutton (root, text="Terrains",width=30)
 Terrains.grid(row = 0, column=2,sticky="nsew")
 Terrains.menu = Menu ( Terrains, tearoff = 0 )
 Terrains["menu"] = Terrains.menu
-mayoVar = IntVar()
-ketchVar = IntVar()
 Terrains.menu.add_checkbutton (label="mayo", command=lambda: addTerrain("mayo"))
 Terrains.menu.add_checkbutton (label="ketchup", command=lambda: addTerrain("ketchup"))
+
+# Zakladka edycji terenow (po lewej)
 
 Edit= Menubutton (root, text="Edit selected",width=30)
 Edit.grid(row = 0, column=0,sticky="nsew")
 Edit.menu = Menu ( Edit, tearoff = 0 )
 Edit["menu"] = Edit.menu
-mayoVar = IntVar()
-ketchVar = IntVar()
-Edit.menu.add_checkbutton (label="Position", variable=mayoVar)
-Edit.menu.add_checkbutton (label="Size", variable=ketchVar)
+Edit.menu.add_checkbutton (label="Position")
+Edit.menu.add_checkbutton (label="Size")
+
+# Estetyka programu
 
 root.columnconfigure(0, weight=1)
 root.columnconfigure(1, weight=1)
