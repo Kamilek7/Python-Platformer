@@ -18,15 +18,26 @@ class PhysicsComponent:
         #handling is temp need to add more checks later
         self.is_coliding = False
         for col_entity in other_entities:
-            if self.entity.pos.y > col_entity.pos.y - self.entity.get_height() and self.entity.pos.y < col_entity.pos.y + col_entity.get_height():
-                if self.entity.pos.x + self.entity.get_width()> col_entity.pos.x and self.entity.pos.x < col_entity.pos.x + col_entity.get_width():
-                    
-                    self.entity.move_by(-moved_by_vec)
+                for i in range(2):
+                    temp_moved_vec = vector2d(moved_by_vec.x, moved_by_vec.y)
+                    if i == 0:
+                        temp_moved_vec.x = 0
+                    elif i == 1:
+                        temp_moved_vec.y = 0
+                    pos_to_check = self.entity.pos
+                    if pos_to_check.y > col_entity.pos.y - self.entity.get_height() and pos_to_check.y < col_entity.pos.y + col_entity.get_height():
+                        if pos_to_check.x + self.entity.get_width()> col_entity.pos.x and pos_to_check.x < col_entity.pos.x + col_entity.get_width():
+                            
+                            self.entity.move_by(-temp_moved_vec)
 
-                    #self.entity.pos.y = col_entity.pos.y - self.entity.get_height()
-                    self.speed.y = 0
-                    self.speed.x = 0
-                    self.is_coliding = True
+                            #self.entity.pos.y = col_entity.pos.y - self.entity.get_height()
+                            if i == 0:
+                                self.speed.y = 0
+                                print("y")
+                            elif i == 1:
+                                self.speed.x = 0
+                                print("x")
+                            self.is_coliding = True
             #else:
             #    self.is_coliding = False
         
