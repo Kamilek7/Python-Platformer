@@ -13,7 +13,8 @@ class Camera:
         self.focus_object.move_by(move_vec)
         window_height = window.get_height()
         abs_f_obj_y = abs(self.focus_object.pos.y)
-        if abs_f_obj_y < window_height/2 - window_height/3 or abs_f_obj_y > window_height/2 + window_height/3:
+        offset = window_height/2.3
+        if abs_f_obj_y < window_height/2 - offset or abs_f_obj_y > window_height/2 + offset:
             self.centre_camera(vector2d(window.get_width(), window.get_height()))
 
         for entity in self.other_objects:
@@ -21,7 +22,7 @@ class Camera:
     def centre_camera(self, window_dimensions):
         #centers the camera to the middle of window_dimensions
         window_centre = window_dimensions/2
-
+        window_centre.y += window_dimensions.y/6
         move_vec = window_centre - self.focus_object.pos
         self.focus_object.move_by(move_vec)
         for entity in self.other_objects:
