@@ -33,7 +33,8 @@ def saveFile():
       temp.set("height",str(ground.height))
    ET.dump(map)
    plik = ET.ElementTree(map)
-   filename = path.join(path.dirname(path.abspath(__file__)), "mapa.xml")
+   fileNum = len(listdir(path.dirname(path.abspath(__file__))))
+   filename = path.join(path.dirname(path.abspath(__file__)), "mapa" + str(fileNum) +".xml")
    plik.write(filename)
 
 def reset():
@@ -41,22 +42,28 @@ def reset():
    grounds = []
    selected = False
 
-def loadfile(_filename):
-   global grounds, selected
-   grounds = []
-   selected = False
+def loadfile(_filename,filewin):
    filename = _filename.get(1.0, "end-1c")
    filename = path.join(path.dirname(path.abspath(__file__)), filename)
-   plik = minidom.parse(filename)
-   mapa = plik.getElementsByTagName('map')[0]
-   for child in mapa.childNodes:
-      grounds.append(VisibleGround(int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName))
+   if path.isfile(filename):
+      global grounds, selected
+      grounds = []
+      selected = False
+      plik = minidom.parse(filename)
+      mapa = plik.getElementsByTagName('map')[0]
+      for child in mapa.childNodes:
+         grounds.append(VisibleGround(int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName))
+      filewin.destroy()
+   else:
+      filewin = Toplevel(root)
+      label = Label(filewin, text="ERROR: Wrong filename")
+      label.pack()
 
 def load():
    filewin = Toplevel(root)
    label = Label(filewin, text="Type in the filename")
    filename = Text(filewin, height = 1,  width = 20) 
-   button = Button(filewin, text="Load", command= lambda: loadfile(filename))
+   button = Button(filewin, text="Load", command= lambda: loadfile(filename,filewin))
    label.pack()
    filename.pack()
    button.pack()
@@ -162,14 +169,14 @@ ketchVar = IntVar()
 Terrains.menu.add_checkbutton (label="mayo", command=lambda: addTerrain("mayo"))
 Terrains.menu.add_checkbutton (label="ketchup", command=lambda: addTerrain("ketchup"))
 
-Edit= Menubutton (root, text="Edit",width=30)
+Edit= Menubutton (root, text="Edit selected",width=30)
 Edit.grid(row = 0, column=0,sticky="nsew")
 Edit.menu = Menu ( Edit, tearoff = 0 )
 Edit["menu"] = Edit.menu
 mayoVar = IntVar()
 ketchVar = IntVar()
-Edit.menu.add_checkbutton (label="mayo", variable=mayoVar)
-Edit.menu.add_checkbutton (label="ketchup", variable=ketchVar)
+Edit.menu.add_checkbutton (label="Position", variable=mayoVar)
+Edit.menu.add_checkbutton (label="Size", variable=ketchVar)
 
 root.columnconfigure(0, weight=1)
 root.columnconfigure(1, weight=1)
