@@ -11,7 +11,6 @@ class Camera:
         self.focus_object.move_by(move_vec)
         for entity in self.other_objects:
             entity.move_by(vector2d((move_vec.x), (move_vec.y)))
-            print(entity.pos)
     def centre_camera(self, window_dimensions):
         #centers the camera to the middle of window_dimensions
         window_centre = window_dimensions/2
@@ -20,4 +19,3 @@ class Camera:
         self.focus_object.move_by(move_vec)
         for entity in self.other_objects:
             entity.move_by(vector2d((move_vec.x), (move_vec.y)))
-            print(entity.pos)

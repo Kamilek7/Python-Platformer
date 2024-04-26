@@ -12,20 +12,22 @@ class PhysicsComponent:
         self.friction = vector2d(-0.1,0)
         self.entity = entity
         self.is_coliding = False
-
+    
     def check_colision(self, moved_by_vec, other_entities = []):
-        #temp. colision
+        #collision detection and handling
+        #handling is temp need to add more checks later
+        self.is_coliding = False
         for col_entity in other_entities:
-            if self.entity.pos.y > col_entity.pos.y - self.entity.get_height() and self.entity.pos.y < col_entity.pos.y:
-                if self.entity.pos.x > col_entity.pos.x and self.entity.pos.x < col_entity.pos.x + col_entity.get_width():
+            if self.entity.pos.y > col_entity.pos.y - self.entity.get_height() and self.entity.pos.y < col_entity.pos.y + col_entity.get_height():
+                if self.entity.pos.x + self.entity.get_width()> col_entity.pos.x and self.entity.pos.x < col_entity.pos.x + col_entity.get_width():
                 
                     self.entity.pos.y = col_entity.pos.y - self.entity.get_height()
                     #print(self.entity.pos.y)
                     #self.entity.pos.y > self.entity.window.get_height()
                     self.speed.y = 0
                     self.is_coliding = True
-            else:
-                self.is_coliding = False
+            #else:
+            #    self.is_coliding = False
         
     def move(self, move_vec, other_entities = None):
         self.speed.x += self.def_speed*move_vec.x
