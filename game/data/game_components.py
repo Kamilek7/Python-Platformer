@@ -20,11 +20,12 @@ class PhysicsComponent:
         for col_entity in other_entities:
             if self.entity.pos.y > col_entity.pos.y - self.entity.get_height() and self.entity.pos.y < col_entity.pos.y + col_entity.get_height():
                 if self.entity.pos.x + self.entity.get_width()> col_entity.pos.x and self.entity.pos.x < col_entity.pos.x + col_entity.get_width():
-                
-                    self.entity.pos.y = col_entity.pos.y - self.entity.get_height()
-                    #print(self.entity.pos.y)
-                    #self.entity.pos.y > self.entity.window.get_height()
+                    
+                    self.entity.move_by(-moved_by_vec)
+
+                    #self.entity.pos.y = col_entity.pos.y - self.entity.get_height()
                     self.speed.y = 0
+                    self.speed.x = 0
                     self.is_coliding = True
             #else:
             #    self.is_coliding = False
