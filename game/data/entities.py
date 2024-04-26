@@ -46,6 +46,8 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
 
     def get_height(self):
         return self.area.get_height()
+    def get_width(self):
+        return self.area.get_width()
 
     def update(self, in_other_entities = []):
         if self.MOVEABLE:
@@ -91,4 +93,4 @@ class Player(Entity): # dziedziczenie po entity
 class Grounds(Entity):
     def __init__(self,window,_x,_y):
          # X, Y, WYSOKOSC, SZEROKOSC, KOLOR, PED PRZY RUCHU, TARCIE, RUCHOME, MOZNA STEROWAC
-        super().__init__(window, _x, _y, 60, APP_WIDTH, (60,60,210), False, False)
+        super().__init__(window, _x, _y, 120, APP_WIDTH, (60,60,210), False, False)

@@ -16,12 +16,14 @@ class PhysicsComponent:
     def check_colision(self, moved_by_vec, other_entities = []):
         #temp. colision
         for col_entity in other_entities:
-            if self.entity.pos.y > col_entity.pos.y - col_entity.get_height():
-                self.entity.pos.y = col_entity.pos.y - col_entity.get_height()
-                #print(self.entity.pos.y)
-                #self.entity.pos.y > self.entity.window.get_height()
-                self.speed.y = 0
-                self.is_coliding = True
+            if self.entity.pos.y > col_entity.pos.y - self.entity.get_height() and self.entity.pos.y < col_entity.pos.y:
+                if self.entity.pos.x > col_entity.pos.x and self.entity.pos.x < col_entity.pos.x + col_entity.get_width():
+                
+                    self.entity.pos.y = col_entity.pos.y - self.entity.get_height()
+                    #print(self.entity.pos.y)
+                    #self.entity.pos.y > self.entity.window.get_height()
+                    self.speed.y = 0
+                    self.is_coliding = True
             else:
                 self.is_coliding = False
         
