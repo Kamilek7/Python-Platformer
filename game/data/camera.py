@@ -22,6 +22,7 @@ class Camera:
     def centre_camera(self, window_dimensions):
         #centers the camera to the middle of window_dimensions
         window_centre = window_dimensions/2
+        window_centre.x -= window_dimensions.x/10
         window_centre.y += window_dimensions.y/6
         move_vec = window_centre - self.focus_object.pos
         self.focus_object.move_by(move_vec)
