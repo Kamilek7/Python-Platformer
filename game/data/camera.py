@@ -1,14 +1,21 @@
 from entities import *
-
+import math
 class Camera:
-    def __init__(self, focus_object:Player, other_objects = []) -> None:
+    def __init__(self, focus_object:Player, other_objects = [], y_centre = 400) -> None:
         self.focus_object = focus_object
         self.other_objects = other_objects
-    def update(self):
+        self.y_centre = y_centre
+    def update(self, window):
         #run every tick
         #moves the camera by changing pos of all objects
         move_vec = -self.focus_object.last_movement
+        move_vec.y = 0
         self.focus_object.move_by(move_vec)
+        window_height = window.get_height()
+        abs_f_obj_y = abs(self.focus_object.pos.y)
+        if abs_f_obj_y < window_height/2 - window_height/3 or abs_f_obj_y > window_height/2 + window_height/3:
+            self.centre_camera(vector2d(window.get_width(), window.get_height()))
+
         for entity in self.other_objects:
             entity.move_by(vector2d((move_vec.x), (move_vec.y)))
     def centre_camera(self, window_dimensions):

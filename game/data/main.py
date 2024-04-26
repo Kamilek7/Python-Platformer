@@ -36,7 +36,7 @@ moveables = [player]
 
 platforms = [p1,p2,p3]
 
-main_camera = Camera(player, platforms)
+main_camera = Camera(player, platforms, window.get_height()*0.75)
 
  # game loop
 main_camera.centre_camera(vector2d(window.get_width(), window.get_height()))
@@ -51,7 +51,7 @@ while running:
     for entity in moveables:
         entity.update(platforms)
         
-    main_camera.update()
+    main_camera.update(window)
     for entity in sprites:
         #,special_flags= BLEND_ADD'
         window.blit(entity.area, entity.shape)
