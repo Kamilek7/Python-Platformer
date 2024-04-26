@@ -26,7 +26,7 @@ running = True
 
 player = Player(window,APP_WIDTH/5,60)
 p1 = Grounds(window,APP_WIDTH/6 ,APP_HEIGHT-30)
-p2 = Grounds(window,APP_WIDTH/3 ,APP_HEIGHT-120-80,120)
+p2 = Grounds(window,APP_WIDTH/3 ,APP_HEIGHT-120-80,30)
 sprites = pygame.sprite.Group()
 sprites.add(player)
 sprites.add(p1)
