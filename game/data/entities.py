@@ -79,7 +79,7 @@ class Player(Entity): # dziedziczenie po entity
     def update(self, in_other_entities = []):
             prev_pos = vector2d(self.pos.x, self.pos.y)
             #get input from player
-            move_input = self.input_component.get_movement_vec(self.physics_component.is_coliding)
+            move_input = self.input_component.get_movement_vec(self.physics_component.is_on_ground)
             #debug
             if move_input != vector2d(0,0):
                 pass
