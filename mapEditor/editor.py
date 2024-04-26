@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter.ttk import *
+from os import *
 import xml.etree.cElementTree as ET
 
  # Funkcje do wykorzystania
@@ -25,11 +26,14 @@ def donothing():
 def saveFile():
    for ground in grounds:
       temp = ET.SubElement(map, ground.type)
-      temp.set("x", ground.x)
-      temp.set("y", ground.y)
-      temp.set("width", ground.width)
-      temp.set("height", ground.height)
+      temp.set("x", str(ground.x))
+      temp.set("y", str(ground.y))
+      temp.set("width", str(ground.width))
+      temp.set("height",str(ground.height))
    ET.dump(map)
+   plik = ET.ElementTree(map)
+   filename = path.join(path.dirname(path.abspath(__file__)), "mapa.xml")
+   plik.write(filename)
 def addTerrain(type):
    grounds.append(VisibleGround(0,0,120,80,type))
 
@@ -69,8 +73,7 @@ menu = Menu(root)
 fileMenu = Menu(menu, tearoff=0)
 fileMenu.add_command(label="New", command=donothing)
 fileMenu.add_command(label="Open", command=donothing)
-fileMenu.add_command(label="Save", command=donothing)
-fileMenu.add_command(label="Save as...", command=donothing)
+fileMenu.add_command(label="Save", command=saveFile)
 fileMenu.add_command(label="Close", command=donothing)
 fileMenu.add_separator()
 fileMenu.add_command(label="Exit", command=root.quit)
