@@ -138,9 +138,11 @@ vbar.config(command=canvas.yview)
 canvas.config(xscrollcommand=hbar.set, yscrollcommand=vbar.set)
 # obsluga przyciskow myszy (musialem tutaj dac zeby wszystko bylo "swieze")
 mouseTimer = False
+offset = (0,0)
 def mouseSelect(event):
    global mouseTimer
    global selected
+   global offset
    x = event.x + canvas.winfo_width()/(hbar.get()[1]-hbar.get()[0])*hbar.get()[0]
    y = event.y + canvas.winfo_height()/(vbar.get()[1]-vbar.get()[0])*vbar.get()[0]
    if len(grounds)>0:
@@ -151,18 +153,20 @@ def mouseSelect(event):
       if len(zs)>0:
          mouseTimer=True
          selected = zs[max(zs.keys())]
+         offset = [selected.x-x,selected.y-y]
       else:
          selected = False
          mouseTimer= False
 
 def mouseMoveBlock(event):
    global mouseTimer
+   global offset
    if mouseTimer:
       global selected
       x = event.x + canvas.winfo_width()/(hbar.get()[1]-hbar.get()[0])*hbar.get()[0]
       y = event.y + canvas.winfo_height()/(vbar.get()[1]-vbar.get()[0])*vbar.get()[0]
-      selected.x = x
-      selected.y = y
+      selected.x = x + offset[0]
+      selected.y = y + offset[1]
 def mouseRelease(event):
    global mouseTimer
    mouseTimer = False
@@ -191,7 +195,7 @@ Edit["menu"] = Edit.menu
 Edit.menu.add_checkbutton (label="Position")
 Edit.menu.add_checkbutton (label="Size")
 
-# Estetyka programu
+# Estetyka programu i odswiezanie okien
 
 root.columnconfigure(0, weight=1)
 root.columnconfigure(1, weight=1)
