@@ -73,9 +73,39 @@ def load():
 def addTerrain(type):
    grounds.append(VisibleGround(0,0,120,80,type))
 
-def moveBlocks(event):
-   pass
+def keyBoardInput(event):
+   global selected
+   if selected!=False:
+      if event.keysym == "Delete":
+         for i in grounds:
+            if i == selected:
+               grounds.remove(i)
+               selected = False
 
+def openSizeEditWindow():
+   global selected
+   filewin = Toplevel(root)
+   if selected!=False:
+      label1 = Label(filewin, text="Width (" + str(selected.width) + ")")
+      label2 = Label(filewin, text="Height (" + str(selected.height) + ")")
+      var1 = IntVar()
+      var2 = IntVar()
+      def updateFromSlider(cos):
+         selected.width = var1.get()
+         selected.height = var2.get()
+         label1.config(text="Width (" + str(selected.width) + ")")
+         label2.config(text="Height (" + str(selected.height) + ")")
+      width = Scale(filewin, from_=1, to=1000, variable=var1, command=updateFromSlider)
+      height = Scale(filewin, from_=1, to=1000, variable=var2, command=updateFromSlider)
+      var1.set (selected.width) 
+      var2.set (selected.height) 
+      label1.pack()
+      width.pack()
+      label2.pack()
+      height.pack()
+   else:
+      label = Label(filewin, text="Nothing selected")
+      label.pack()
 def canvasUpdate():
    global timer
    timer+=MS
@@ -165,15 +195,15 @@ def mouseMoveBlock(event):
       global selected
       x = event.x + canvas.winfo_width()/(hbar.get()[1]-hbar.get()[0])*hbar.get()[0]
       y = event.y + canvas.winfo_height()/(vbar.get()[1]-vbar.get()[0])*vbar.get()[0]
-      selected.x = x + offset[0]
-      selected.y = y + offset[1]
+      selected.x = int(x + offset[0])
+      selected.y = int(y + offset[1])
 def mouseRelease(event):
    global mouseTimer
    mouseTimer = False
 canvas.bind("<Button-1>", mouseSelect)
 canvas.bind("<B1-Motion>", mouseMoveBlock)
 canvas.bind("<ButtonRelease-1>", mouseRelease)
-canvas.bind("<Key>", moveBlocks)
+canvas.bind("<Key>", keyBoardInput)
 canvas.focus_set()
 canvas.pack()
 
@@ -193,7 +223,7 @@ Edit.grid(row = 0, column=0,sticky="nsew")
 Edit.menu = Menu ( Edit, tearoff = 0 )
 Edit["menu"] = Edit.menu
 Edit.menu.add_checkbutton (label="Position")
-Edit.menu.add_checkbutton (label="Size")
+Edit.menu.add_checkbutton (label="Size", command=openSizeEditWindow)
 
 # Estetyka programu i odswiezanie okien
 
