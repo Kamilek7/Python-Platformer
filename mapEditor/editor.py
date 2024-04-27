@@ -4,6 +4,8 @@ from os import *
 import xml.etree.cElementTree as ET
 from xml.dom import minidom
 
+ # stałe
+MS = 10
  # Funkcje do wykorzystania
 class VisibleGround:
    z = 0
@@ -72,19 +74,11 @@ def addTerrain(type):
    grounds.append(VisibleGround(0,0,120,80,type))
 
 def moveBlocks(event):
-   if selected!=False:
-      if event.keysym == "a" or event.keysym == "Left":
-         selected.x -=1
-      if event.keysym == "d" or event.keysym == "Right":
-         selected.x +=1
-      if event.keysym == "w" or event.keysym == "Up":
-         selected.y -=1
-      if event.keysym == "s" or event.keysym == "Down":
-         selected.y +=1
+   pass
 
 def canvasUpdate():
    global timer
-   timer+=10
+   timer+=MS
    canvas.delete("all")
    for ground in grounds:
       width = 2
@@ -94,7 +88,7 @@ def canvasUpdate():
          canvas.create_rectangle(ground.x, ground.y, ground.x + ground.width, ground.y + ground.height, fill='yellow', width=width)
       if ground.type == "ketchup":
          canvas.create_rectangle(ground.x, ground.y, ground.x + ground.width, ground.y + ground.height, fill='red',width=width)
-   canvas.after(50, canvasUpdate)
+   canvas.after(MS, canvasUpdate)
 
 
  # Budowa aplikacji
@@ -134,7 +128,7 @@ root.config(menu=menu)
 
  # canvas
 
-canvas = Canvas (canvasFrame, bg="#FFFFFF",height=500,width=500, scrollregion=(0,0,600,600), relief=SUNKEN, bd=3)
+canvas = Canvas (canvasFrame, bg="#FFFFFF",height=600,width=600, scrollregion=(0,0,1000,1000), relief=SUNKEN, bd=3)
 hbar=Scrollbar(canvasFrame,orient=HORIZONTAL)
 hbar.pack(side=BOTTOM,fill=X)
 hbar.config(command=canvas.xview)
@@ -143,20 +137,38 @@ vbar.pack(side=RIGHT,fill=Y)
 vbar.config(command=canvas.yview)
 canvas.config(xscrollcommand=hbar.set, yscrollcommand=vbar.set)
 # obsluga przyciskow myszy (musialem tutaj dac zeby wszystko bylo "swieze")
-def motion(event):
+mouseTimer = False
+def mouseSelect(event):
+   global mouseTimer
    global selected
-   x = event.x + hbar.get()[0]*canvas.winfo_width()
-   y = event.y + vbar.get()[0]*canvas.winfo_height()
+   x = event.x + canvas.winfo_width()/(hbar.get()[1]-hbar.get()[0])*hbar.get()[0]
+   y = event.y + canvas.winfo_height()/(vbar.get()[1]-vbar.get()[0])*vbar.get()[0]
    if len(grounds)>0:
       zs = {}
       for ground in grounds:
          if (x <= ground.x + ground.width and x >= ground.x) and (y <= ground.y + ground.height and y >= ground.y):
             zs[ground.z] = ground
       if len(zs)>0:
+         mouseTimer=True
          selected = zs[max(zs.keys())]
       else:
          selected = False
-canvas.bind("<Button-1>", motion)
+         mouseTimer= False
+
+def mouseMoveBlock(event):
+   global mouseTimer
+   if mouseTimer:
+      global selected
+      x = event.x + canvas.winfo_width()/(hbar.get()[1]-hbar.get()[0])*hbar.get()[0]
+      y = event.y + canvas.winfo_height()/(vbar.get()[1]-vbar.get()[0])*vbar.get()[0]
+      selected.x = x
+      selected.y = y
+def mouseRelease(event):
+   global mouseTimer
+   mouseTimer = False
+canvas.bind("<Button-1>", mouseSelect)
+canvas.bind("<B1-Motion>", mouseMoveBlock)
+canvas.bind("<ButtonRelease-1>", mouseRelease)
 canvas.bind("<Key>", moveBlocks)
 canvas.focus_set()
 canvas.pack()
@@ -184,6 +196,7 @@ Edit.menu.add_checkbutton (label="Size")
 root.columnconfigure(0, weight=1)
 root.columnconfigure(1, weight=1)
 root.columnconfigure(2, weight=1)
+root.rowconfigure(1, weight=1)
 root.geometry('800x600')
-canvas.after(50, canvasUpdate)
+canvas.after(MS, canvasUpdate)
 root.mainloop()
