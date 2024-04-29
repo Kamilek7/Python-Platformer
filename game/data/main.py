@@ -35,6 +35,7 @@ MAX_FPS = 60
  # definicje dla okna
 current_fps = pygame.time.Clock()
 window = pygame.display.set_mode((APP_WIDTH, APP_HEIGHT), RESIZABLE)
+pygame.display.set_caption("Matka Kacpra - the GAYM")
 running = True
 
  # elementy gry

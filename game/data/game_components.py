@@ -48,8 +48,6 @@ class PhysicsComponent:
                                     self.entity.move_to_pos(vector2d(col_entity.pos.x - self.entity.get_width(), self.entity.pos.y))
                                 else:
                                     self.entity.move_to_pos(vector2d(col_entity.pos.x + col_entity.get_width(), self.entity.pos.y))
-
-                                print("x")
                             
             #else:
             #    self.is_coliding = False

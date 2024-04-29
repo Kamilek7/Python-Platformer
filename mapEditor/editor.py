@@ -45,7 +45,7 @@ def saveFile():
    fileNum = len(listdir(path.dirname(path.abspath(__file__))))
    filename = path.join(path.dirname(path.abspath(__file__)), "mapa" + str(fileNum) +".xml")
    if loadedFilename!=False:
-      filename = loadedFilename
+      filename = path.join(path.dirname(path.abspath(__file__)), loadedFilename)
    plik.write(filename)
 
 def loadfile(_filename,filewin):
