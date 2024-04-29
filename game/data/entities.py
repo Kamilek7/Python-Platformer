@@ -90,7 +90,6 @@ class Player(Entity): # dziedziczenie po entity
             self.physics_component.update_pos(in_other_entities)
             self.last_movement = self.pos - prev_pos
 
-
 class Grounds(Entity):
     def __init__(self,window, _x, _y, in_width = APP_WIDTH, in_height = 120, _type = "mayo"):
          # X, Y, SZEROKOSC, WYSOKOSC, KOLOR, PED PRZY RUCHU, TARCIE, RUCHOME, MOZNA STEROWAC

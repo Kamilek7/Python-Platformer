@@ -1,5 +1,7 @@
 
 from entities import *
+from os import *
+from xml.dom import minidom
 
 APP_HEIGHT = 600
 APP_WIDTH = 800
