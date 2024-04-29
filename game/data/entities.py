@@ -10,7 +10,7 @@ APP_WIDTH = 800
  # klasy w grze
 class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
      # test wiarygodnosci argumentow
-    def __new__(cls, _window, _x,_y, height=10, width=10):
+    def __new__(cls, _window, _x,_y, height=10, width=10, type="mayo"):
         #do checks for window, height, width later
         if not isinstance(_x, float) and not isinstance(_x, int):
             raise TypeError("Pierwszy argument inicjalizacji obiektu klasy Entity (_x) musi być typu numerycznego float lub int!")
@@ -92,6 +92,9 @@ class Player(Entity): # dziedziczenie po entity
 
 
 class Grounds(Entity):
-    def __init__(self,window, _x, _y, in_height = 120, in_width = APP_WIDTH):
+    def __init__(self,window, _x, _y, in_height = 120, in_width = APP_WIDTH, _type = "mayo"):
          # X, Y, WYSOKOSC, SZEROKOSC, KOLOR, PED PRZY RUCHU, TARCIE, RUCHOME, MOZNA STEROWAC
-        super().__init__(window, _x, _y, in_height, in_width, (60,60,210), False, False)
+        if _type=="mayo":
+            super().__init__(window, _x, _y, in_height, in_width, (210,210,60), False, False)
+        elif _type=="ketchup":
+            super().__init__(window, _x, _y, in_height, in_width, (210,60,60), False, False)

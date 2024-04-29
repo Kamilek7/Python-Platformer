@@ -18,6 +18,7 @@ class VisibleGround:
       self.height = _height
       self.type = _type
 timer = 0
+loadedFilename = False
 selected = False
 grounds = []
 map = ET.Element('map')
@@ -32,6 +33,7 @@ def reset():
    selected = False
 
 def saveFile():
+   global loadedFilename
    for ground in grounds:
       temp = ET.SubElement(map, ground.type)
       temp.set("x", str(ground.x))
@@ -42,16 +44,19 @@ def saveFile():
    plik = ET.ElementTree(map)
    fileNum = len(listdir(path.dirname(path.abspath(__file__))))
    filename = path.join(path.dirname(path.abspath(__file__)), "mapa" + str(fileNum) +".xml")
+   if loadedFilename!=False:
+      filename = loadedFilename
    plik.write(filename)
 
 def loadfile(_filename,filewin):
    filename = _filename.get(1.0, "end-1c")
-   filename = path.join(path.dirname(path.abspath(__file__)), filename)
-   if path.isfile(filename):
-      global grounds, selected
+   filenameLong = path.join(path.dirname(path.abspath(__file__)), filename)
+   if path.isfile(filenameLong):
+      global grounds, selected, loadedFilename
       grounds = []
       selected = False
-      plik = minidom.parse(filename)
+      loadedFilename = filename
+      plik = minidom.parse(filenameLong)
       mapa = plik.getElementsByTagName('map')[0]
       for child in mapa.childNodes:
          grounds.append(VisibleGround(int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName))
@@ -231,6 +236,6 @@ root.columnconfigure(0, weight=1)
 root.columnconfigure(1, weight=1)
 root.columnconfigure(2, weight=1)
 root.rowconfigure(1, weight=1)
-root.geometry('800x600')
+root.geometry('1200x800')
 canvas.after(MS, canvasUpdate)
 root.mainloop()

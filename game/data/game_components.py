@@ -88,4 +88,3 @@ class InputComponent:
         if key[K_DOWN] or key[K_s]:
             move_vec.y = 1
         return move_vec
-        

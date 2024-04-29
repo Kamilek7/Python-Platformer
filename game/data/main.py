@@ -3,8 +3,24 @@
  # meow
 
 from entities import *
-from os import *
 from camera import Camera
+from os import *
+from xml.dom import minidom
+
+class SystemComponent:
+    @staticmethod
+    def loadMaps(_window):
+        MAPS_DIR =  path.join(path.dirname(path.dirname(path.abspath(__file__))), 'maps')
+        levels = []
+        for files in listdir(MAPS_DIR):
+            maps = []
+            plik = minidom.parse(path.join(MAPS_DIR,files))
+            mapa = plik.getElementsByTagName('map')[0]
+            for child in mapa.childNodes:
+                maps.append(Grounds(_window,int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName))
+            levels.append(maps)
+        return levels
+
 BIDEN_CHECK = path.join(path.dirname(path.abspath(__file__)), "joe_mama.jpg")
 if not path.isfile(BIDEN_CHECK):
     raise ImportError("GDZIE JEST BIDEN")
@@ -24,22 +40,18 @@ running = True
  # elementy gry
 
 player = Player(window,APP_WIDTH/5,60)
-p1 = Grounds(window,APP_WIDTH/6 ,APP_HEIGHT-30)
-p2 = Grounds(window,APP_WIDTH/2 ,APP_HEIGHT-120,120,80)
-p3 = Grounds(window,APP_WIDTH/1.5 ,APP_HEIGHT-220,120,80)
+levels = SystemComponent.loadMaps(window)
+platforms = levels[0]
 sprites = pygame.sprite.Group()
 sprites.add(player)
-sprites.add(p1)
-sprites.add(p2)
-sprites.add(p3)
+for p in platforms:
+    sprites.add(p)
 moveables = [player]
-
-platforms = [p1,p2,p3]
-
 main_camera = Camera(player, platforms, window.get_height()*0.75)
 
  # game loop
 main_camera.centre_camera(vector2d(window.get_width(), window.get_height()))
+
 while running:
     for event in pygame.event.get():
         if event.type == QUIT:
