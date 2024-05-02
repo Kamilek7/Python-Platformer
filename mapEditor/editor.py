@@ -49,6 +49,7 @@ timer = 0
 mapSize = (1200,1200)
 offset = (0,0)
 windowOffset = (0,0)
+copyboard = None
 loadedFilename = False
 selected = False
 grounds = []
@@ -117,23 +118,39 @@ def addTerrain(type):
       grounds.append(VisibleGround(windowOffset[0],windowOffset[1],120,80,type))
 
 def keyBoardInput(event):
+   global copyboard
    global selected
    global keyFlags
+   global windowOffset
    print(event.keysym)
    if event.keysym == "Shift_L":
       keyFlags["Shift"] = True
+   if event.keysym == "Control_L":
+      keyFlags["Ctrl"] = True
    if selected!=False:
       if event.keysym == "Delete":
          for i in grounds:
             if i == selected:
                grounds.remove(i)
                selected = False
+      if event.keysym == "c" and keyFlags["Ctrl"]:
+         copyboard = selected
+   if event.keysym == "v" and keyFlags["Ctrl"]:
+      sprite = copyboard.sprite
+      if copyboard.sprite!=None:
+         sprite = copyboard.spriteLoc
+      grounds.append(VisibleGround(windowOffset[0],windowOffset[1],copyboard.width,copyboard.height,copyboard.type, sprite = sprite))
+   if event.keysym == "s" and keyFlags["Ctrl"]:
+      saveFile()
+      
 
 def keyBoardInputRelease(event):
    global keyFlags
    print(event.keysym)
    if event.keysym == "Shift_L":
       keyFlags["Shift"] = False
+   if event.keysym == "Control_L":
+      keyFlags["Ctrl"] = False
 
 def openSpriteEditWindow():
    global selected
