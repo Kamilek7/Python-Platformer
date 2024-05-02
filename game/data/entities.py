@@ -102,5 +102,3 @@ class Grounds(Entity):
             super().__init__(window, _x, _y, in_width, in_height, False, False,color=(210,210,60), sprite=sprite)
         elif _type=="ketchup":
             super().__init__(window, _x, _y, in_width, in_height, False, False, color=(210,60,60), sprite=sprite)
-        else:
-            super().__init__(window, _x, _y, in_width, in_height, False, False, color=(210,60,60), sprite=sprite)

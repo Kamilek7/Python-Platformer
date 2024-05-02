@@ -27,16 +27,26 @@ class VisibleGround:
          self.spriteLoc =sprite
       else:
          self.sprite = None
-   def resize(self,newWidth,newHeight):
+   def resize(self,newWidth,newHeight, sprite=None):
       self.width = newWidth
       self.height = newHeight
-      if self.sprite!=None:
-         spriteLocation = path.join(path.dirname(path.abspath(__file__)),"sprites",self.spriteLoc)
-         img = Image.open(spriteLocation)
-         img = img.resize((self.width,self.height))
-         img= ImageTk.PhotoImage(img)
-         self.sprite = img
+      if self.sprite!=None and self.sprite!="None" or sprite!=None:
+         if sprite!="Remove sprite":
+            filename=sprite
+            if sprite==None:
+               filename = self.spriteLoc
+            spriteLocation = path.join(path.dirname(path.abspath(__file__)),"sprites",filename)
+            img = Image.open(spriteLocation)
+            img = img.resize((self.width,self.height))
+            img= ImageTk.PhotoImage(img)
+            self.sprite = img
+            self.spriteLoc = filename
+         else:
+            self.sprite=None
+            self.spriteLoc="None"
 timer = 0
+offset = (0,0)
+windowOffset = (0,0)
 loadedFilename = False
 selected = False
 grounds = []
@@ -99,10 +109,8 @@ def load():
    button.pack()
 
 def addTerrain(type):
-   if type!="biden":
-      grounds.append(VisibleGround(0,0,120,80,type))
-   else:
-      grounds.append(VisibleGround(0,0,120,80,type, sprite="joe_mama.jpg"))
+      global windowOffsetoffset
+      grounds.append(VisibleGround(windowOffset[0],windowOffset[1],120,80,type))
 
 def keyBoardInput(event):
    global selected
@@ -113,6 +121,34 @@ def keyBoardInput(event):
                grounds.remove(i)
                selected = False
 
+def openSpriteEditWindow():
+   global selected
+   filewin = Toplevel(root)
+   if selected!=False:
+      if selected.sprite != None and selected.sprite != "None":
+         label1 = Label(filewin, text="Current sprite: " + selected.spriteLoc)
+      else:
+         label1 = Label(filewin, text="Current sprite: None")
+      sprites = Listbox(filewin)
+      spriters = path.join(path.dirname(path.abspath(__file__)),"sprites")
+      spriters = listdir(spriters)
+      for i in range(len(spriters)):
+         sprites.insert(i, spriters[i])
+      sprites.insert(len(spriters),"Remove sprite")
+      def updateFromSlider():
+         selection = None
+         for i in sprites.curselection():
+            selection = sprites.get(i)
+         selected.resize(selected.width, selected.height, sprite=selection)
+         label1.config(text="Current sprite: " + selected.spriteLoc)
+      button = Button(filewin, text="Load", command=updateFromSlider)
+
+      label1.pack()
+      sprites.pack()
+      button.pack()
+   else:
+      label = Label(filewin, text="Nothing selected")
+      label.pack()
 def openSizeEditWindow():
    global selected
    filewin = Toplevel(root)
@@ -146,6 +182,7 @@ def canvasUpdate():
       if ground==selected:
          width=4
       if ground.sprite!=None:
+         canvas.create_rectangle(ground.x, ground.y, ground.x + ground.width, ground.y + ground.height, fill='red',width=width)
          canvas.create_image(ground.x, ground.y, anchor=NW, image=ground.sprite)
       else:
          if ground.type == "mayo":
@@ -193,22 +230,30 @@ root.config(menu=menu)
  # canvas
 
 canvas = Canvas (canvasFrame, bg="#FFFFFF",height=600,width=600, scrollregion=(0,0,1000,1000), relief=SUNKEN, bd=3)
-hbar=Scrollbar(canvasFrame,orient=HORIZONTAL)
+hbar = None
+vbar = None
+def changeOffsetH(a,b):
+   canvas.xview(a,b)
+   global windowOffset
+   windowOffset = (canvas.winfo_width()/(hbar.get()[1]-hbar.get()[0])*hbar.get()[0],windowOffset[1])
+def changeOffsetV(a,b):
+   canvas.yview(a,b)
+   global windowOffset
+   windowOffset = (windowOffset[0],canvas.winfo_height()/(vbar.get()[1]-vbar.get()[0])*vbar.get()[0])
+hbar=Scrollbar(canvasFrame,orient=HORIZONTAL, command=changeOffsetH)
 hbar.pack(side=BOTTOM,fill=X)
-hbar.config(command=canvas.xview)
-vbar=Scrollbar(canvasFrame,orient=VERTICAL)
+vbar=Scrollbar(canvasFrame,orient=VERTICAL, command=changeOffsetV)
 vbar.pack(side=RIGHT,fill=Y)
-vbar.config(command=canvas.yview)
 canvas.config(xscrollcommand=hbar.set, yscrollcommand=vbar.set)
 # obsluga przyciskow myszy (musialem tutaj dac zeby wszystko bylo "swieze")
 mouseTimer = False
-offset = (0,0)
 def mouseSelect(event):
    global mouseTimer
    global selected
    global offset
-   x = event.x + canvas.winfo_width()/(hbar.get()[1]-hbar.get()[0])*hbar.get()[0]
-   y = event.y + canvas.winfo_height()/(vbar.get()[1]-vbar.get()[0])*vbar.get()[0]
+   global windowOffset
+   x = event.x + windowOffset[0]
+   y = event.y + windowOffset[1]
    if len(grounds)>0:
       zs = {}
       for ground in grounds:
@@ -249,7 +294,6 @@ Terrains.menu = Menu ( Terrains, tearoff = 0 )
 Terrains["menu"] = Terrains.menu
 Terrains.menu.add_checkbutton (label="mayo", command=lambda: addTerrain("mayo"))
 Terrains.menu.add_checkbutton (label="ketchup", command=lambda: addTerrain("ketchup"))
-Terrains.menu.add_checkbutton (label="biden", command=lambda: addTerrain("biden"))
 
 # Zakladka edycji terenow (po lewej)
 
@@ -257,7 +301,7 @@ Edit= Menubutton (root, text="Edit selected",width=30)
 Edit.grid(row = 0, column=0,sticky="nsew")
 Edit.menu = Menu ( Edit, tearoff = 0 )
 Edit["menu"] = Edit.menu
-Edit.menu.add_checkbutton (label="Position")
+Edit.menu.add_checkbutton (label="Sprites", command=openSpriteEditWindow)
 Edit.menu.add_checkbutton (label="Size", command=openSizeEditWindow)
 
 # Estetyka programu i odswiezanie okien
