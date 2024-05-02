@@ -4,6 +4,7 @@ from PIL import Image,ImageTk
 from os import *
 import xml.etree.cElementTree as ET
 from xml.dom import minidom
+import math
 
  # stałe
 MS = 10
@@ -45,12 +46,15 @@ class VisibleGround:
             self.sprite=None
             self.spriteLoc="None"
 timer = 0
+mapSize = (1200,1200)
 offset = (0,0)
 windowOffset = (0,0)
 loadedFilename = False
 selected = False
 grounds = []
 map = ET.Element('map')
+ # Flagi klawiszowe
+keyFlags = {"Shift": False, "Ctrl": False}
 def donothing():
    filewin = Toplevel(root)
    button = Button(filewin, text="Do nothing button")
@@ -114,12 +118,22 @@ def addTerrain(type):
 
 def keyBoardInput(event):
    global selected
+   global keyFlags
+   print(event.keysym)
+   if event.keysym == "Shift_L":
+      keyFlags["Shift"] = True
    if selected!=False:
       if event.keysym == "Delete":
          for i in grounds:
             if i == selected:
                grounds.remove(i)
                selected = False
+
+def keyBoardInputRelease(event):
+   global keyFlags
+   print(event.keysym)
+   if event.keysym == "Shift_L":
+      keyFlags["Shift"] = False
 
 def openSpriteEditWindow():
    global selected
@@ -142,13 +156,13 @@ def openSpriteEditWindow():
          selected.resize(selected.width, selected.height, sprite=selection)
          label1.config(text="Current sprite: " + selected.spriteLoc)
       button = Button(filewin, text="Load", command=updateFromSlider)
-
       label1.pack()
       sprites.pack()
       button.pack()
    else:
       label = Label(filewin, text="Nothing selected")
       label.pack()
+
 def openSizeEditWindow():
    global selected
    filewin = Toplevel(root)
@@ -158,13 +172,13 @@ def openSizeEditWindow():
       var1 = IntVar()
       var2 = IntVar()
       def updateFromSlider(cos):
-         selected.resize(var1.get(),var2.get())
+         selected.resize(20*var1.get(),20*var2.get())
          label1.config(text="Width (" + str(selected.width) + ")")
          label2.config(text="Height (" + str(selected.height) + ")")
-      width = Scale(filewin, from_=1, to=1000, variable=var1, command=updateFromSlider)
-      height = Scale(filewin, from_=1, to=1000, variable=var2, command=updateFromSlider)
-      var1.set (selected.width) 
-      var2.set (selected.height) 
+      width = Scale(filewin, from_=1, to=60, variable=var1,  command=updateFromSlider)
+      height = Scale(filewin, from_=1, to=60, variable=var2, command=updateFromSlider)
+      var1.set (int(selected.width/20)) 
+      var2.set (int(selected.height/20)) 
       label1.pack()
       width.pack()
       label2.pack()
@@ -172,6 +186,7 @@ def openSizeEditWindow():
    else:
       label = Label(filewin, text="Nothing selected")
       label.pack()
+
 def canvasUpdate():
    global timer
    global img
@@ -189,6 +204,13 @@ def canvasUpdate():
             canvas.create_rectangle(ground.x, ground.y, ground.x + ground.width, ground.y + ground.height, fill='yellow', width=width)
          if ground.type == "ketchup":
             canvas.create_rectangle(ground.x, ground.y, ground.x + ground.width, ground.y + ground.height, fill='red',width=width)
+   # 40 to szerokosc gracza
+   xLines = mapSize[0]//40 - 1
+   yLines = mapSize[1]//40 - 1
+   for i in range (xLines):
+      canvas.create_line((i+1)*40,0,(i+1)*40,mapSize[1])
+   for i in range (yLines):
+      canvas.create_line(0,(i+1)*40,mapSize[1],(i+1)*40)
    canvas.after(MS, canvasUpdate)
 
 
@@ -229,7 +251,7 @@ root.config(menu=menu)
 
  # canvas
 
-canvas = Canvas (canvasFrame, bg="#FFFFFF",height=600,width=600, scrollregion=(0,0,1000,1000), relief=SUNKEN, bd=3)
+canvas = Canvas (canvasFrame, bg="#FFFFFF",height=600,width=600, scrollregion=(0,0,mapSize[0],mapSize[1]), relief=SUNKEN, bd=3)
 hbar = None
 vbar = None
 def changeOffsetH(a,b):
@@ -270,12 +292,17 @@ def mouseSelect(event):
 def mouseMoveBlock(event):
    global mouseTimer
    global offset
+   global keyFlags
    if mouseTimer:
       global selected
       x = event.x + canvas.winfo_width()/(hbar.get()[1]-hbar.get()[0])*hbar.get()[0]
       y = event.y + canvas.winfo_height()/(vbar.get()[1]-vbar.get()[0])*vbar.get()[0]
-      selected.x = int(x + offset[0])
-      selected.y = int(y + offset[1])
+      if keyFlags["Shift"]:
+         selected.x = round((x + offset[0])/40)*40
+         selected.y = round((y + offset[1])/40)*40
+      else:
+         selected.x = int(x + offset[0])
+         selected.y = int(y + offset[1])
 def mouseRelease(event):
    global mouseTimer
    mouseTimer = False
@@ -283,6 +310,7 @@ canvas.bind("<Button-1>", mouseSelect)
 canvas.bind("<B1-Motion>", mouseMoveBlock)
 canvas.bind("<ButtonRelease-1>", mouseRelease)
 canvas.bind("<Key>", keyBoardInput)
+canvas.bind("<KeyRelease>", keyBoardInputRelease)
 canvas.focus_set()
 canvas.pack()
 

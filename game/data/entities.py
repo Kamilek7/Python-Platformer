@@ -65,7 +65,7 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
 
 
 class Player(Entity): # dziedziczenie po entity
-    def __init__(self,window,_x,_y, in_width = 30, in_height = 60):
+    def __init__(self,window,_x,_y, in_width = 40, in_height = 80):
          # X, Y, WYSOKOSC, SZEROKOSC, KOLOR, PED PRZY RUCHU, TARCIE, RUCHOME, MOZNA STEROWAC
                  #grawitacja
         super().__init__(window,_x, _y, in_width, in_height, True, True, color=(210,60,60))
