@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter.ttk import *
+from PIL import Image,ImageTk
 from os import *
 import xml.etree.cElementTree as ET
 from xml.dom import minidom
@@ -9,7 +10,7 @@ MS = 10
  # Funkcje do wykorzystania
 class VisibleGround:
    z = 0
-   def __init__(self, _x,_y,_width,_height, _type):
+   def __init__(self, _x,_y,_width,_height, _type, sprite=None):
       VisibleGround.z+=1
       self.z = VisibleGround.z
       self.x = _x
@@ -17,6 +18,22 @@ class VisibleGround:
       self.width = _width
       self.height = _height
       self.type = _type
+      if sprite!=None:
+         spriteLocation = path.join(path.dirname(path.abspath(__file__)),"sprites",sprite)
+         img = Image.open(spriteLocation)
+         img = img.resize((self.width,self.height))
+         img= ImageTk.PhotoImage(img)
+         self.sprite = img
+         self.spriteLoc =sprite
+   def resize(self,newWidth,newHeight):
+      self.width = newWidth
+      self.height = newHeight
+      if self.sprite!=None:
+         spriteLocation = path.join(path.dirname(path.abspath(__file__)),"sprites",self.spriteLoc)
+         img = Image.open(spriteLocation)
+         img = img.resize((self.width,self.height))
+         img= ImageTk.PhotoImage(img)
+         self.sprite = img
 timer = 0
 selected = False
 grounds = []
@@ -38,9 +55,13 @@ def saveFile():
       temp.set("y", str(ground.y))
       temp.set("width", str(ground.width))
       temp.set("height",str(ground.height))
+      if ground.sprite!=None:
+         temp.set("sprite",str(ground.spriteLoc))
+      else:
+         temp.set("sprite",str("None"))
    ET.dump(map)
    plik = ET.ElementTree(map)
-   fileNum = len(listdir(path.dirname(path.abspath(__file__))))
+   fileNum = len(listdir(path.dirname(path.abspath(__file__))))-1
    filename = path.join(path.dirname(path.abspath(__file__)), "mapa" + str(fileNum) +".xml")
    plik.write(filename)
 
@@ -71,7 +92,10 @@ def load():
    button.pack()
 
 def addTerrain(type):
-   grounds.append(VisibleGround(0,0,120,80,type))
+   if type!="biden":
+      grounds.append(VisibleGround(0,0,120,80,type))
+   else:
+      grounds.append(VisibleGround(0,0,120,80,type, sprite="joe_mama.jpg"))
 
 def keyBoardInput(event):
    global selected
@@ -91,8 +115,7 @@ def openSizeEditWindow():
       var1 = IntVar()
       var2 = IntVar()
       def updateFromSlider(cos):
-         selected.width = var1.get()
-         selected.height = var2.get()
+         selected.resize(var1.get(),var2.get())
          label1.config(text="Width (" + str(selected.width) + ")")
          label2.config(text="Height (" + str(selected.height) + ")")
       width = Scale(filewin, from_=1, to=1000, variable=var1, command=updateFromSlider)
@@ -108,16 +131,20 @@ def openSizeEditWindow():
       label.pack()
 def canvasUpdate():
    global timer
+   global img
    timer+=MS
    canvas.delete("all")
    for ground in grounds:
       width = 2
       if ground==selected:
          width=4
-      if ground.type == "mayo":
-         canvas.create_rectangle(ground.x, ground.y, ground.x + ground.width, ground.y + ground.height, fill='yellow', width=width)
-      if ground.type == "ketchup":
-         canvas.create_rectangle(ground.x, ground.y, ground.x + ground.width, ground.y + ground.height, fill='red',width=width)
+      if ground.sprite!=None:
+         canvas.create_image(ground.x, ground.y, anchor=NW, image=ground.sprite)
+      else:
+         if ground.type == "mayo":
+            canvas.create_rectangle(ground.x, ground.y, ground.x + ground.width, ground.y + ground.height, fill='yellow', width=width)
+         if ground.type == "ketchup":
+            canvas.create_rectangle(ground.x, ground.y, ground.x + ground.width, ground.y + ground.height, fill='red',width=width)
    canvas.after(MS, canvasUpdate)
 
 
@@ -215,6 +242,7 @@ Terrains.menu = Menu ( Terrains, tearoff = 0 )
 Terrains["menu"] = Terrains.menu
 Terrains.menu.add_checkbutton (label="mayo", command=lambda: addTerrain("mayo"))
 Terrains.menu.add_checkbutton (label="ketchup", command=lambda: addTerrain("ketchup"))
+Terrains.menu.add_checkbutton (label="biden", command=lambda: addTerrain("biden"))
 
 # Zakladka edycji terenow (po lewej)
 
