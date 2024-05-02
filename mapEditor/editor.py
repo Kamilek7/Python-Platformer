@@ -18,13 +18,15 @@ class VisibleGround:
       self.width = _width
       self.height = _height
       self.type = _type
-      if sprite!=None:
+      if sprite!=None and sprite!="None":
          spriteLocation = path.join(path.dirname(path.abspath(__file__)),"sprites",sprite)
          img = Image.open(spriteLocation)
          img = img.resize((self.width,self.height))
          img= ImageTk.PhotoImage(img)
          self.sprite = img
          self.spriteLoc =sprite
+      else:
+         self.sprite = None
    def resize(self,newWidth,newHeight):
       self.width = newWidth
       self.height = newHeight
@@ -80,7 +82,7 @@ def loadfile(_filename,filewin):
       plik = minidom.parse(filenameLong)
       mapa = plik.getElementsByTagName('map')[0]
       for child in mapa.childNodes:
-         grounds.append(VisibleGround(int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName))
+         grounds.append(VisibleGround(int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName, sprite=child.getAttribute("sprite")))
       filewin.destroy()
    else:
       filewin = Toplevel(root)

@@ -17,7 +17,7 @@ class SystemComponent:
             plik = minidom.parse(path.join(MAPS_DIR,files))
             mapa = plik.getElementsByTagName('map')[0]
             for child in mapa.childNodes:
-                maps.append(Grounds(_window,int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName))
+                maps.append(Grounds(_window,int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName, child.getAttribute("sprite")))
             levels.append(maps)
         return levels
 

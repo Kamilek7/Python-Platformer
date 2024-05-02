@@ -1,5 +1,6 @@
 import pygame
 from pygame.locals import *
+from os import *
 from game_components import PhysicsComponent, InputComponent
 vector2d = pygame.math.Vector2
 
@@ -10,28 +11,33 @@ APP_WIDTH = 800
  # klasy w grze
 class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
      # test wiarygodnosci argumentow
-    def __new__(cls, _window, _x,_y, width=10, height=10, type="mayo"):
+    def __new__(cls, _window, _x,_y, width=10, height=10, type="mayo", sprite=None):
         #do checks for window, height, width later
         if not isinstance(_x, float) and not isinstance(_x, int):
             raise TypeError("Pierwszy argument inicjalizacji obiektu klasy Entity (_x) musi być typu numerycznego float lub int!")
         if not isinstance(_y, float) and not isinstance(_y, int):
             raise TypeError("Pierwszy argument inicjalizacji obiektu klasy Entity (_y) musi być typu numerycznego float lub int!")
         return super(Entity, cls).__new__(cls)
-    def __init__(self,window,_x,_y, _width, _height, _color, _control,_moveable):
+    def __init__(self,window,_x,_y, _width, _height, _control,_moveable, color=(255,255,255), sprite=None):
         super().__init__()
         #komponent odpowiedzialny za fizykę
         self.window = window
         # "stałe" dla klasy
         self.HEIGHT = _height
         self.WIDTH = _width
-        self.COLOR = _color   # potem sie zrobi slownik z kolorami, wszystko jest w RGB
+        self.COLOR = color   # potem sie zrobi slownik z kolorami, wszystko jest w RGB
         # self.input_component = _speed
         
         self.MOVEABLE = _moveable
         self.CONTROL = _control
          # definiowanie elementow obiektu
         self.area = pygame.Surface((self.WIDTH, self.HEIGHT))
-        self.area.fill(self.COLOR)
+        if sprite!=None and sprite!="None":
+            self.area = pygame.image.load(path.join(path.dirname(path.abspath(__file__)), 'sprites',sprite)).convert()
+            self.area.set_colorkey((255, 255, 255), RLEACCEL)
+            self.area = pygame.transform.scale(self.area,(self.WIDTH,self.HEIGHT))
+        else:
+            self.area.fill(self.COLOR)
         self.shape = self.area.get_rect(center = (_x,_y))
          # fizyka
         self.pos = vector2d((_x,_y))
@@ -62,7 +68,7 @@ class Player(Entity): # dziedziczenie po entity
     def __init__(self,window,_x,_y, in_width = 30, in_height = 60):
          # X, Y, WYSOKOSC, SZEROKOSC, KOLOR, PED PRZY RUCHU, TARCIE, RUCHOME, MOZNA STEROWAC
                  #grawitacja
-        super().__init__(window,_x, _y, in_width, in_height, (210,60,60), True, True)
+        super().__init__(window,_x, _y, in_width, in_height, True, True, color=(210,60,60))
         self.last_movement = vector2d(0,0)
         self.physics_component = PhysicsComponent(self)
         #gravity
@@ -91,9 +97,10 @@ class Player(Entity): # dziedziczenie po entity
             self.last_movement = self.pos - prev_pos
 
 class Grounds(Entity):
-    def __init__(self,window, _x, _y, in_width = APP_WIDTH, in_height = 120, _type = "mayo"):
-         # X, Y, SZEROKOSC, WYSOKOSC, KOLOR, PED PRZY RUCHU, TARCIE, RUCHOME, MOZNA STEROWAC
+    def __init__(self,window, _x, _y, in_width = APP_WIDTH, in_height = 120, _type = "mayo", sprite=None):
         if _type=="mayo":
-            super().__init__(window, _x, _y, in_width, in_height, (210,210,60), False, False)
+            super().__init__(window, _x, _y, in_width, in_height, False, False,color=(210,210,60), sprite=sprite)
         elif _type=="ketchup":
-            super().__init__(window, _x, _y, in_width, in_height, (210,60,60), False, False)
+            super().__init__(window, _x, _y, in_width, in_height, False, False, color=(210,60,60), sprite=sprite)
+        else:
+            super().__init__(window, _x, _y, in_width, in_height, False, False, color=(210,60,60), sprite=sprite)
