@@ -8,6 +8,7 @@ import math
 
  # stałe
 MS = 10
+TILE_SIZE = 40
  # Funkcje do wykorzystania
 class VisibleGround:
    z = 0
@@ -38,7 +39,10 @@ class VisibleGround:
                filename = self.spriteLoc
             spriteLocation = path.join(path.dirname(path.abspath(__file__)),"sprites",filename)
             img = Image.open(spriteLocation)
-            img = img.resize((self.width,self.height))
+            global tileViewSize
+            global TILE_SIZE
+            radio = tileViewSize/TILE_SIZE
+            img = img.resize((int(radio*self.width),int(radio*self.height)))
             img= ImageTk.PhotoImage(img)
             self.sprite = img
             self.spriteLoc = filename
@@ -46,7 +50,8 @@ class VisibleGround:
             self.sprite=None
             self.spriteLoc="None"
 timer = 0
-mapSize = (1200,1200)
+mapSize = (80,60)
+tileViewSize = TILE_SIZE
 offset = (0,0)
 windowOffset = (0,0)
 copyboard = None
@@ -117,6 +122,89 @@ def addTerrain(type):
       global windowOffsetoffset
       grounds.append(VisibleGround(windowOffset[0],windowOffset[1],120,80,type))
 
+def copy():
+   global copyboard
+   global selected
+   if selected!=False:
+      copyboard = selected
+
+def paste():
+   global copyboard
+   if copyboard!=None:
+      sprite = copyboard.sprite
+      if copyboard.sprite!=None:
+         sprite = copyboard.spriteLoc
+      grounds.append(VisibleGround(windowOffset[0],windowOffset[1],copyboard.width,copyboard.height,copyboard.type, sprite = sprite))
+
+def cut():
+   global selected
+   global grounds
+   global copyboard
+   copy()
+   delete()
+
+def delete():
+   global selected
+   global grounds
+   if selected!=False:
+      for i in grounds:
+         if i == selected:
+            grounds.remove(i)
+            selected = False
+
+def scaleMap(how):
+   global tileViewSize
+   global mapSize
+   if how =="bigger" and tileViewSize<250:
+      tileViewSize +=5
+   elif how =="smaller" and tileViewSize>10:
+      tileViewSize -=5
+   canvas.config(scrollregion=(0,0,mapSize[0]*tileViewSize,mapSize[1]*tileViewSize))
+
+def openMapEditWindow():
+   filewin = Toplevel(root)
+   global mapSize
+   label1 = Label(filewin, text="Map properties")
+   label2 = Label(filewin, text="Map size: " + str(mapSize))
+   label3 = Label(filewin, text="Width:")
+   label4 = Label(filewin, text="Height:")
+   tempX = mapSize[0]
+   tempY = mapSize[1]
+   def showX(a):
+      global tempX
+      global tempY
+      tempX = int(float(a))
+      label2.config(text="Map size: (" + str(tempX) + ", " + str(tempY) + ")")
+   def showY(a):
+      global tempX
+      global tempY
+      tempY = int(float(a))
+      label2.config(text="Map size: (" + str(tempX) + ", " + str(tempY) + ")")
+   width = Scale(filewin, from_=10, to=200, command=showX)
+   height = Scale(filewin, from_=10, to=200, command=showY)
+   width.set(mapSize[0])
+   height.set(mapSize[1])
+   def updateFromSlider():
+      global mapSize
+      global canvas
+      global tileViewSize
+      mapSize= (int(width.get()), int(height.get()))
+      canvas.config(scrollregion=(0,0,mapSize[0]*tileViewSize,mapSize[1]*tileViewSize))
+   button = Button(filewin, text="Save changes", command=updateFromSlider)
+   label1.pack()
+   label2.pack()
+   label3.pack()
+   width.pack()
+   label4.pack()
+   height.pack()
+   button.pack()
+
+def mouseWheelEvents(event):
+    if event.num == 5 or event.delta <= -10:
+        scaleMap("smaller")
+    if event.num == 4 or event.delta >= 10:
+        scaleMap("bigger")
+
 def keyBoardInput(event):
    global copyboard
    global selected
@@ -129,21 +217,17 @@ def keyBoardInput(event):
       keyFlags["Ctrl"] = True
    if selected!=False:
       if event.keysym == "Delete":
-         for i in grounds:
-            if i == selected:
-               grounds.remove(i)
-               selected = False
+         delete()
+      if event.keysym == "x" and keyFlags["Ctrl"]:
+         cut()
       if event.keysym == "c" and keyFlags["Ctrl"]:
-         copyboard = selected
-   if event.keysym == "v" and keyFlags["Ctrl"]:
-      sprite = copyboard.sprite
-      if copyboard.sprite!=None:
-         sprite = copyboard.spriteLoc
-      grounds.append(VisibleGround(windowOffset[0],windowOffset[1],copyboard.width,copyboard.height,copyboard.type, sprite = sprite))
+         copy()
+
+   if event.keysym == "v" and keyFlags["Ctrl"] and copyboard!=None:
+      paste()
    if event.keysym == "s" and keyFlags["Ctrl"]:
       saveFile()
       
-
 def keyBoardInputRelease(event):
    global keyFlags
    print(event.keysym)
@@ -206,28 +290,30 @@ def openSizeEditWindow():
 
 def canvasUpdate():
    global timer
-   global img
+   global tileViewSize, TILE_SIZE
    timer+=MS
    canvas.delete("all")
+   radio = tileViewSize/TILE_SIZE
    for ground in grounds:
       width = 2
       if ground==selected:
          width=4
       if ground.sprite!=None:
-         canvas.create_rectangle(ground.x, ground.y, ground.x + ground.width, ground.y + ground.height, fill='red',width=width)
-         canvas.create_image(ground.x, ground.y, anchor=NW, image=ground.sprite)
+         ground.resize(ground.width, ground.height)
+         canvas.create_rectangle(int(ground.x*radio), int(ground.y*radio), int(ground.x*radio) + int(ground.width*radio), int(ground.y*radio + ground.height*radio), width=width)
+         canvas.create_image(int(ground.x*radio), int(ground.y*radio), anchor=NW, image=ground.sprite)
       else:
          if ground.type == "mayo":
-            canvas.create_rectangle(ground.x, ground.y, ground.x + ground.width, ground.y + ground.height, fill='yellow', width=width)
+            canvas.create_rectangle(int(ground.x*radio), int(ground.y*radio), int(ground.x*radio) + int(ground.width*radio), int(ground.y*radio + ground.height*radio), fill='yellow', width=width)
          if ground.type == "ketchup":
-            canvas.create_rectangle(ground.x, ground.y, ground.x + ground.width, ground.y + ground.height, fill='red',width=width)
+            canvas.create_rectangle(int(ground.x*radio), int(ground.y*radio), int(ground.x*radio + ground.width*radio), int(ground.y*radio + ground.height*radio), fill='red',width=width)
    # 40 to szerokosc gracza
-   xLines = mapSize[0]//40 - 1
-   yLines = mapSize[1]//40 - 1
+   xLines = mapSize[0] - 1
+   yLines = mapSize[1] - 1
    for i in range (xLines):
-      canvas.create_line((i+1)*40,0,(i+1)*40,mapSize[1])
+      canvas.create_line((i+1)*tileViewSize,0,(i+1)*tileViewSize,mapSize[1]*tileViewSize)
    for i in range (yLines):
-      canvas.create_line(0,(i+1)*40,mapSize[1],(i+1)*40)
+      canvas.create_line(0,(i+1)*tileViewSize,mapSize[0]*tileViewSize,(i+1)*tileViewSize)
    canvas.after(MS, canvasUpdate)
 
 
@@ -253,11 +339,12 @@ menu.add_cascade(label="File", menu=fileMenu)
 editMenu = Menu(menu, tearoff=0)
 editMenu.add_command(label="Undo", command=donothing)
 editMenu.add_separator()
-editMenu.add_command(label="Cut", command=donothing)
-editMenu.add_command(label="Copy", command=donothing)
-editMenu.add_command(label="Paste", command=donothing)
-editMenu.add_command(label="Delete", command=donothing)
-editMenu.add_command(label="Select All", command=donothing)
+editMenu.add_command(label="Cut", command=cut)
+editMenu.add_command(label="Copy", command=copy)
+editMenu.add_command(label="Paste", command=paste)
+editMenu.add_command(label="Delete", command=delete)
+editMenu.add_separator()
+editMenu.add_command(label="Map properties", command=openMapEditWindow)
 menu.add_cascade(label="Edit", menu=editMenu)
  # zakladka help
 helpMenu = Menu(menu, tearoff=0)
@@ -268,7 +355,7 @@ root.config(menu=menu)
 
  # canvas
 
-canvas = Canvas (canvasFrame, bg="#FFFFFF",height=600,width=600, scrollregion=(0,0,mapSize[0],mapSize[1]), relief=SUNKEN, bd=3)
+canvas = Canvas (canvasFrame, bg="white",height=600,width=600, scrollregion=(0,0,mapSize[0]*tileViewSize,mapSize[1]*tileViewSize), relief=SUNKEN, bd=3)
 hbar = None
 vbar = None
 def changeOffsetH(a,b):
@@ -291,17 +378,20 @@ def mouseSelect(event):
    global selected
    global offset
    global windowOffset
+   global TILE_SIZE
+   global tileViewSize
+   radio = tileViewSize/TILE_SIZE
    x = event.x + windowOffset[0]
-   y = event.y + windowOffset[1]
+   y = event.y + windowOffset[1]*radio
    if len(grounds)>0:
       zs = {}
       for ground in grounds:
-         if (x <= ground.x + ground.width and x >= ground.x) and (y <= ground.y + ground.height and y >= ground.y):
+         if (x <= radio*(ground.x + ground.width) and x >= radio*ground.x) and (y <= radio*(ground.y + ground.height) and y >= radio*ground.y):
             zs[ground.z] = ground
       if len(zs)>0:
          mouseTimer=True
          selected = zs[max(zs.keys())]
-         offset = [selected.x-x,selected.y-y]
+         offset = [selected.x-x/radio,selected.y-y/radio]
       else:
          selected = False
          mouseTimer= False
@@ -310,16 +400,19 @@ def mouseMoveBlock(event):
    global mouseTimer
    global offset
    global keyFlags
+   global TILE_SIZE
+   global tileViewSize
+   radio = tileViewSize/TILE_SIZE
    if mouseTimer:
       global selected
       x = event.x + canvas.winfo_width()/(hbar.get()[1]-hbar.get()[0])*hbar.get()[0]
       y = event.y + canvas.winfo_height()/(vbar.get()[1]-vbar.get()[0])*vbar.get()[0]
       if keyFlags["Shift"]:
-         selected.x = round((x + offset[0])/40)*40
-         selected.y = round((y + offset[1])/40)*40
+         selected.x = round((x/radio + offset[0])/TILE_SIZE)*TILE_SIZE
+         selected.y = round((y/radio + offset[1])/TILE_SIZE)*TILE_SIZE
       else:
-         selected.x = int(x + offset[0])
-         selected.y = int(y + offset[1])
+         selected.x = int(x/radio + offset[0])
+         selected.y = int(y/radio + offset[1])
 def mouseRelease(event):
    global mouseTimer
    mouseTimer = False
@@ -328,6 +421,7 @@ canvas.bind("<B1-Motion>", mouseMoveBlock)
 canvas.bind("<ButtonRelease-1>", mouseRelease)
 canvas.bind("<Key>", keyBoardInput)
 canvas.bind("<KeyRelease>", keyBoardInputRelease)
+canvas.bind("<MouseWheel>", mouseWheelEvents)
 canvas.focus_set()
 canvas.pack()
 
@@ -346,8 +440,8 @@ Edit= Menubutton (root, text="Edit selected",width=30)
 Edit.grid(row = 0, column=0,sticky="nsew")
 Edit.menu = Menu ( Edit, tearoff = 0 )
 Edit["menu"] = Edit.menu
-Edit.menu.add_checkbutton (label="Sprites", command=openSpriteEditWindow)
-Edit.menu.add_checkbutton (label="Size", command=openSizeEditWindow)
+Edit.menu.add_checkbutton (label="Ground sprites", command=openSpriteEditWindow)
+Edit.menu.add_checkbutton (label="Ground size", command=openSizeEditWindow)
 
 # Estetyka programu i odswiezanie okien
 
