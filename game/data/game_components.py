@@ -29,7 +29,7 @@ class PhysicsComponent:
                         temp_moved_vec.x = 0
                     elif i == 1:
                         #checks only x axis
-                        #pos_to_check.y -= temp_moved_vec.y
+                        pos_to_check.y -= temp_moved_vec.y
                         temp_moved_vec.y = 0
                     if pos_to_check.y > col_entity.pos.y - self.entity.get_height() and pos_to_check.y < col_entity.pos.y + col_entity.get_height():
                         if pos_to_check.x + self.entity.get_width()> col_entity.pos.x and pos_to_check.x < col_entity.pos.x + col_entity.get_width():
