@@ -210,7 +210,6 @@ def keyBoardInput(event):
    global selected
    global keyFlags
    global windowOffset
-   print(event.keysym)
    if event.keysym == "Shift_L":
       keyFlags["Shift"] = True
    if event.keysym == "Control_L":
@@ -230,7 +229,6 @@ def keyBoardInput(event):
       
 def keyBoardInputRelease(event):
    global keyFlags
-   print(event.keysym)
    if event.keysym == "Shift_L":
       keyFlags["Shift"] = False
    if event.keysym == "Control_L":
@@ -303,10 +301,7 @@ def canvasUpdate():
          canvas.create_rectangle(int(ground.x*radio), int(ground.y*radio), int(ground.x*radio) + int(ground.width*radio), int(ground.y*radio + ground.height*radio), width=width)
          canvas.create_image(int(ground.x*radio), int(ground.y*radio), anchor=NW, image=ground.sprite)
       else:
-         if ground.type == "mayo":
-            canvas.create_rectangle(int(ground.x*radio), int(ground.y*radio), int(ground.x*radio) + int(ground.width*radio), int(ground.y*radio + ground.height*radio), fill='yellow', width=width)
-         if ground.type == "ketchup":
-            canvas.create_rectangle(int(ground.x*radio), int(ground.y*radio), int(ground.x*radio + ground.width*radio), int(ground.y*radio + ground.height*radio), fill='red',width=width)
+            canvas.create_rectangle(int(ground.x*radio), int(ground.y*radio), int(ground.x*radio + ground.width*radio), int(ground.y*radio + ground.height*radio), width=width)
    # 40 to szerokosc gracza
    xLines = mapSize[0] - 1
    yLines = mapSize[1] - 1
@@ -431,8 +426,14 @@ Terrains= Menubutton (root, text="Terrains",width=30)
 Terrains.grid(row = 0, column=2,sticky="nsew")
 Terrains.menu = Menu ( Terrains, tearoff = 0 )
 Terrains["menu"] = Terrains.menu
-Terrains.menu.add_checkbutton (label="mayo", command=lambda: addTerrain("mayo"))
-Terrains.menu.add_checkbutton (label="ketchup", command=lambda: addTerrain("ketchup"))
+Terrains.menu.add_checkbutton (label="Solid block", command=lambda: addTerrain("block"))
+Terrains.menu.add_checkbutton (label="Platform", command=lambda: addTerrain("plat"))
+Terrains.menu.add_checkbutton (label="Decoration", command=lambda: addTerrain("decor"))
+Terrains.menu.add_checkbutton (label="Key", command=lambda: addTerrain("key"))
+Terrains.menu.add_checkbutton (label="Door", command=lambda: addTerrain("door"))
+Terrains.menu.add_checkbutton (label="Ladder", command=lambda: addTerrain("ladder"))
+Terrains.menu.add_checkbutton (label="Enemy spawn", command=lambda: addTerrain("ladder"))
+Terrains.menu.add_checkbutton (label="Player spawn", command=lambda: addTerrain("spawn"))
 
 # Zakladka edycji terenow (po lewej)
 
