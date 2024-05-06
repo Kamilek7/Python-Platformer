@@ -120,8 +120,22 @@ def load():
 
 def addTerrain(type):
       global windowOffsetoffset
-      grounds.append(VisibleGround(windowOffset[0],windowOffset[1],120,80,type))
-
+      if type=="block":
+         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],120,80,type, sprite="floor.png"))
+      elif type=="plat":
+         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],120,80,type, sprite="floor.png"))
+      elif type=="decor":
+         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],120,80,type, sprite="lawka.png"))
+      elif type=="key":
+         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],120,80,type, sprite="key.png"))
+      elif type=="door":
+         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],120,80,type, sprite="drzwi_red.png"))
+      elif type=="ladder":
+         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],120,80,type, sprite="ladder.png"))
+      elif type=="spawnE":
+         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],120,80,type))
+      elif type=="spawn":
+         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],120,80,type))
 def copy():
    global copyboard
    global selected
@@ -432,7 +446,7 @@ Terrains.menu.add_checkbutton (label="Decoration", command=lambda: addTerrain("d
 Terrains.menu.add_checkbutton (label="Key", command=lambda: addTerrain("key"))
 Terrains.menu.add_checkbutton (label="Door", command=lambda: addTerrain("door"))
 Terrains.menu.add_checkbutton (label="Ladder", command=lambda: addTerrain("ladder"))
-Terrains.menu.add_checkbutton (label="Enemy spawn", command=lambda: addTerrain("ladder"))
+Terrains.menu.add_checkbutton (label="Enemy spawn", command=lambda: addTerrain("spawnE"))
 Terrains.menu.add_checkbutton (label="Player spawn", command=lambda: addTerrain("spawn"))
 
 # Zakladka edycji terenow (po lewej)
