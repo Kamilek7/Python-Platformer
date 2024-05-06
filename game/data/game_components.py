@@ -51,8 +51,7 @@ class PhysicsComponent:
                                 else:
                                     self.entity.move_to_pos(vector2d(col_entity.pos.x + col_entity.get_width(), self.entity.pos.y))
                             
-            #else:
-            #    self.is_coliding = False
+
         
     def move(self, move_vec, other_entities = None):
         self.speed.x += self.def_speed*move_vec.x
