@@ -22,9 +22,6 @@ class PhysicsComponent:
         for col_entity in other_entities:
             if col_entity.type=="decor":
                 pass
-            elif col_entity.type=="key":
-                self.entity.get_key(col_entity.keyColor)
-                other_entities.remove(col_entity)
             else:
                 for i in range(2):
                     temp_moved_vec = vector2d(moved_by_vec.x, moved_by_vec.y)
@@ -39,23 +36,30 @@ class PhysicsComponent:
                         temp_moved_vec.y = 0
                     if pos_to_check.y > col_entity.pos.y - self.entity.get_height() and pos_to_check.y < col_entity.pos.y + col_entity.get_height():
                         if pos_to_check.x + self.entity.get_width()> col_entity.pos.x and pos_to_check.x < col_entity.pos.x + col_entity.get_width():
-                            
-
-                            #self.entity.pos.y = col_entity.pos.y - self.entity.get_height()
-                            if i == 0:
-                                self.speed.y = 0
-                                if temp_moved_vec.y > 0:
-                                    #going down
-                                    self.is_on_ground = True
-                                    self.entity.move_to_pos(vector2d(self.entity.pos.x, col_entity.pos.y - self.entity.get_height()))
-                                else:
-                                    self.entity.move_to_pos(vector2d(self.entity.pos.x, col_entity.pos.y + col_entity.get_height()))
-                            elif i == 1:
-                                self.speed.x = 0
-                                if temp_moved_vec.x > 0:
-                                    self.entity.move_to_pos(vector2d(col_entity.pos.x - self.entity.get_width(), self.entity.pos.y))
-                                else:
-                                    self.entity.move_to_pos(vector2d(col_entity.pos.x + col_entity.get_width(), self.entity.pos.y))
+                            if col_entity.type=="key":
+                                self.entity.getKey(col_entity.keyColor)
+                                other_entities.remove(col_entity)
+                            else:
+                                check = False
+                                if col_entity.type=="door":
+                                    check = self.entity.useKey(col_entity.keyColor)
+                                    if check:
+                                        other_entities.remove(col_entity)
+                                if not check:
+                                    if i == 0:
+                                        self.speed.y = 0
+                                        if temp_moved_vec.y > 0:
+                                            #going down
+                                            self.is_on_ground = True
+                                            self.entity.move_to_pos(vector2d(self.entity.pos.x, col_entity.pos.y - self.entity.get_height()))
+                                        else:
+                                            self.entity.move_to_pos(vector2d(self.entity.pos.x, col_entity.pos.y + col_entity.get_height()))
+                                    elif i == 1:
+                                        self.speed.x = 0
+                                        if temp_moved_vec.x > 0:
+                                            self.entity.move_to_pos(vector2d(col_entity.pos.x - self.entity.get_width(), self.entity.pos.y))
+                                        else:
+                                            self.entity.move_to_pos(vector2d(col_entity.pos.x + col_entity.get_width(), self.entity.pos.y))
                             
 
         

@@ -82,9 +82,17 @@ class Player(Entity): # dziedziczenie po entity
 
          # inventory
         self.keys = {"red":0,"purple":0,"green":0}
-    def get_key(self,type):
+    def getKey(self,type):
         self.keys[type]+=1
         print("got the gey")
+
+    def useKey(self, type):
+        if self.keys[type]>0:
+            self.keys[type]-=1
+            print("used the gey")
+            return True
+        else:
+            return False
         
         
 
@@ -106,7 +114,7 @@ class Grounds(Entity):
     def __init__(self,window, _x, _y, in_width = APP_WIDTH, in_height = 120, _type = "block", sprite=None):
         super().__init__(window, _x, _y, in_width, in_height, False, False,color=(210,210,60), sprite=sprite)
         self.type = _type
-        if self.type=="key":
+        if self.type=="key" or self.type=="door":
             if "red" in sprite:
                 self.keyColor = "red"
             elif "purple" in sprite:
