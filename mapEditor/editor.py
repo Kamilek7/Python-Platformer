@@ -121,21 +121,21 @@ def load():
 def addTerrain(type):
       global windowOffsetoffset
       if type=="block":
-         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],120,80,type, sprite="floor.png"))
+         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],40,40,type, sprite="floor.png"))
       elif type=="plat":
-         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],120,80,type, sprite="floor.png"))
+         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],40,40,type, sprite="floor.png"))
       elif type=="decor":
-         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],120,80,type, sprite="lawka.png"))
+         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],120,40,type, sprite="lawka.png"))
       elif type=="key":
-         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],120,80,type, sprite="key.png"))
+         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],40,40,type, sprite="key_red.png"))
       elif type=="door":
-         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],120,80,type, sprite="drzwi_red.png"))
+         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],80,80,type, sprite="drzwi_red.png"))
       elif type=="ladder":
-         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],120,80,type, sprite="ladder.png"))
+         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],40,40,type, sprite="ladder.png"))
       elif type=="spawnE":
-         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],120,80,type))
+         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],80,20,type))
       elif type=="spawn":
-         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],120,80,type))
+         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],40,80,type))
 def copy():
    global copyboard
    global selected

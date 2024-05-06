@@ -20,6 +20,12 @@ class PhysicsComponent:
         #handling is temp need to add more checks later
         self.is_on_ground = False
         for col_entity in other_entities:
+            if col_entity.type=="decor":
+                pass
+            elif col_entity.type=="key":
+                self.entity.get_key(col_entity.keyColor)
+                other_entities.remove(col_entity)
+            else:
                 for i in range(2):
                     temp_moved_vec = vector2d(moved_by_vec.x, moved_by_vec.y)
                     pos_to_check = vector2d(self.entity.pos.x,self.entity.pos.y)

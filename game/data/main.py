@@ -44,9 +44,9 @@ player = Player(window,APP_WIDTH/5,60)
 levels = SystemComponent.loadMaps(window)
 platforms = levels[0]
 sprites = pygame.sprite.Group()
-sprites.add(player)
 for p in platforms:
     sprites.add(p)
+sprites.add(player)
 moveables = [player]
 main_camera = Camera(player, platforms, window.get_height()*0.75)
 
@@ -63,8 +63,13 @@ while running:
     window.fill((0,0,0))
     for entity in moveables:
         entity.update(platforms)
-        
+
     main_camera.update(window)
+    if len(platforms)<len(sprites):
+        sprites = pygame.sprite.Group()
+        for p in platforms:
+            sprites.add(p)
+        sprites.add(player)
     for entity in sprites:
         #,special_flags= BLEND_ADD'
         window.blit(entity.area, entity.shape)
