@@ -129,7 +129,7 @@ def addTerrain(type):
       elif type=="key":
          grounds.append(VisibleGround(windowOffset[0],windowOffset[1],40,40,type, sprite="key_red.png"))
       elif type=="door":
-         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],80,80,type, sprite="drzwi_red.png"))
+         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],80,80,type, sprite="drzwi_side_red.png"))
       elif type=="ladder":
          grounds.append(VisibleGround(windowOffset[0],windowOffset[1],40,40,type, sprite="ladder.png"))
       elif type=="spawnE":

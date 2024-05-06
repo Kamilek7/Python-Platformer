@@ -20,7 +20,7 @@ class PhysicsComponent:
         #handling is temp need to add more checks later
         self.is_on_ground = False
         for col_entity in other_entities:
-            if col_entity.type=="decor":
+            if col_entity.type=="decor" or col_entity.type=="spawn" or col_entity.type=="spawnE":
                 pass
             else:
                 for i in range(2):
@@ -39,27 +39,37 @@ class PhysicsComponent:
                             if col_entity.type=="key":
                                 self.entity.getKey(col_entity.keyColor)
                                 other_entities.remove(col_entity)
+                                break
+                            elif col_entity.type=="ladder":
+                                    self.speed.y = -7
                             else:
                                 check = False
                                 if col_entity.type=="door":
                                     check = self.entity.useKey(col_entity.keyColor)
                                     if check:
-                                        other_entities.remove(col_entity)
+                                        # tutaj mozna potem dac zmiane sprite'u
+                                        col_entity.type = "decor"
+                                        col_entity.WIDTH = 80
+                                        col_entity.pos.x+=2
+                                        col_entity.changeSprite("drzwi_" + col_entity.keyColor + ".png")
                                 if not check:
                                     if i == 0:
                                         self.speed.y = 0
                                         if temp_moved_vec.y > 0:
-                                            #going down
                                             self.is_on_ground = True
                                             self.entity.move_to_pos(vector2d(self.entity.pos.x, col_entity.pos.y - self.entity.get_height()))
                                         else:
-                                            self.entity.move_to_pos(vector2d(self.entity.pos.x, col_entity.pos.y + col_entity.get_height()))
+                                            if col_entity.type!="plat":
+                                                self.entity.move_to_pos(vector2d(self.entity.pos.x, col_entity.pos.y + col_entity.get_height()))
+                                            else:
+                                                break
                                     elif i == 1:
-                                        self.speed.x = 0
-                                        if temp_moved_vec.x > 0:
-                                            self.entity.move_to_pos(vector2d(col_entity.pos.x - self.entity.get_width(), self.entity.pos.y))
-                                        else:
-                                            self.entity.move_to_pos(vector2d(col_entity.pos.x + col_entity.get_width(), self.entity.pos.y))
+                                        if col_entity.type!="plat":
+                                            self.speed.x = 0
+                                            if temp_moved_vec.x > 0:
+                                                self.entity.move_to_pos(vector2d(col_entity.pos.x - self.entity.get_width(), self.entity.pos.y))
+                                            else:
+                                                self.entity.move_to_pos(vector2d(col_entity.pos.x + col_entity.get_width(), self.entity.pos.y))
                             
 
         

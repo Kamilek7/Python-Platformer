@@ -18,25 +18,23 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
         if not isinstance(_y, float) and not isinstance(_y, int):
             raise TypeError("Pierwszy argument inicjalizacji obiektu klasy Entity (_y) musi być typu numerycznego float lub int!")
         return super(Entity, cls).__new__(cls)
-    def __init__(self,window,_x,_y, _width, _height, _control,_moveable, color=(255,255,255), sprite=None):
+    def __init__(self,window,_x,_y, _width, _height, _control,_moveable, sprite=None):
         super().__init__()
         #komponent odpowiedzialny za fizykę
         self.window = window
         # "stałe" dla klasy
         self.HEIGHT = _height
         self.WIDTH = _width
-        self.COLOR = color   # potem sie zrobi slownik z kolorami, wszystko jest w RGB
         # self.input_component = _speed
-        
         self.MOVEABLE = _moveable
         self.CONTROL = _control
+
+        self.spriteChange = False
          # definiowanie elementow obiektu
         self.area = pygame.Surface((self.WIDTH, self.HEIGHT), pygame.SRCALPHA, 32)
         if sprite!=None and sprite!="None":
             self.area = pygame.image.load(path.join(path.dirname(path.abspath(__file__)), 'sprites',sprite)).convert_alpha()
             self.area = pygame.transform.scale(self.area,(self.WIDTH,self.HEIGHT))
-        else:
-            self.area.fill(self.COLOR)
         self.shape = self.area.get_rect(center = (_x,_y))
          # fizyka
         self.pos = vector2d((_x,_y))
@@ -59,6 +57,11 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
         if self.MOVEABLE:
             pass
             # wstepnie ustawia acc na 0
+    def changeSprite(self, spriteDir):
+        self.spriteChange = True
+        self.area = pygame.image.load(path.join(path.dirname(path.abspath(__file__)), 'sprites',spriteDir)).convert_alpha()
+        self.area = pygame.transform.scale(self.area,(self.WIDTH,self.HEIGHT))
+        self.shape = self.area.get_rect(center = (self.pos.x,self.pos.y))
 
 
 
@@ -67,7 +70,7 @@ class Player(Entity): # dziedziczenie po entity
     def __init__(self,window,_x,_y, in_width = 38, in_height = 75):
          # X, Y, WYSOKOSC, SZEROKOSC, KOLOR, PED PRZY RUCHU, TARCIE, RUCHOME, MOZNA STEROWAC
                  #grawitacja
-        super().__init__(window,_x, _y, in_width, in_height, True, True, color=(210,60,60))
+        super().__init__(window,_x, _y, in_width, in_height, True, True, sprite="brick.png")
 
         self.last_movement = vector2d(0,0)
         self.physics_component = PhysicsComponent(self)
@@ -84,12 +87,10 @@ class Player(Entity): # dziedziczenie po entity
         self.keys = {"red":0,"purple":0,"green":0}
     def getKey(self,type):
         self.keys[type]+=1
-        print("got the gey")
 
     def useKey(self, type):
         if self.keys[type]>0:
             self.keys[type]-=1
-            print("used the gey")
             return True
         else:
             return False
@@ -112,7 +113,7 @@ class Player(Entity): # dziedziczenie po entity
 
 class Grounds(Entity):
     def __init__(self,window, _x, _y, in_width = APP_WIDTH, in_height = 120, _type = "block", sprite=None):
-        super().__init__(window, _x, _y, in_width, in_height, False, False,color=(210,210,60), sprite=sprite)
+        super().__init__(window, _x, _y, in_width, in_height, False, False, sprite=sprite)
         self.type = _type
         if self.type=="key" or self.type=="door":
             if "red" in sprite:

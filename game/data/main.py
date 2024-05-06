@@ -62,6 +62,12 @@ while running:
             pass
     window.fill((0,0,0))
     for entity in moveables:
+        if entity.spriteChange:
+            sprites = pygame.sprite.Group()
+            for p in platforms:
+                sprites.add(p)
+            sprites.add(player)
+            entity.spriteChange = False
         entity.update(platforms)
 
     main_camera.update(window)
