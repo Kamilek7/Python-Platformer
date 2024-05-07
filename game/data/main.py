@@ -7,6 +7,8 @@ from camera import Camera
 from os import *
 from xml.dom import minidom
 
+playerSpawn = (APP_WIDTH/5,60)
+
 class SystemComponent:
     @staticmethod
     def loadMaps(_window):
@@ -17,7 +19,12 @@ class SystemComponent:
             plik = minidom.parse(path.join(MAPS_DIR,files))
             mapa = plik.getElementsByTagName('map')[0]
             for child in mapa.childNodes:
-                maps.append(Grounds(_window,int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName, child.getAttribute("sprite")))
+                if child.tagName=="spawn":
+                    print(child.tagName)
+                    global playerSpawn
+                    playerSpawn = (int(child.getAttribute("x")),int(child.getAttribute("y")))
+                else:
+                    maps.append(Grounds(_window,int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName, child.getAttribute("sprite")))
             levels.append(maps)
         return levels
 
@@ -40,9 +47,9 @@ running = True
 
  # elementy gry
 
-player = Player(window,APP_WIDTH/5,60)
 levels = SystemComponent.loadMaps(window)
 platforms = levels[0]
+player = Player(window,playerSpawn[0],playerSpawn[1])
 sprites = pygame.sprite.Group()
 for p in platforms:
     sprites.add(p)

@@ -40,8 +40,6 @@ class PhysicsComponent:
                                 self.entity.getKey(col_entity.keyColor)
                                 other_entities.remove(col_entity)
                                 break
-                            elif col_entity.type=="ladder":
-                                    self.speed.y = -7
                             else:
                                 check = False
                                 if col_entity.type=="door":
@@ -54,17 +52,22 @@ class PhysicsComponent:
                                         col_entity.changeSprite("drzwi_" + col_entity.keyColor + ".png")
                                 if not check:
                                     if i == 0:
-                                        self.speed.y = 0
-                                        if temp_moved_vec.y > 0:
-                                            self.is_on_ground = True
-                                            self.entity.move_to_pos(vector2d(self.entity.pos.x, col_entity.pos.y - self.entity.get_height()))
+                                        if col_entity.type=="plat" or col_entity.type=="ladder":
+                                            if self.speed.y>0:
+                                                self.speed.y = 0
+                                                self.is_on_ground = True
+                                                self.entity.move_to_pos(vector2d(self.entity.pos.x, col_entity.pos.y - self.entity.get_height()))
+                                            elif col_entity.type=="ladder":
+                                                self.speed.y = -7
                                         else:
-                                            if col_entity.type!="plat":
-                                                self.entity.move_to_pos(vector2d(self.entity.pos.x, col_entity.pos.y + col_entity.get_height()))
+                                            self.speed.y = 0
+                                            if temp_moved_vec.y > 0:
+                                                self.is_on_ground = True
+                                                self.entity.move_to_pos(vector2d(self.entity.pos.x, col_entity.pos.y - self.entity.get_height()))
                                             else:
-                                                break
+                                                self.entity.move_to_pos(vector2d(self.entity.pos.x, col_entity.pos.y + col_entity.get_height()))
                                     elif i == 1:
-                                        if col_entity.type!="plat":
+                                        if col_entity.type!="plat" and col_entity.type!="ladder":
                                             self.speed.x = 0
                                             if temp_moved_vec.x > 0:
                                                 self.entity.move_to_pos(vector2d(col_entity.pos.x - self.entity.get_width(), self.entity.pos.y))
