@@ -11,14 +11,14 @@ APP_WIDTH = 800
  # klasy w grze
 class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
      # test wiarygodnosci argumentow
-    def __new__(cls, _window, _x,_y, width=10, height=10, type="block", sprite=None):
+    def __new__(cls, _window, _x,_y, width=10, height=10, type="block", sprite=None, foreground=False):
         #do checks for window, height, width later
         if not isinstance(_x, float) and not isinstance(_x, int):
             raise TypeError("Pierwszy argument inicjalizacji obiektu klasy Entity (_x) musi być typu numerycznego float lub int!")
         if not isinstance(_y, float) and not isinstance(_y, int):
             raise TypeError("Pierwszy argument inicjalizacji obiektu klasy Entity (_y) musi być typu numerycznego float lub int!")
         return super(Entity, cls).__new__(cls)
-    def __init__(self,window,_x,_y, _width, _height, _control,_moveable, sprite=None):
+    def __init__(self,window,_x,_y, _width, _height, _control,_moveable, sprite=None, foreground=False):
         super().__init__()
         #komponent odpowiedzialny za fizykę
         self.window = window
@@ -30,6 +30,7 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
         self.CONTROL = _control
 
         self.spriteChange = False
+        self.foreground = foreground
          # definiowanie elementow obiektu
         self.area = pygame.Surface((self.WIDTH, self.HEIGHT), pygame.SRCALPHA, 32)
         if sprite!=None and sprite!="None":
@@ -39,6 +40,7 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
          # fizyka
         self.pos = vector2d((_x,_y))
         self.shape.topleft = self.pos
+        
 
     def move_to_pos(self, in_pos):
         self.pos = in_pos
@@ -112,8 +114,8 @@ class Player(Entity): # dziedziczenie po entity
             self.last_movement = self.pos - prev_pos
 
 class Grounds(Entity):
-    def __init__(self,window, _x, _y, in_width = APP_WIDTH, in_height = 120, _type = "block", sprite=None):
-        super().__init__(window, _x, _y, in_width, in_height, False, False, sprite=sprite)
+    def __init__(self,window, _x, _y, in_width = APP_WIDTH, in_height = 120, _type = "block", sprite=None, foreground=False):
+        super().__init__(window, _x, _y, in_width, in_height, False, False, sprite=sprite, foreground=foreground)
         self.type = _type
         if self.type=="key" or self.type=="door":
             if "red" in sprite:

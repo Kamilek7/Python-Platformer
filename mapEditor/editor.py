@@ -4,7 +4,6 @@ from PIL import Image,ImageTk
 from os import *
 import xml.etree.cElementTree as ET
 from xml.dom import minidom
-import math
 
  # stałe
 MS = 10
@@ -12,11 +11,12 @@ TILE_SIZE = 40
  # Funkcje do wykorzystania
 class VisibleGround:
    z = 0
-   def __init__(self, _x,_y,_width,_height, _type, sprite=None):
+   def __init__(self, _x,_y,_width,_height, _type, sprite=None, foreground=False):
       VisibleGround.z+=1
       self.z = VisibleGround.z
       self.x = _x
       self.y = _y
+      self.foreground=foreground
       self.width = _width
       self.height = _height
       self.type = _type
@@ -29,9 +29,11 @@ class VisibleGround:
          self.spriteLoc =sprite
       else:
          self.sprite = None
-   def resize(self,newWidth,newHeight, sprite=None):
+   def resize(self,newWidth,newHeight, sprite=None, foreground=None):
       self.width = newWidth
       self.height = newHeight
+      if foreground!=None:
+         self.foreground = foreground
       if self.sprite!=None and self.sprite!="None" or sprite!=None:
          if sprite!="Remove sprite":
             filename=sprite
@@ -83,6 +85,7 @@ def saveFile():
          temp.set("sprite",str(ground.spriteLoc))
       else:
          temp.set("sprite",str("None"))
+      temp.set("foreground",str(ground.foreground))
    ET.dump(map)
    plik = ET.ElementTree(map)
    fileNum = len(listdir(path.dirname(path.abspath(__file__))))-1
@@ -102,7 +105,7 @@ def loadfile(_filename,filewin):
       plik = minidom.parse(filenameLong)
       mapa = plik.getElementsByTagName('map')[0]
       for child in mapa.childNodes:
-         grounds.append(VisibleGround(int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName, sprite=child.getAttribute("sprite")))
+         grounds.append(VisibleGround(int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName, sprite=child.getAttribute("sprite"), foreground=child.getAttribute("foreground")))
       filewin.destroy()
    else:
       filewin = Toplevel(root)
@@ -129,7 +132,7 @@ def addTerrain(type):
       elif type=="key":
          grounds.append(VisibleGround(windowOffset[0],windowOffset[1],40,40,type, sprite="key_red.png"))
       elif type=="door":
-         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],80,80,type, sprite="drzwi_side_red.png"))
+         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],80,80,type, sprite="door_side_red.png"))
       elif type=="ladder":
          grounds.append(VisibleGround(windowOffset[0],windowOffset[1],40,40,type, sprite="ladder.png"))
       elif type=="spawnE":
@@ -262,15 +265,28 @@ def openSpriteEditWindow():
       for i in range(len(spriters)):
          sprites.insert(i, spriters[i])
       sprites.insert(len(spriters),"Remove sprite")
+      check = IntVar()
+      checkbutton = Checkbutton(filewin, variable=check, text="Foreground", onvalue=1, offvalue=0)
+      check.set(False)
+      if selected.foreground=="True" or selected.foreground == 1:
+         check.set(True)
       def updateFromSlider():
          selection = None
          for i in sprites.curselection():
             selection = sprites.get(i)
-         selected.resize(selected.width, selected.height, sprite=selection)
+         state = False
+         if checkbutton.instate(['selected']):
+            state=True
+         gowno = check.get()
+         print(state)
+         selected.resize(selected.width, selected.height, sprite=selection, foreground=state)
          label1.config(text="Current sprite: " + selected.spriteLoc)
+      
+
       button = Button(filewin, text="Load", command=updateFromSlider)
       label1.pack()
       sprites.pack()
+      checkbutton.pack()
       button.pack()
    else:
       label = Label(filewin, text="Nothing selected")

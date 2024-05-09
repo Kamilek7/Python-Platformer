@@ -10,6 +10,8 @@ from xml.dom import minidom
 playerSpawn = (APP_WIDTH/5,60)
 
 class SystemComponent:
+    spritesB = pygame.sprite.Group()
+    spritesF = pygame.sprite.Group()
     @staticmethod
     def loadMaps(_window):
         MAPS_DIR =  path.join(path.dirname(path.dirname(path.abspath(__file__))), 'maps')
@@ -24,9 +26,18 @@ class SystemComponent:
                     global playerSpawn
                     playerSpawn = (int(child.getAttribute("x")),int(child.getAttribute("y")))
                 else:
-                    maps.append(Grounds(_window,int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName, child.getAttribute("sprite")))
+                    maps.append(Grounds(_window,int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName, child.getAttribute("sprite"), foreground=child.getAttribute("foreground")))
             levels.append(maps)
         return levels
+    def setSprites(platform, player):
+        SystemComponent.spritesB = pygame.sprite.Group()
+        SystemComponent.spritesF = pygame.sprite.Group()
+        for p in platforms:
+            if not p.foreground=="True":
+                SystemComponent.spritesB.add(p)
+            else:
+                SystemComponent.spritesF.add(p)
+        SystemComponent.spritesB.add(player)
 
 BIDEN_CHECK = path.join(path.dirname(path.abspath(__file__)), "joe_mama.jpg")
 if not path.isfile(BIDEN_CHECK):
@@ -50,10 +61,7 @@ running = True
 levels = SystemComponent.loadMaps(window)
 platforms = levels[0]
 player = Player(window,playerSpawn[0],playerSpawn[1])
-sprites = pygame.sprite.Group()
-for p in platforms:
-    sprites.add(p)
-sprites.add(player)
+SystemComponent.setSprites(platforms,player)
 moveables = [player]
 main_camera = Camera(player, platforms, window.get_height()*0.75)
 
@@ -70,20 +78,16 @@ while running:
     window.fill((0,0,0))
     for entity in moveables:
         if entity.spriteChange:
-            sprites = pygame.sprite.Group()
-            for p in platforms:
-                sprites.add(p)
-            sprites.add(player)
-            entity.spriteChange = False
+            SystemComponent.setSprites(platforms,player)
         entity.update(platforms)
 
     main_camera.update(window)
-    if len(platforms)<len(sprites):
-        sprites = pygame.sprite.Group()
-        for p in platforms:
-            sprites.add(p)
-        sprites.add(player)
-    for entity in sprites:
+    if len(platforms)<len(SystemComponent.spritesB) + len(SystemComponent.spritesF)-1:
+        SystemComponent.setSprites(platforms,player)
+    for entity in SystemComponent.spritesB:
+        #,special_flags= BLEND_ADD'
+        window.blit(entity.area, entity.shape)
+    for entity in SystemComponent.spritesF:
         #,special_flags= BLEND_ADD'
         window.blit(entity.area, entity.shape)
     pygame.display.update()
