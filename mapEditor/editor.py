@@ -464,6 +464,7 @@ Terrains.menu.add_checkbutton (label="Door", command=lambda: addTerrain("door"))
 Terrains.menu.add_checkbutton (label="Ladder", command=lambda: addTerrain("ladder"))
 Terrains.menu.add_checkbutton (label="Enemy spawn", command=lambda: addTerrain("spawnE"))
 Terrains.menu.add_checkbutton (label="Player spawn", command=lambda: addTerrain("spawn"))
+Terrains.menu.add_checkbutton (label="Background Type", command=lambda: addTerrain("background"))
 
 # Zakladka edycji terenow (po lewej)
 

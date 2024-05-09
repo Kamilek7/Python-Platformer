@@ -22,7 +22,6 @@ class SystemComponent:
             mapa = plik.getElementsByTagName('map')[0]
             for child in mapa.childNodes:
                 if child.tagName=="spawn":
-                    print(child.tagName)
                     global playerSpawn
                     playerSpawn = (int(child.getAttribute("x")),int(child.getAttribute("y")))
                 else:
@@ -63,6 +62,15 @@ platforms = levels[0]
 player = Player(window,playerSpawn[0],playerSpawn[1])
 SystemComponent.setSprites(platforms,player)
 moveables = [player]
+
+currentBackground = "joe_mama.jpg"
+backarea = pygame.Surface((window.get_width(),window.get_height()), pygame.SRCALPHA, 32)
+backarea = pygame.image.load(path.join(path.dirname(path.abspath(__file__)), 'sprites',"joe_mama.jpg")).convert_alpha()
+backarea = pygame.transform.scale(backarea,(window.get_width(),window.get_height()))
+backshape = backarea.get_rect(center = (0,0))
+backpos = vector2d((0,0))
+backshape.topleft = backpos
+
 main_camera = Camera(player, platforms, window.get_height()*0.75)
 
  # game loop
@@ -74,8 +82,8 @@ while running:
             pygame.quit()
         elif event.type == VIDEORESIZE:
             main_camera.centre_camera(vector2d(window.get_width(), window.get_height()))
-            pass
-    window.fill((0,0,0))
+            backarea = pygame.transform.scale(backarea,(window.get_width(),window.get_height()))
+    window.blit(backarea, backshape)
     for entity in moveables:
         if entity.spriteChange:
             SystemComponent.setSprites(platforms,player)
