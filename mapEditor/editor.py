@@ -134,7 +134,6 @@ def load():
 
 def addTerrain(type):
       global windowOffsetoffset
-      # zamienic na switch
       if type=="block":
          grounds.append(VisibleGround(windowOffset[0],windowOffset[1],40,40,type, sprite="floor.png"))
       elif type=="plat":
