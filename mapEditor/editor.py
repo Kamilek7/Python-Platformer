@@ -11,15 +11,21 @@ TILE_SIZE = 40
  # Funkcje do wykorzystania
 class VisibleGround:
    z = 0
-   def __init__(self, _x,_y,_width,_height, _type, sprite=None, foreground=False):
-      VisibleGround.z+=1
-      self.z = VisibleGround.z
+   backgroundZ = 0
+   def __init__(self, _x,_y,_width,_height, _type, sprite=None, foreground=False, background=None):
+      if _type!="background":
+         VisibleGround.z+=1
+         self.z = VisibleGround.z
+      else:
+         VisibleGround.backgroundZ-=1
+         self.z = VisibleGround.backgroundZ
       self.x = _x
       self.y = _y
       self.foreground=foreground
       self.width = _width
       self.height = _height
       self.type = _type
+      self.background = background
       if sprite!=None and sprite!="None":
          spriteLocation = path.join(path.dirname(path.abspath(__file__)),"sprites",sprite)
          img = Image.open(spriteLocation)
@@ -86,6 +92,8 @@ def saveFile():
       else:
          temp.set("sprite",str("None"))
       temp.set("foreground",str(ground.foreground))
+      if ground.type=="background":
+         temp.set("background",ground.background)
    ET.dump(map)
    plik = ET.ElementTree(map)
    fileNum = len(listdir(path.dirname(path.abspath(__file__))))-1
@@ -105,7 +113,10 @@ def loadfile(_filename,filewin):
       plik = minidom.parse(filenameLong)
       mapa = plik.getElementsByTagName('map')[0]
       for child in mapa.childNodes:
-         grounds.append(VisibleGround(int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName, sprite=child.getAttribute("sprite"), foreground=child.getAttribute("foreground")))
+         if child.tagName=="background":
+            grounds.append(VisibleGround(int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName, background=child.getAttribute("background")))
+         else:
+            grounds.append(VisibleGround(int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName, sprite=child.getAttribute("sprite"), foreground=child.getAttribute("foreground")))
       filewin.destroy()
    else:
       filewin = Toplevel(root)
@@ -123,6 +134,7 @@ def load():
 
 def addTerrain(type):
       global windowOffsetoffset
+      # zamienic na switch
       if type=="block":
          grounds.append(VisibleGround(windowOffset[0],windowOffset[1],40,40,type, sprite="floor.png"))
       elif type=="plat":
@@ -139,6 +151,8 @@ def addTerrain(type):
          grounds.append(VisibleGround(windowOffset[0],windowOffset[1],80,20,type))
       elif type=="spawn":
          grounds.append(VisibleGround(windowOffset[0],windowOffset[1],40,80,type))
+      elif type=="background":
+         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],80,80,type))
 def copy():
    global copyboard
    global selected
@@ -254,7 +268,7 @@ def keyBoardInputRelease(event):
 def openSpriteEditWindow():
    global selected
    filewin = Toplevel(root)
-   if selected!=False:
+   if selected!=False and selected.type!="background":
       if selected.sprite != None and selected.sprite != "None":
          label1 = Label(filewin, text="Current sprite: " + selected.spriteLoc)
       else:
@@ -277,19 +291,19 @@ def openSpriteEditWindow():
          state = False
          if checkbutton.instate(['selected']):
             state=True
-         gowno = check.get()
-         print(state)
+         test = check.get()
          selected.resize(selected.width, selected.height, sprite=selection, foreground=state)
          label1.config(text="Current sprite: " + selected.spriteLoc)
-      
-
       button = Button(filewin, text="Load", command=updateFromSlider)
       label1.pack()
       sprites.pack()
       checkbutton.pack()
       button.pack()
-   else:
+   elif selected==False:
       label = Label(filewin, text="Nothing selected")
+      label.pack()
+   else:
+      label = Label(filewin, text="Background type has no sprite - check the special settings tab")
       label.pack()
 
 def openSizeEditWindow():
@@ -314,6 +328,36 @@ def openSizeEditWindow():
       height.pack()
    else:
       label = Label(filewin, text="Nothing selected")
+      label.pack()
+
+def openSpecialEditWindow():
+   global selected
+   filewin = Toplevel(root)
+   if selected!=False and selected.type=="background":
+      if selected.background != None and selected.background != "None":
+         label1 = Label(filewin, text="Current background: " + selected.background)
+      else:
+         label1 = Label(filewin, text="Current background: None")
+      sprites = Listbox(filewin)
+      spriters = path.join(path.dirname(path.abspath(__file__)),"backgrounds")
+      spriters = listdir(spriters)
+      for i in range(len(spriters)):
+         sprites.insert(i, spriters[i])
+      def updateFromSlider():
+         selection = None
+         for i in sprites.curselection():
+            selection = sprites.get(i)
+         selected.background = selection
+         label1.config(text="Current sprite: " + selected.background)
+      button = Button(filewin, text="Load", command=updateFromSlider)
+      label1.pack()
+      sprites.pack()
+      button.pack()
+   elif selected==False:
+      label = Label(filewin, text="Nothing selected")
+      label.pack()
+   else:
+      label = Label(filewin, text="Ground type has no special settings")
       label.pack()
 
 def canvasUpdate():
@@ -474,6 +518,7 @@ Edit.menu = Menu ( Edit, tearoff = 0 )
 Edit["menu"] = Edit.menu
 Edit.menu.add_checkbutton (label="Ground sprites", command=openSpriteEditWindow)
 Edit.menu.add_checkbutton (label="Ground size", command=openSizeEditWindow)
+Edit.menu.add_checkbutton (label="Special settings", command=openSpecialEditWindow)
 
 # Estetyka programu i odswiezanie okien
 

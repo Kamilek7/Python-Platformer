@@ -6,6 +6,31 @@ from xml.dom import minidom
 APP_HEIGHT = 600
 APP_WIDTH = 800
 vector2d = pygame.math.Vector2
+
+class TextureComponent:
+    spritesB = pygame.sprite.Group()
+    spritesF = pygame.sprite.Group()
+    background=None
+    fadedBackground = None
+    changeFlag = False
+    fadeFlag = False
+    alpha = 255
+    @staticmethod
+    def changeBackground(newBackground):
+        if TextureComponent.background!=newBackground:
+            TextureComponent.fadedBackground=TextureComponent.background
+            TextureComponent.background = newBackground
+            TextureComponent.changeFlag = True
+    def setSprites(platforms, player):
+        TextureComponent.spritesB = pygame.sprite.Group()
+        TextureComponent.spritesF = pygame.sprite.Group()
+        for p in platforms:
+            if not p.foreground=="True":
+                TextureComponent.spritesB.add(p)
+            else:
+                TextureComponent.spritesF.add(p)
+        TextureComponent.spritesB.add(player)
+    
 class PhysicsComponent:
     def __init__(self, entity) -> None:
         self.def_speed = 1
@@ -40,6 +65,8 @@ class PhysicsComponent:
                                 self.entity.getKey(col_entity.keyColor)
                                 other_entities.remove(col_entity)
                                 break
+                            elif col_entity.type=="background":
+                                TextureComponent.changeBackground(col_entity.background)
                             else:
                                 check = False
                                 if col_entity.type=="door":
