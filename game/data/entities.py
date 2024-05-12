@@ -1,7 +1,9 @@
+# Modul zawierajacy klasy w grze reprezentujace nieabstrakcyjne elementy
+
 import pygame
 from pygame.locals import *
 from os import *
-from game_components import PhysicsComponent, InputComponent
+from game_components import (PhysicsComponent, InputComponent)
 vector2d = pygame.math.Vector2
 
 

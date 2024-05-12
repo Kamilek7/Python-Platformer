@@ -1,4 +1,3 @@
-
 from entities import *
 from os import *
 from xml.dom import minidom
@@ -15,7 +14,41 @@ class TextureComponent:
     changeFlag = False
     fadeFlag = False
     alpha = 255
+    backarea = None
+    backareaTemp = None
+    backshape = None
     @staticmethod
+    def manageBackground(window):
+        if TextureComponent.backarea==None:
+            TextureComponent.backarea = pygame.Surface((window.get_width(),window.get_height()), pygame.SRCALPHA, 32)
+            TextureComponent.backareaTemp = pygame.Surface((window.get_width(),window.get_height()), pygame.SRCALPHA, 32)
+            TextureComponent.backshape = TextureComponent.backarea.get_rect(center = (0,0))
+            backpos = vector2d((0,0))
+            TextureComponent.backshape.topleft = backpos
+        if TextureComponent.changeFlag:
+            TextureComponent.changeFlag = False
+            TextureComponent.alpha = 255
+            if TextureComponent.fadedBackground != None:
+                TextureComponent.fadeFlag = True
+                TextureComponent.backareaTemp = pygame.image.load(path.join(path.dirname(path.abspath(__file__)), 'backgrounds',TextureComponent.fadedBackground)).convert()
+                TextureComponent.backareaTemp = pygame.transform.scale(TextureComponent.backarea,(window.get_width(),window.get_height()))
+                TextureComponent.alpha=0
+                TextureComponent.backareaTemp.set_alpha(255)
+                window.blit(TextureComponent.backareaTemp, TextureComponent.backshape)
+            TextureComponent.backarea = pygame.image.load(path.join(path.dirname(path.abspath(__file__)), 'backgrounds',TextureComponent.background)).convert()
+            TextureComponent.backarea = pygame.transform.scale(TextureComponent.backarea,(window.get_width(),window.get_height()))
+            TextureComponent.backarea.set_alpha(TextureComponent.alpha)
+        elif TextureComponent.fadeFlag:
+            if TextureComponent.alpha<255:
+                TextureComponent.alpha+=10
+                TextureComponent.backarea.set_alpha(TextureComponent.alpha)
+                window.blit(TextureComponent.backareaTemp, TextureComponent.backshape)
+            else:
+                TextureComponent.alpha=255
+                TextureComponent.fadeFlag=False
+                TextureComponent.backarea.set_alpha(TextureComponent.alpha)
+        window.blit(TextureComponent.backarea, TextureComponent.backshape)
+
     def changeBackground(newBackground):
         if TextureComponent.background!=newBackground:
             TextureComponent.fadedBackground=TextureComponent.background
