@@ -10,6 +10,7 @@ from game_components import *
 
 playerSpawn = (APP_WIDTH/5,60)
 
+# z jakiegos powodu Grounds nie dziala w game_components ale dziala tutaj?
 class SystemComponent:
     @staticmethod
     def loadMaps(_window):
@@ -55,12 +56,6 @@ player = Player(window,playerSpawn[0],playerSpawn[1])
 TextureComponent.setSprites(platforms,player)
 moveables = [player]
 
-backarea = pygame.Surface((window.get_width(),window.get_height()), pygame.SRCALPHA, 32)
-backareaTemp = pygame.Surface((window.get_width(),window.get_height()), pygame.SRCALPHA, 32)
-backshape = backarea.get_rect(center = (0,0))
-backpos = vector2d((0,0))
-backshape.topleft = backpos
-
 main_camera = Camera(player, platforms, window.get_height()*0.75)
 
  # game loop
@@ -73,28 +68,7 @@ while running:
         elif event.type == VIDEORESIZE:
             main_camera.centre_camera(vector2d(window.get_width(), window.get_height()))
             backarea = pygame.transform.scale(backarea,(window.get_width(),window.get_height()))
-    if TextureComponent.changeFlag:
-        TextureComponent.changeFlag = False
-        TextureComponent.alpha = 255
-        if TextureComponent.fadedBackground != None:
-            TextureComponent.fadeFlag = True
-            backareaTemp = backarea
-            TextureComponent.alpha=0
-            backareaTemp.set_alpha(255)
-            window.blit(backareaTemp, backshape)
-        backarea = pygame.image.load(path.join(path.dirname(path.abspath(__file__)), 'backgrounds',TextureComponent.background)).convert()
-        backarea = pygame.transform.scale(backarea,(window.get_width(),window.get_height()))
-        backarea.set_alpha(TextureComponent.alpha)
-    elif TextureComponent.fadeFlag:
-        if TextureComponent.alpha<255:
-            TextureComponent.alpha+=10
-            backarea.set_alpha(TextureComponent.alpha)
-            window.blit(backareaTemp, backshape)
-        else:
-            TextureComponent.alpha=255
-            TextureComponent.fadeFlag=False
-            backarea.set_alpha(TextureComponent.alpha)
-    window.blit(backarea, backshape)
+    TextureComponent.manageBackground(window)
     for entity in moveables:
         if entity.spriteChange:
             TextureComponent.setSprites(platforms,player)
