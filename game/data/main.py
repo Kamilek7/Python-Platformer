@@ -67,7 +67,7 @@ while running:
             pygame.quit()
         elif event.type == VIDEORESIZE:
             main_camera.centre_camera(vector2d(window.get_width(), window.get_height()))
-            backarea = pygame.transform.scale(backarea,(window.get_width(),window.get_height()))
+            TextureComponent.scaleBackground(window)
     TextureComponent.manageBackground(window)
     for entity in moveables:
         if entity.spriteChange:

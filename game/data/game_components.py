@@ -18,6 +18,8 @@ class TextureComponent:
     backareaTemp = None
     backshape = None
     @staticmethod
+    def scaleBackground(window):
+        TextureComponent.backarea = pygame.transform.scale(TextureComponent.backarea,(window.get_width(),window.get_height()))
     def manageBackground(window):
         if TextureComponent.backarea==None:
             TextureComponent.backarea = pygame.Surface((window.get_width(),window.get_height()), pygame.SRCALPHA, 32)
