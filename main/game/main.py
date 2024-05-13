@@ -6,14 +6,12 @@ from os import *
 from xml.dom import minidom
 from game_components import *
 
-# z jakiegos powodu Grounds nie dziala w game_components ale dziala tutaj?
-
-    
-BIDEN_CHECK = path.join(path.dirname(path.abspath(__file__)), "joe_mama.jpg")
+BIDEN_CHECK = path.join(CURRENT_DIR, "joe_mama.jpg")
 if not path.isfile(BIDEN_CHECK):
     raise ImportError("GDZIE JEST BIDEN")
 else:
     pygame.init()
+    
  # definicja dla wektora, dla latwych przeksztalcen
 vector2d = pygame.math.Vector2
  # stałe

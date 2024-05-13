@@ -8,6 +8,10 @@ from xml.dom import minidom
  # stałe
 MS = 18
 TILE_SIZE = 40
+CURRENT_DIR = path.dirname(path.abspath(__file__))
+RESOURCES = path.join(path.dirname(CURRENT_DIR),"resources")
+SPRITES_DIR = path.join(RESOURCES,"sprites")
+BACKGROUNDS_DIR = path.join(RESOURCES,"backgrounds")
  # Funkcje do wykorzystania
 class VisibleGround:
    z = 0
@@ -27,7 +31,7 @@ class VisibleGround:
       self.type = _type
       self.background = background
       if sprite!=None and sprite!="None":
-         spriteLocation = path.join(path.dirname(path.abspath(__file__)),"sprites",sprite)
+         spriteLocation = path.join(SPRITES_DIR,sprite)
          img = Image.open(spriteLocation)
          img = img.resize((self.width,self.height))
          img= ImageTk.PhotoImage(img)
@@ -45,7 +49,7 @@ class VisibleGround:
             filename=sprite
             if sprite==None:
                filename = self.spriteLoc
-            spriteLocation = path.join(path.dirname(path.abspath(__file__)),"sprites",filename)
+            spriteLocation = path.join(SPRITES_DIR,filename)
             img = Image.open(spriteLocation)
             global tileViewSize
             global TILE_SIZE
@@ -96,15 +100,15 @@ def saveFile():
          temp.set("background",ground.background)
    ET.dump(map)
    plik = ET.ElementTree(map)
-   fileNum = len(listdir(path.dirname(path.abspath(__file__))))-1
-   filename = path.join(path.dirname(path.abspath(__file__)), "mapa" + str(fileNum) +".xml")
+   fileNum = len(listdir(CURRENT_DIR))-1
+   filename = path.join(CURRENT_DIR, "mapa" + str(fileNum) +".xml")
    if loadedFilename!=False:
-      filename = path.join(path.dirname(path.abspath(__file__)), loadedFilename)
+      filename = path.join(CURRENT_DIR, loadedFilename)
    plik.write(filename)
 
 def loadfile(_filename,filewin):
    filename = _filename.get(1.0, "end-1c")
-   filenameLong = path.join(path.dirname(path.abspath(__file__)), filename)
+   filenameLong = path.join(CURRENT_DIR, filename)
    if path.isfile(filenameLong):
       global grounds, selected, loadedFilename
       grounds = []
@@ -273,8 +277,7 @@ def openSpriteEditWindow():
       else:
          label1 = Label(filewin, text="Current sprite: None")
       sprites = Listbox(filewin)
-      spriters = path.join(path.dirname(path.abspath(__file__)),"sprites")
-      spriters = listdir(spriters)
+      spriters = listdir(SPRITES_DIR)
       for i in range(len(spriters)):
          sprites.insert(i, spriters[i])
       sprites.insert(len(spriters),"Remove sprite")
@@ -338,8 +341,7 @@ def openSpecialEditWindow():
       else:
          label1 = Label(filewin, text="Current background: None")
       sprites = Listbox(filewin)
-      spriters = path.join(path.dirname(path.abspath(__file__)),"backgrounds")
-      spriters = listdir(spriters)
+      spriters = listdir(BACKGROUNDS_DIR)
       for i in range(len(spriters)):
          sprites.insert(i, spriters[i])
       def updateFromSlider():

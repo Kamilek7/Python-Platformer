@@ -3,6 +3,11 @@ from xml.dom import minidom
 import pygame
 from pygame.locals import *
 
+CURRENT_DIR = path.dirname(path.abspath(__file__))
+RESOURCES = path.join(path.dirname(CURRENT_DIR),"resources")
+SPRITES_DIR = path.join(RESOURCES,"sprites")
+BACKGROUNDS_DIR = path.join(RESOURCES,"backgrounds")
+MAPS_DIR = path.join(RESOURCES,"maps")
 APP_HEIGHT = 600
 APP_WIDTH = 800
 vector2d = pygame.math.Vector2
@@ -35,12 +40,12 @@ class TextureComponent:
             TextureComponent.alpha = 255
             if TextureComponent.fadedBackground != None:
                 TextureComponent.fadeFlag = True
-                TextureComponent.backareaTemp = pygame.image.load(path.join(path.dirname(path.abspath(__file__)), 'backgrounds',TextureComponent.fadedBackground)).convert()
+                TextureComponent.backareaTemp = pygame.image.load(path.join(BACKGROUNDS_DIR,TextureComponent.fadedBackground)).convert()
                 TextureComponent.backareaTemp = pygame.transform.scale(TextureComponent.backarea,(window.get_width(),window.get_height()))
                 TextureComponent.alpha=0
                 TextureComponent.backareaTemp.set_alpha(255)
                 window.blit(TextureComponent.backareaTemp, TextureComponent.backshape)
-            TextureComponent.backarea = pygame.image.load(path.join(path.dirname(path.abspath(__file__)), 'backgrounds',TextureComponent.background)).convert()
+            TextureComponent.backarea = pygame.image.load(path.join(BACKGROUNDS_DIR,TextureComponent.background)).convert()
             TextureComponent.backarea = pygame.transform.scale(TextureComponent.backarea,(window.get_width(),window.get_height()))
             TextureComponent.backarea.set_alpha(TextureComponent.alpha)
         elif TextureComponent.fadeFlag:
@@ -73,7 +78,6 @@ class SystemComponent:
     @staticmethod
     def loadMaps(_window):
         playerSpawn = (APP_WIDTH/5,60)
-        MAPS_DIR =  path.join(path.dirname(path.dirname(path.abspath(__file__))), 'maps')
         levels = []
         for files in listdir(MAPS_DIR):
             maps = []
@@ -261,7 +265,7 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
          # definiowanie elementow obiektu
         self.area = pygame.Surface((self.WIDTH, self.HEIGHT), pygame.SRCALPHA, 32)
         if sprite!=None and sprite!="None":
-            self.area = pygame.image.load(path.join(path.dirname(path.abspath(__file__)), 'sprites',sprite)).convert_alpha()
+            self.area = pygame.image.load(path.join(SPRITES_DIR,sprite)).convert_alpha()
             self.area = pygame.transform.scale(self.area,(self.WIDTH,self.HEIGHT))
         self.shape = self.area.get_rect(center = (_x,_y))
          # fizyka
@@ -301,7 +305,7 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
             # wstepnie ustawia acc na 0
     def changeSprite(self, spriteDir):
         self.spriteChange = True
-        self.area = pygame.image.load(path.join(path.dirname(path.abspath(__file__)), 'sprites',spriteDir)).convert_alpha()
+        self.area = pygame.image.load(path.join(SPRITES_DIR,spriteDir)).convert_alpha()
         self.area = pygame.transform.scale(self.area,(self.WIDTH,self.HEIGHT))
         self.shape = self.area.get_rect(center = (self.pos.x,self.pos.y))
 
