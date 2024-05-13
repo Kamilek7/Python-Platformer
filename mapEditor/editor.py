@@ -6,7 +6,7 @@ import xml.etree.cElementTree as ET
 from xml.dom import minidom
 
  # stałe
-MS = 10
+MS = 18
 TILE_SIZE = 40
  # Funkcje do wykorzystania
 class VisibleGround:
