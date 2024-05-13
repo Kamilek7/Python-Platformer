@@ -7,7 +7,7 @@ APP_HEIGHT = 600
 APP_WIDTH = 800
 vector2d = pygame.math.Vector2
 
-
+# MAIN GAME COMPONENTS
 
 class TextureComponent:
     spritesB = pygame.sprite.Group()
@@ -204,6 +204,7 @@ class Camera:
         self.focus_object = focus_object
         self.other_objects = other_objects
         self.y_centre = y_centre
+
     def update(self, window):
         #run every tick
         #moves the camera by changing pos of all objects
@@ -215,9 +216,9 @@ class Camera:
         offset = window_height/2.3
         if abs_f_obj_y < window_height/2 - offset or abs_f_obj_y > window_height/2 + offset:
             self.centre_camera(vector2d(window.get_width(), window.get_height()))
-
         for entity in self.other_objects:
             entity.move_by(vector2d((move_vec.x), (move_vec.y)))
+
     def centre_camera(self, window_dimensions):
         #centers the camera to the middle of window_dimensions
         window_centre = window_dimensions/2
@@ -228,16 +229,8 @@ class Camera:
         for entity in self.other_objects:
             entity.move_by(vector2d((move_vec.x), (move_vec.y)))
 
-import pygame
-from pygame.locals import *
-from os import *
-vector2d = pygame.math.Vector2
+# CLASSES FOR GAME ENTITIES
 
-
-APP_HEIGHT = 600
-APP_WIDTH = 800
-
- # klasy w grze
 class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
      # test wiarygodnosci argumentow
     def __new__(cls, _window, _x,_y, width=10, height=10, type=None, sprite=None, foreground=False, background=None):
@@ -311,9 +304,6 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
         self.area = pygame.image.load(path.join(path.dirname(path.abspath(__file__)), 'sprites',spriteDir)).convert_alpha()
         self.area = pygame.transform.scale(self.area,(self.WIDTH,self.HEIGHT))
         self.shape = self.area.get_rect(center = (self.pos.x,self.pos.y))
-
-
-
 
 class Player(Entity): # dziedziczenie po entity
     def __init__(self,window,_x,_y, in_width = 38, in_height = 75):

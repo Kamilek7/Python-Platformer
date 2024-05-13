@@ -2,12 +2,9 @@
  # wszystkie definicje i wstepne wartosci
  # meow
 
-from entities import *
 from os import *
 from xml.dom import minidom
 from game_components import *
-
-
 
 # z jakiegos powodu Grounds nie dziala w game_components ale dziala tutaj?
 
