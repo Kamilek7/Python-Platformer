@@ -3,33 +3,14 @@
  # meow
 
 from entities import *
-from camera import Camera
 from os import *
 from xml.dom import minidom
 from game_components import *
 
-playerSpawn = (APP_WIDTH/5,60)
+
 
 # z jakiegos powodu Grounds nie dziala w game_components ale dziala tutaj?
-class SystemComponent:
-    @staticmethod
-    def loadMaps(_window):
-        MAPS_DIR =  path.join(path.dirname(path.dirname(path.abspath(__file__))), 'maps')
-        levels = []
-        for files in listdir(MAPS_DIR):
-            maps = []
-            plik = minidom.parse(path.join(MAPS_DIR,files))
-            mapa = plik.getElementsByTagName('map')[0]
-            for child in mapa.childNodes:
-                if child.tagName=="spawn":
-                    global playerSpawn
-                    playerSpawn = (int(child.getAttribute("x")),int(child.getAttribute("y")))
-                elif child.tagName=="background":
-                    maps.append(Grounds(_window,int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName,  background=child.getAttribute("background")))
-                else:
-                    maps.append(Grounds(_window,int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName, child.getAttribute("sprite"), foreground=child.getAttribute("foreground")))
-            levels.append(maps)
-        return levels
+
     
 BIDEN_CHECK = path.join(path.dirname(path.abspath(__file__)), "joe_mama.jpg")
 if not path.isfile(BIDEN_CHECK):
@@ -50,7 +31,9 @@ running = True
 
  # elementy gry
 
-levels = SystemComponent.loadMaps(window)
+package = SystemComponent.loadMaps(window)
+levels = package["levels"]
+playerSpawn = package["playerSpawn"]
 platforms = levels[0]
 player = Player(window,playerSpawn[0],playerSpawn[1])
 TextureComponent.setSprites(platforms,player)
