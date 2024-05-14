@@ -13,23 +13,115 @@ RESOURCES = path.join(path.dirname(CURRENT_DIR),"resources")
 SPRITES_DIR = path.join(RESOURCES,"sprites")
 BACKGROUNDS_DIR = path.join(RESOURCES,"backgrounds")
  # Funkcje do wykorzystania
-class VisibleGround:
-   z = 0
-   backgroundZ = 0
-   def __init__(self, _x,_y,_width,_height, _type, sprite=None, foreground=False, background=None):
-      if _type!="background":
-         VisibleGround.z+=1
-         self.z = VisibleGround.z
-      else:
-         VisibleGround.backgroundZ-=1
-         self.z = VisibleGround.backgroundZ
+class Box:
+   z=0
+   def __init__(self, _x, _y, _width, _height):
+      Box.z+=1
+      self.z = Box.z
       self.x = _x
       self.y = _y
-      self.foreground=foreground
       self.width = _width
       self.height = _height
-      self.type = _type
+      self.sprite = None
+
+   def resize(self,newWidth,newHeight):
+      self.width = newWidth
+      self.height = newHeight
+
+class Trigger(Box):
+   def __init__(self, _x, _y, _width, _height):
+      super().__init__(_x,_y,_width,_height)
+      self.actionType = None
+      self.actionSpecs = None
+
+   def setMessage(self,message):
+      self.actionType = "message"
+      self.actionSpecs = message
+
+   def representXML(self, map):
+      temp = ET.SubElement(map, "trigger")
+      temp.set("x", str(self.x))
+      temp.set("y", str(self.y))
+      temp.set("width", str(self.width))
+      temp.set("height",str(self.height))
+      temp.set("actionType",self.actionType)
+      temp.set("actionSpecs", str(self.actionSpecs))
+
+   def resetZ(self):
+      global windowOffset
+      temp = Trigger(windowOffset[0],windowOffset[1],self.width,self.height)
+      temp.actionType = self.actionType
+      temp.actionSpecs = self.actionSpecs
+      return temp
+   
+   def specialWindow(self,filewin):
+      if self.background != None and self.background != "None":
+         label1 = Label(filewin, text="Current background: " + self.background)
+      else:
+         label1 = Label(filewin, text="Current background: None")
+      sprites = Listbox(filewin)
+      spriters = listdir(BACKGROUNDS_DIR)
+      for i in range(len(spriters)):
+         sprites.insert(i, spriters[i])
+      def updateFromSlider():
+         selection = None
+         for i in sprites.curselection():
+            selection = sprites.get(i)
+         self.background = selection
+         label1.config(text="Current sprite: " + self.background)
+      button = Button(filewin, text="Load", command=updateFromSlider)
+      label1.pack()
+      sprites.pack()
+      button.pack()
+
+class Background(Box):
+   z = 0
+   def __init__(self, _x,_y,_width,_height, background=None):
+      super().__init__(_x,_y,_width,_height)
+      Background.z -=1
+      self.z = Background.z
       self.background = background
+
+   def resetZ(self):
+      global windowOffset
+      background = self.background
+      return Background(windowOffset[0],windowOffset[1],self.width,self.height, background = background)
+   
+   def representXML(self, map):
+      temp = ET.SubElement(map, "background")
+      temp.set("x", str(self.x))
+      temp.set("y", str(self.y))
+      temp.set("width", str(self.width))
+      temp.set("height",str(self.height))
+      temp.set("background",self.background)
+
+   def specialWindow(self, filewin):
+      if self.background != None and self.background != "None":
+         label1 = Label(filewin, text="Current background: " + self.background)
+      else:
+         label1 = Label(filewin, text="Current background: None")
+      sprites = Listbox(filewin)
+      spriters = listdir(BACKGROUNDS_DIR)
+      for i in range(len(spriters)):
+         sprites.insert(i, spriters[i])
+      def updateFromSlider():
+         selection = None
+         for i in sprites.curselection():
+            selection = sprites.get(i)
+         self.background = selection
+         label1.config(text="Current sprite: " + self.background)
+      button = Button(filewin, text="Load", command=updateFromSlider)
+      label1.pack()
+      sprites.pack()
+      button.pack()
+
+class Grounds(Box):
+   z = 0
+   backgroundZ = 0
+   def __init__(self, _x,_y,_width,_height, _type, sprite=None, foreground=False):
+      super().__init__(_x,_y,_width,_height)
+      self.foreground=foreground
+      self.type = _type
       if sprite!=None and sprite!="None":
          spriteLocation = path.join(SPRITES_DIR,sprite)
          img = Image.open(spriteLocation)
@@ -39,6 +131,7 @@ class VisibleGround:
          self.spriteLoc =sprite
       else:
          self.sprite = None
+
    def resize(self,newWidth,newHeight, sprite=None, foreground=None):
       self.width = newWidth
       self.height = newHeight
@@ -61,6 +154,29 @@ class VisibleGround:
          else:
             self.sprite=None
             self.spriteLoc="None"
+
+   def resetZ(self):
+      global windowOffset
+      sprite = self.sprite
+      if self.sprite!=None:
+         sprite = self.spriteLoc
+      return Grounds(windowOffset[0],windowOffset[1],self.width,self.height,self.type, sprite = sprite)
+   
+   def representXML(self, map):
+      temp = ET.SubElement(map, self.type)
+      temp.set("x", str(self.x))
+      temp.set("y", str(self.y))
+      temp.set("width", str(self.width))
+      temp.set("height",str(self.height))
+      if self.sprite!=None:
+         temp.set("sprite",str(self.spriteLoc))
+      else:
+         temp.set("sprite",str("None"))
+      temp.set("foreground",str(self.foreground))
+
+   def specialWindow(self,filewin):
+      label = Label(filewin, text="Ground type has no special settings")
+      label.pack()
 timer = 0
 mapSize = (80,60)
 tileViewSize = TILE_SIZE
@@ -98,7 +214,6 @@ def saveFile():
       temp.set("foreground",str(ground.foreground))
       if ground.type=="background":
          temp.set("background",ground.background)
-   ET.dump(map)
    plik = ET.ElementTree(map)
    fileNum = len(listdir(CURRENT_DIR))-1
    filename = path.join(CURRENT_DIR, "mapa" + str(fileNum) +".xml")
@@ -118,9 +233,9 @@ def loadfile(_filename,filewin):
       mapa = plik.getElementsByTagName('map')[0]
       for child in mapa.childNodes:
          if child.tagName=="background":
-            grounds.append(VisibleGround(int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName, background=child.getAttribute("background")))
+            grounds.append(Background(int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName, background=child.getAttribute("background")))
          else:
-            grounds.append(VisibleGround(int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName, sprite=child.getAttribute("sprite"), foreground=child.getAttribute("foreground")))
+            grounds.append(Grounds(int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName, sprite=child.getAttribute("sprite"), foreground=child.getAttribute("foreground")))
       filewin.destroy()
    else:
       filewin = Toplevel(root)
@@ -139,44 +254,42 @@ def load():
 def addTerrain(type):
       global windowOffsetoffset
       if type=="block":
-         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],40,40,type, sprite="floor.png"))
+         grounds.append(Grounds(windowOffset[0],windowOffset[1],40,40,type, sprite="floor.png"))
       elif type=="plat":
-         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],40,40,type, sprite="floor.png"))
+         grounds.append(Grounds(windowOffset[0],windowOffset[1],40,40,type, sprite="floor.png"))
       elif type=="decor":
-         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],120,40,type, sprite="lawka.png"))
+         grounds.append(Grounds(windowOffset[0],windowOffset[1],120,40,type, sprite="lawka.png"))
       elif type=="key":
-         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],40,40,type, sprite="key_red.png"))
+         grounds.append(Grounds(windowOffset[0],windowOffset[1],40,40,type, sprite="key_red.png"))
       elif type=="door":
-         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],80,80,type, sprite="door_side_red.png"))
+         grounds.append(Grounds(windowOffset[0],windowOffset[1],20,80,type, sprite="door_side_red.png"))
       elif type=="ladder":
-         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],40,40,type, sprite="ladder.png"))
+         grounds.append(Grounds(windowOffset[0],windowOffset[1],40,40,type, sprite="ladder.png"))
       elif type=="spawnE":
-         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],80,20,type))
+         grounds.append(Grounds(windowOffset[0],windowOffset[1],80,20,type))
       elif type=="spawn":
-         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],40,80,type))
+         grounds.append(Grounds(windowOffset[0],windowOffset[1],40,80,type))
       elif type=="background":
-         grounds.append(VisibleGround(windowOffset[0],windowOffset[1],80,80,type))
+         grounds.append(Background(windowOffset[0],windowOffset[1],80,80))
+      elif type=="trigger":
+         grounds.append(Trigger(windowOffset[0],windowOffset[1],40,40))
+
 def copy():
    global copyboard
    global selected
    if selected!=False:
       copyboard = selected
-
 def paste():
    global copyboard
    if copyboard!=None:
-      sprite = copyboard.sprite
-      if copyboard.sprite!=None:
-         sprite = copyboard.spriteLoc
-      grounds.append(VisibleGround(windowOffset[0],windowOffset[1],copyboard.width,copyboard.height,copyboard.type, sprite = sprite))
-
+      new = copyboard.resetZ()
+      grounds.append(new)
 def cut():
    global selected
    global grounds
    global copyboard
    copy()
    delete()
-
 def delete():
    global selected
    global grounds
@@ -260,7 +373,6 @@ def keyBoardInput(event):
       paste()
    if event.keysym == "s" and keyFlags["Ctrl"]:
       saveFile()
-      
 def keyBoardInputRelease(event):
    global keyFlags
    if event.keysym == "Shift_L":
@@ -335,31 +447,11 @@ def openSizeEditWindow():
 def openSpecialEditWindow():
    global selected
    filewin = Toplevel(root)
-   if selected!=False and selected.type=="background":
-      if selected.background != None and selected.background != "None":
-         label1 = Label(filewin, text="Current background: " + selected.background)
-      else:
-         label1 = Label(filewin, text="Current background: None")
-      sprites = Listbox(filewin)
-      spriters = listdir(BACKGROUNDS_DIR)
-      for i in range(len(spriters)):
-         sprites.insert(i, spriters[i])
-      def updateFromSlider():
-         selection = None
-         for i in sprites.curselection():
-            selection = sprites.get(i)
-         selected.background = selection
-         label1.config(text="Current sprite: " + selected.background)
-      button = Button(filewin, text="Load", command=updateFromSlider)
-      label1.pack()
-      sprites.pack()
-      button.pack()
-   elif selected==False:
+   if selected==False:
       label = Label(filewin, text="Nothing selected")
       label.pack()
    else:
-      label = Label(filewin, text="Ground type has no special settings")
-      label.pack()
+      selected.specialWindow(filewin)
 
 def canvasUpdate():
    global timer
@@ -377,7 +469,6 @@ def canvasUpdate():
          canvas.create_image(int(ground.x*radio), int(ground.y*radio), anchor=NW, image=ground.sprite)
       else:
             canvas.create_rectangle(int(ground.x*radio), int(ground.y*radio), int(ground.x*radio + ground.width*radio), int(ground.y*radio + ground.height*radio), width=width)
-   # 40 to szerokosc gracza
    xLines = mapSize[0] - 1
    yLines = mapSize[1] - 1
    for i in range (xLines):
@@ -478,11 +569,15 @@ def mouseMoveBlock(event):
       x = event.x + canvas.winfo_width()/(hbar.get()[1]-hbar.get()[0])*hbar.get()[0]
       y = event.y + canvas.winfo_height()/(vbar.get()[1]-vbar.get()[0])*vbar.get()[0]
       if keyFlags["Shift"]:
-         selected.x = round((x/radio + offset[0])/TILE_SIZE)*TILE_SIZE
-         selected.y = round((y/radio + offset[1])/TILE_SIZE)*TILE_SIZE
+         tileHold = TILE_SIZE
+         if selected.width<TILE_SIZE or selected.height<TILE_SIZE:
+            tileHold/=2
+         selected.x = round((x/radio + offset[0])/tileHold)*tileHold
+         selected.y = round((y/radio + offset[1])/tileHold)*tileHold
       else:
          selected.x = int(x/radio + offset[0])
          selected.y = int(y/radio + offset[1])
+
 def mouseRelease(event):
    global mouseTimer
    mouseTimer = False
@@ -509,7 +604,8 @@ Terrains.menu.add_checkbutton (label="Door", command=lambda: addTerrain("door"))
 Terrains.menu.add_checkbutton (label="Ladder", command=lambda: addTerrain("ladder"))
 Terrains.menu.add_checkbutton (label="Enemy spawn", command=lambda: addTerrain("spawnE"))
 Terrains.menu.add_checkbutton (label="Player spawn", command=lambda: addTerrain("spawn"))
-Terrains.menu.add_checkbutton (label="Background Type", command=lambda: addTerrain("background"))
+Terrains.menu.add_checkbutton (label="Background", command=lambda: addTerrain("background"))
+Terrains.menu.add_checkbutton (label="Trigger", command=lambda: addTerrain("trigger"))
 
 # Zakladka edycji terenow (po lewej)
 
