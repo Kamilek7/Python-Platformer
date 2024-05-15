@@ -122,8 +122,12 @@ class PhysicsComponent:
                         #checks only x axis
                         pos_to_check.y -= temp_moved_vec.y
                         temp_moved_vec.y = 0
-                    if pos_to_check.y > col_entity.pos.y - self.entity.get_height() and pos_to_check.y < col_entity.pos.y + col_entity.get_height():
-                        if pos_to_check.x + self.entity.get_width()> col_entity.pos.x and pos_to_check.x < col_entity.pos.x + col_entity.get_width():
+                    upperBound = pos_to_check.y > col_entity.pos.y - self.entity.get_height()
+                    lowerBound = pos_to_check.y < col_entity.pos.y + col_entity.get_height()
+                    rightBound = pos_to_check.x + self.entity.get_width()> col_entity.pos.x
+                    leftBound = pos_to_check.x < col_entity.pos.x + col_entity.get_width()
+                    if upperBound and lowerBound:
+                        if rightBound and leftBound:
                             if col_entity.type=="key":
                                 self.entity.getKey(col_entity.keyColor)
                                 other_entities.remove(col_entity)
@@ -135,7 +139,6 @@ class PhysicsComponent:
                                 if col_entity.type=="door":
                                     check = self.entity.useKey(col_entity.keyColor)
                                     if check:
-                                        # tutaj mozna potem dac zmiane sprite'u
                                         col_entity.type = "decor"
                                         col_entity.WIDTH = 80
                                         col_entity.pos.x+=2
@@ -143,7 +146,7 @@ class PhysicsComponent:
                                 if not check:
                                     if i == 0:
                                         if col_entity.type=="plat" or col_entity.type=="ladder":
-                                            if self.speed.y>0:
+                                            if self.speed.y>0 and pos_to_check.y<=col_entity.pos.y-col_entity.get_height():
                                                 self.speed.y = 0
                                                 self.is_on_ground = True
                                                 self.entity.move_to_pos(vector2d(self.entity.pos.x, col_entity.pos.y - self.entity.get_height()))
