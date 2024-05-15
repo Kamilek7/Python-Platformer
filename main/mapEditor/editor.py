@@ -28,6 +28,10 @@ class Box:
       self.width = newWidth
       self.height = newHeight
 
+   def spriteWindow(self, filewin):
+      label = Label(filewin, text="This ground type has no sprite settings")
+      label.pack()
+
 class Trigger(Box):
    def __init__(self, _x, _y, _width, _height):
       super().__init__(_x,_y,_width,_height)
@@ -55,24 +59,13 @@ class Trigger(Box):
       return temp
    
    def specialWindow(self,filewin):
-      if self.background != None and self.background != "None":
-         label1 = Label(filewin, text="Current background: " + self.background)
-      else:
-         label1 = Label(filewin, text="Current background: None")
-      sprites = Listbox(filewin)
-      spriters = listdir(BACKGROUNDS_DIR)
-      for i in range(len(spriters)):
-         sprites.insert(i, spriters[i])
-      def updateFromSlider():
-         selection = None
-         for i in sprites.curselection():
-            selection = sprites.get(i)
-         self.background = selection
-         label1.config(text="Current sprite: " + self.background)
-      button = Button(filewin, text="Load", command=updateFromSlider)
+      label1 = Label(filewin, text="Configure trigger specs")
+      trigType = Listbox(filewin)
+      trigTypes = ["messageBox","moveEntity"]
+      for i in range(len(trigTypes)):
+         trigType.insert(i, trigTypes[i])
       label1.pack()
-      sprites.pack()
-      button.pack()
+      trigType.pack()
 
 class Background(Box):
    z = 0
@@ -174,9 +167,41 @@ class Grounds(Box):
          temp.set("sprite",str("None"))
       temp.set("foreground",str(self.foreground))
 
+   def spriteWindow(self, filewin):
+      if self.sprite != None and self.sprite != "None":
+         label1 = Label(filewin, text="Current sprite: " + self.spriteLoc)
+      else:
+         label1 = Label(filewin, text="Current sprite: None")
+      sprites = Listbox(filewin)
+      spriters = listdir(SPRITES_DIR)
+      for i in range(len(spriters)):
+         sprites.insert(i, spriters[i])
+      sprites.insert(len(spriters),"Remove sprite")
+      check = IntVar()
+      checkbutton = Checkbutton(filewin, variable=check, text="Foreground", onvalue=1, offvalue=0)
+      check.set(False)
+      if self.foreground=="True" or self.foreground == 1:
+         check.set(True)
+      def updateFromSlider():
+         selection = None
+         for i in sprites.curselection():
+            selection = sprites.get(i)
+         state = False
+         if checkbutton.instate(['selected']):
+            state=True
+         test = check.get()
+         self.resize(self.width, self.height, sprite=selection, foreground=state)
+         label1.config(text="Current sprite: " + self.spriteLoc)
+      button = Button(filewin, text="Load", command=updateFromSlider)
+      label1.pack()
+      sprites.pack()
+      checkbutton.pack()
+      button.pack()
+
    def specialWindow(self,filewin):
       label = Label(filewin, text="Ground type has no special settings")
       label.pack()
+
 timer = 0
 mapSize = (80,60)
 tileViewSize = TILE_SIZE
@@ -383,42 +408,11 @@ def keyBoardInputRelease(event):
 def openSpriteEditWindow():
    global selected
    filewin = Toplevel(root)
-   if selected!=False and selected.type!="background":
-      if selected.sprite != None and selected.sprite != "None":
-         label1 = Label(filewin, text="Current sprite: " + selected.spriteLoc)
-      else:
-         label1 = Label(filewin, text="Current sprite: None")
-      sprites = Listbox(filewin)
-      spriters = listdir(SPRITES_DIR)
-      for i in range(len(spriters)):
-         sprites.insert(i, spriters[i])
-      sprites.insert(len(spriters),"Remove sprite")
-      check = IntVar()
-      checkbutton = Checkbutton(filewin, variable=check, text="Foreground", onvalue=1, offvalue=0)
-      check.set(False)
-      if selected.foreground=="True" or selected.foreground == 1:
-         check.set(True)
-      def updateFromSlider():
-         selection = None
-         for i in sprites.curselection():
-            selection = sprites.get(i)
-         state = False
-         if checkbutton.instate(['selected']):
-            state=True
-         test = check.get()
-         selected.resize(selected.width, selected.height, sprite=selection, foreground=state)
-         label1.config(text="Current sprite: " + selected.spriteLoc)
-      button = Button(filewin, text="Load", command=updateFromSlider)
-      label1.pack()
-      sprites.pack()
-      checkbutton.pack()
-      button.pack()
-   elif selected==False:
+   if selected==False:
       label = Label(filewin, text="Nothing selected")
       label.pack()
    else:
-      label = Label(filewin, text="Background type has no sprite - check the special settings tab")
-      label.pack()
+      selected.spriteWindow(filewin)
 
 def openSizeEditWindow():
    global selected
