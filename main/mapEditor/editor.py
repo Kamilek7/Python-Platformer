@@ -12,6 +12,7 @@ CURRENT_DIR = path.dirname(path.abspath(__file__))
 RESOURCES = path.join(path.dirname(CURRENT_DIR),"resources")
 SPRITES_DIR = path.join(RESOURCES,"sprites")
 BACKGROUNDS_DIR = path.join(RESOURCES,"backgrounds")
+AVATARS_DIR = path.join(RESOURCES,"avatars")
  # Funkcje do wykorzystania
 class Box:
    z=0
@@ -33,10 +34,10 @@ class Box:
       label.pack()
 
 class Trigger(Box):
-   def __init__(self, _x, _y, _width, _height):
+   def __init__(self, _x, _y, _width, _height, actionType=None, actionSpecs=None):
       super().__init__(_x,_y,_width,_height)
-      self.actionType = None
-      self.actionSpecs = None
+      self.actionType = actionType
+      self.actionSpecs = actionSpecs
 
    def setMessage(self,message):
       self.actionType = "message"
@@ -48,7 +49,7 @@ class Trigger(Box):
       temp.set("y", str(self.y))
       temp.set("width", str(self.width))
       temp.set("height",str(self.height))
-      temp.set("actionType",self.actionType)
+      temp.set("actionType",str(self.actionType))
       temp.set("actionSpecs", str(self.actionSpecs))
 
    def resetZ(self):
@@ -64,8 +65,36 @@ class Trigger(Box):
       trigTypes = ["messageBox","moveEntity"]
       for i in range(len(trigTypes)):
          trigType.insert(i, trigTypes[i])
+      def idk():
+         nextWindow = Toplevel(root)
+         selection = None
+         for i in trigType.curselection():
+            selection = trigType.get(i)
+         self.actionType = selection
+         if selection=="messageBox":
+            label2 = Label(nextWindow, text="Enter messageBox text")
+            text = Text(nextWindow, height = 5, width = 20)
+            spriters = listdir(AVATARS_DIR)
+            list2 = Listbox(nextWindow)
+            for i in range(len(spriters)):
+               list2.insert(i, spriters[i])
+            def idk2():
+               selection2 = None
+               for i in list2.curselection():
+                  selection2 = list2.get(i)
+               self.actionSpecs = {"text" : text.get("1.0", "end-1c"), "icon" : selection2}
+               nextWindow.destroy()
+               filewin.destroy()
+            button2 = Button(nextWindow,text="Confirm",command=idk2)
+            label2.pack()
+            text.pack()
+            list2.pack()
+            button2.pack()
+
+      button = Button(filewin, text="Proceed with edit",command=idk)
       label1.pack()
       trigType.pack()
+      button.pack()
 
 class Background(Box):
    z = 0
@@ -211,7 +240,6 @@ copyboard = None
 loadedFilename = False
 selected = False
 grounds = []
-map = ET.Element('map')
  # Flagi klawiszowe
 keyFlags = {"Shift": False, "Ctrl": False}
 def donothing():
@@ -226,19 +254,9 @@ def reset():
 
 def saveFile():
    global loadedFilename
+   map = ET.Element('map')
    for ground in grounds:
-      temp = ET.SubElement(map, ground.type)
-      temp.set("x", str(ground.x))
-      temp.set("y", str(ground.y))
-      temp.set("width", str(ground.width))
-      temp.set("height",str(ground.height))
-      if ground.sprite!=None:
-         temp.set("sprite",str(ground.spriteLoc))
-      else:
-         temp.set("sprite",str("None"))
-      temp.set("foreground",str(ground.foreground))
-      if ground.type=="background":
-         temp.set("background",ground.background)
+      ground.representXML(map)
    plik = ET.ElementTree(map)
    fileNum = len(listdir(CURRENT_DIR))-1
    filename = path.join(CURRENT_DIR, "mapa" + str(fileNum) +".xml")
@@ -258,7 +276,9 @@ def loadfile(_filename,filewin):
       mapa = plik.getElementsByTagName('map')[0]
       for child in mapa.childNodes:
          if child.tagName=="background":
-            grounds.append(Background(int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName, background=child.getAttribute("background")))
+            grounds.append(Background(int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")), background=child.getAttribute("background")))
+         elif child.tagName=="trigger":
+            grounds.append(Trigger(int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")), actionSpecs=child.getAttribute("actionSpecs"),actionType=child.getAttribute("actionType")))
          else:
             grounds.append(Grounds(int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName, sprite=child.getAttribute("sprite"), foreground=child.getAttribute("foreground")))
       filewin.destroy()

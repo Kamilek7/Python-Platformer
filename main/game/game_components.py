@@ -8,6 +8,7 @@ RESOURCES = path.join(path.dirname(CURRENT_DIR),"resources")
 SPRITES_DIR = path.join(RESOURCES,"sprites")
 BACKGROUNDS_DIR = path.join(RESOURCES,"backgrounds")
 MAPS_DIR = path.join(RESOURCES,"maps")
+AVATARS_DIR = path.join(RESOURCES,"avatars")
 APP_HEIGHT = 600
 APP_WIDTH = 800
 vector2d = pygame.math.Vector2
@@ -17,6 +18,7 @@ vector2d = pygame.math.Vector2
 class TextureComponent:
     spritesB = pygame.sprite.Group()
     spritesF = pygame.sprite.Group()
+    messageBoxes = []
     background=None
     fadedBackground = None
     changeFlag = False
@@ -73,6 +75,27 @@ class TextureComponent:
             else:
                 TextureComponent.spritesF.add(p)
         TextureComponent.spritesB.add(player)
+
+    def appendMessages(package):
+        TextureComponent.messageBoxes.append(package)
+
+    def showMessage(_window,package):
+        pygame.font.init()
+        my_font = pygame.font.SysFont('Comic Sans MS', 30)
+        text_surface = my_font.render(package["text"], True, (255, 255, 255))
+        # ratio sie pozniej poprawi
+        width = int(_window.get_width()/1.1)
+        height = int(_window.get_height()/3.5)
+        posX = int((_window.get_width()- width)/2)
+        posY = int(_window.get_height() - _window.get_height()/3)
+        pygame.draw.rect(_window, (0,0,0), pygame.Rect(posX,  posY , width, height))
+        if package["icon"]!="None":
+            temparea = pygame.image.load(path.join(AVATARS_DIR,package["icon"])).convert_alpha()
+            temparea = pygame.transform.scale(temparea,(int(height/1.3),int(height/1.3)))
+            _window.blit(temparea,(posX + (height - height/1.3)/2,posY + (height - height/1.3)/2))
+            _window.blit(text_surface,(posX+height, posY + (height - height/1.3)/2))
+        else:
+            _window.blit(text_surface,(posX+(height - height/1.3)/2, posY + (height - height/1.3)/2))
     
 class SystemComponent:
     @staticmethod
@@ -88,11 +111,17 @@ class SystemComponent:
                     playerSpawn = (int(child.getAttribute("x")),int(child.getAttribute("y")))
                 elif child.tagName=="background":
                     maps.append(Grounds(_window,int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName,  background=child.getAttribute("background")))
+                elif child.tagName=="trigger":
+                    maps.append(Grounds(_window,int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName,  triggerType=child.getAttribute("actionType"), triggerInfo=child.getAttribute("actionSpecs")))
                 else:
                     maps.append(Grounds(_window,int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName, child.getAttribute("sprite"), foreground=child.getAttribute("foreground")))
             levels.append(maps)
         package = {"levels": levels, "playerSpawn": playerSpawn}
         return package
+    @staticmethod
+    def showMessage(package):
+        TextureComponent.appendMessages(package)
+
 
 class PhysicsComponent:
     def __init__(self, entity) -> None:
@@ -134,6 +163,10 @@ class PhysicsComponent:
                                 break
                             elif col_entity.type=="background":
                                 TextureComponent.changeBackground(col_entity.background)
+                            elif col_entity.type=="trigger":
+                                if col_entity.triggerType=="messageBox" and not col_entity.triggered:
+                                    SystemComponent.showMessage(col_entity.triggerInfo)
+                                    col_entity.triggered = True
                             else:
                                 check = False
                                 if col_entity.type=="door":
@@ -240,14 +273,14 @@ class Camera:
 
 class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
      # test wiarygodnosci argumentow
-    def __new__(cls, _window, _x,_y, width=10, height=10, type=None, sprite=None, foreground=False, background=None):
+    def __new__(cls, _window, _x,_y, width=10, height=10, type=None, sprite=None, foreground=False, background=None, triggerType=None, triggerInfo=None):
         #do checks for window, height, width later
         if not isinstance(_x, float) and not isinstance(_x, int):
             raise TypeError("Pierwszy argument inicjalizacji obiektu klasy Entity (_x) musi być typu numerycznego float lub int!")
         if not isinstance(_y, float) and not isinstance(_y, int):
             raise TypeError("Pierwszy argument inicjalizacji obiektu klasy Entity (_y) musi być typu numerycznego float lub int!")
         return super(Entity, cls).__new__(cls)
-    def __init__(self,window,_x,_y, _width, _height, _control,_moveable, type=None,sprite=None, foreground=False):
+    def __init__(self,window,_x,_y, _width, _height, _control,_moveable, type=None,sprite=None, foreground=False, triggerType=None, triggerInfo=None):
         super().__init__()
 
         self.window = window
@@ -347,7 +380,7 @@ class Player(Entity): # dziedziczenie po entity
             self.last_movement = self.pos - prev_pos
 
 class Grounds(Entity):
-    def __init__(self,window, _x, _y, in_width = APP_WIDTH, in_height = 120, _type = "block", sprite=None, foreground=False, background=None):
+    def __init__(self,window, _x, _y, in_width = APP_WIDTH, in_height = 120, _type = "block", sprite=None, foreground=False, background=None, triggerType=None, triggerInfo=None):
         super().__init__(window, _x, _y, in_width, in_height, False, False, sprite=sprite, foreground=foreground)
         self.type = _type
         if self.type=="key" or self.type=="door":
@@ -359,3 +392,7 @@ class Grounds(Entity):
                 self.keyColor = "green"
         elif self.type == "background":
             self.background = background
+        elif self.type =="trigger":
+            self.triggerInfo = eval(triggerInfo)
+            self.triggerType = triggerType
+            self.triggered = False

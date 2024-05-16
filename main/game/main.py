@@ -61,5 +61,7 @@ while running:
     for entity in TextureComponent.spritesF:
         #,special_flags= BLEND_ADD'
         window.blit(entity.area, entity.shape)
+    for messageBox in TextureComponent.messageBoxes:
+        TextureComponent.showMessage(window, messageBox)
     pygame.display.update()
     current_fps.tick(MAX_FPS)
