@@ -6,7 +6,7 @@ import xml.etree.cElementTree as ET
 from xml.dom import minidom
 
  # stałe
-MS = 18
+MS = 15
 TILE_SIZE = 40
 CURRENT_DIR = path.dirname(path.abspath(__file__))
 RESOURCES = path.join(path.dirname(CURRENT_DIR),"resources")
@@ -235,7 +235,7 @@ timer = 0
 mapSize = (80,60)
 tileViewSize = TILE_SIZE
 offset = (0,0)
-windowOffset = (0,0)
+windowOffset = [0,0]
 copyboard = None
 loadedFilename = False
 selected = False
@@ -530,17 +530,19 @@ root.config(menu=menu)
 
  # canvas
 
+mousePositionLabel = Label(canvasFrame, text="(0,0)")
+mousePositionLabel.pack()
 canvas = Canvas (canvasFrame, bg="white",height=600,width=600, scrollregion=(0,0,mapSize[0]*tileViewSize,mapSize[1]*tileViewSize), relief=SUNKEN, bd=3)
 hbar = None
 vbar = None
 def changeOffsetH(a,b):
    canvas.xview(a,b)
    global windowOffset
-   windowOffset = (canvas.winfo_width()/(hbar.get()[1]-hbar.get()[0])*hbar.get()[0],windowOffset[1])
+   windowOffset[0] = canvas.canvasx(0)
 def changeOffsetV(a,b):
    canvas.yview(a,b)
    global windowOffset
-   windowOffset = (windowOffset[0],canvas.winfo_height()/(vbar.get()[1]-vbar.get()[0])*vbar.get()[0])
+   windowOffset[1] = canvas.canvasy(0)
 hbar=Scrollbar(canvasFrame,orient=HORIZONTAL, command=changeOffsetH)
 hbar.pack(side=BOTTOM,fill=X)
 vbar=Scrollbar(canvasFrame,orient=VERTICAL, command=changeOffsetV)
@@ -556,8 +558,9 @@ def mouseSelect(event):
    global TILE_SIZE
    global tileViewSize
    radio = tileViewSize/TILE_SIZE
-   x = event.x + windowOffset[0]
-   y = event.y + windowOffset[1]*radio
+   x = canvas.canvasx(event.x)
+   y = canvas.canvasy(event.y)
+   mousePositionLabel.config(text = str((x,y)))
    if len(grounds)>0:
       zs = {}
       for ground in grounds:
