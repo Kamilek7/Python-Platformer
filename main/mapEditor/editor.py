@@ -560,7 +560,7 @@ def mouseSelect(event):
    radio = tileViewSize/TILE_SIZE
    x = canvas.canvasx(event.x)
    y = canvas.canvasy(event.y)
-   mousePositionLabel.config(text = str((x,y)))
+   mousePositionLabel.config(text = str((int(x/radio),int(y/radio))))
    if len(grounds)>0:
       zs = {}
       for ground in grounds:
