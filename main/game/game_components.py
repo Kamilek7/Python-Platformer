@@ -27,6 +27,10 @@ class TextureComponent:
     backarea = None
     backareaTemp = None
     backshape = None
+    messageFadeFlag = False
+    messageVisibility = False
+    messageLifespan = 0
+    messageSizeFade = 0
     @staticmethod
     def scaleBackground(window):
         TextureComponent.backarea = pygame.transform.scale(TextureComponent.backarea,(window.get_width(),window.get_height()))
@@ -80,7 +84,6 @@ class TextureComponent:
         TextureComponent.messageBoxes.append(package)
 
     def showMessage(_window,package):
-        pygame.font.init()
         my_font = pygame.font.SysFont('Comic Sans MS', 30)
         text_surface = my_font.render(package["text"], True, (255, 255, 255))
         # ratio sie pozniej poprawi
@@ -88,14 +91,42 @@ class TextureComponent:
         height = int(_window.get_height()/3.5)
         posX = int((_window.get_width()- width)/2)
         posY = int(_window.get_height() - _window.get_height()/3)
+        avatarWidth = int(height/1.3)
+        avatarHeight = avatarWidth
+        border = (height - height/1.3)/2
+        if TextureComponent.messageFadeFlag and not TextureComponent.messageVisibility:
+            if TextureComponent.messageSizeFade>=100:
+                TextureComponent.messageSizeFade=100
+                TextureComponent.messageFadeFlag=False
+                TextureComponent.messageVisibility=True
+                TextureComponent.messageLifespan=100
+            else:
+                TextureComponent.messageSizeFade+=5
+        elif not TextureComponent.messageFadeFlag and TextureComponent.messageVisibility:
+            if TextureComponent.messageLifespan>0:
+                TextureComponent.messageLifespan-=1
+            else:
+                TextureComponent.messageLifespan=0
+                TextureComponent.messageFadeFlag=True
+        elif TextureComponent.messageFadeFlag and TextureComponent.messageVisibility:
+            if TextureComponent.messageSizeFade<=0:
+                TextureComponent.messageSizeFade=0
+                TextureComponent.messageFadeFlag=False
+                TextureComponent.messageVisibility=False
+                TextureComponent.messageBoxes.remove(package)
+            else:
+                TextureComponent.messageSizeFade-=5
+        height = int(height*TextureComponent.messageSizeFade/100)
+        avatarHeight = int(avatarHeight*TextureComponent.messageSizeFade/100)
         pygame.draw.rect(_window, (0,0,0), pygame.Rect(posX,  posY , width, height))
         if package["icon"]!="None":
             temparea = pygame.image.load(path.join(AVATARS_DIR,package["icon"])).convert_alpha()
-            temparea = pygame.transform.scale(temparea,(int(height/1.3),int(height/1.3)))
-            _window.blit(temparea,(posX + (height - height/1.3)/2,posY + (height - height/1.3)/2))
-            _window.blit(text_surface,(posX+height, posY + (height - height/1.3)/2))
-        else:
-            _window.blit(text_surface,(posX+(height - height/1.3)/2, posY + (height - height/1.3)/2))
+            temparea = pygame.transform.scale(temparea,(avatarWidth,avatarHeight))
+            _window.blit(temparea,(posX + border,posY + border))
+            if TextureComponent.messageVisibility and not TextureComponent.messageFadeFlag:
+                _window.blit(text_surface,(posX+avatarWidth + 2*border, posY + border))
+        elif TextureComponent.messageVisibility and not TextureComponent.messageFadeFlag:
+            _window.blit(text_surface,(posX+ border, posY + border))
     
 class SystemComponent:
     @staticmethod
@@ -121,6 +152,7 @@ class SystemComponent:
     @staticmethod
     def showMessage(package):
         TextureComponent.appendMessages(package)
+        TextureComponent.messageFadeFlag = True
 
 
 class PhysicsComponent:

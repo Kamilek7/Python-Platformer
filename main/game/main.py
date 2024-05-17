@@ -11,6 +11,7 @@ if not path.isfile(BIDEN_CHECK):
     raise ImportError("GDZIE JEST BIDEN")
 else:
     pygame.init()
+    pygame.font.init()
     
  # definicja dla wektora, dla latwych przeksztalcen
 vector2d = pygame.math.Vector2
