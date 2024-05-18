@@ -276,18 +276,31 @@ class Camera:
         self.focus_object = focus_object
         self.other_objects = other_objects
         self.y_centre = y_centre
-
+        self.current_pos = vector2d(0,0)
     def update(self, window):
+        camera_centre = vector2d(window.get_width()/2,window.get_height()/2);
+        new_camera_pos = vector2d(0,0);
+        player_pos = self.focus_object.pos
+        vec_to_player = player_pos - camera_centre;
+        new_camera_pos.lerp(vec_to_player, 0.1)
+        
+        self.move_camera(new_camera_pos.lerp(vec_to_player, 0.1), window);
+
+
+    def move_camera(self,move_vector, window):
+        
         #run every tick
         #moves the camera by changing pos of all objects
-        move_vec = -self.focus_object.last_movement
+        #move_vec = -self.focus_object.last_movement
+        move_vec = move_vector;
         move_vec.y = 0
         self.focus_object.move_by(move_vec)
-        window_height = window.get_height()
-        abs_f_obj_y = abs(self.focus_object.pos.y)
-        offset = window_height/2.3
-        if abs_f_obj_y < window_height/2 - offset or abs_f_obj_y > window_height/2 + offset:
-            self.centre_camera(vector2d(window.get_width(), window.get_height()))
+        #window_height = window.get_height()
+        #abs_f_obj_y = abs(self.focus_object.pos.y)
+        #offset = window_height/2.3\
+        
+        #if abs_f_obj_y < window_height/2 - offset or abs_f_obj_y > window_height/2 + offset:
+        #    self.centre_camera(vector2d(window.get_width(), window.get_height()))
         for entity in self.other_objects:
             entity.move_by(vector2d((move_vec.x), (move_vec.y)))
 
