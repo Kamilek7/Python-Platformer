@@ -280,14 +280,14 @@ class Camera:
         self.y_centre = y_centre
         self.current_pos = vector2d(0,0)
     def update(self, window):
-        camera_centre = vector2d(window.get_width()/2,window.get_height()/2);
-        new_camera_pos = vector2d(0,0);
+        camera_centre = vector2d(window.get_width()/2,window.get_height()/2)
+        new_camera_pos = vector2d(0,0)
         player_pos = self.focus_object.pos
-        vec_to_player = camera_centre - player_pos;
+        vec_to_player = camera_centre - player_pos
         
-        focus_object_speed = self.focus_object.last_movement;
+        focus_object_speed = self.focus_object.last_movement
         if abs(focus_object_speed.x) < 0.5 and abs(focus_object_speed.y) < 0.5:
-            self.move_camera(new_camera_pos.lerp(vec_to_player, 0.05), window);
+            self.move_camera(new_camera_pos.lerp(vec_to_player, 0.05), window)
 
 
     def move_camera(self,move_vector, window):
