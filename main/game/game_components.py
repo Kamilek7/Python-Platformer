@@ -281,8 +281,7 @@ class Camera:
         camera_centre = vector2d(window.get_width()/2,window.get_height()/2);
         new_camera_pos = vector2d(0,0);
         player_pos = self.focus_object.pos
-        vec_to_player = player_pos - camera_centre;
-        new_camera_pos.lerp(vec_to_player, 0.1)
+        vec_to_player = camera_centre - player_pos;
         
         self.move_camera(new_camera_pos.lerp(vec_to_player, 0.1), window);
 
@@ -293,7 +292,7 @@ class Camera:
         #moves the camera by changing pos of all objects
         #move_vec = -self.focus_object.last_movement
         move_vec = move_vector;
-        move_vec.y = 0
+        #move_vec.y = 0
         self.focus_object.move_by(move_vec)
         #window_height = window.get_height()
         #abs_f_obj_y = abs(self.focus_object.pos.y)
