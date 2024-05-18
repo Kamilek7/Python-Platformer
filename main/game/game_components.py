@@ -290,8 +290,7 @@ class Camera:
 
         
         focus_object_input = focus_object.input_component.get_movement_vec(focus_object.physics_component.is_on_ground)
-        
-        bounding_box = pygame.rect(window.get_width()*(1/4), window.get_height()*(1/4), window.get_width()*(3/4), window.get_height()*(3/4) )
+        bounding_box = pygame.Rect(window.get_width()*(1/4), window.get_height()*(1/4), window.get_width()*(3/4), window.get_height()*(3/4) )
         Player_is_inside_box = bounding_box.collidepoint(focus_object.pos)
         is_stationary = abs(focus_object_speed.x) < 0.5 and abs(focus_object_speed.y) < 0.5;
         no_input = focus_object_input == vector2d(0,0);
