@@ -242,11 +242,13 @@ class PhysicsComponent:
         prev_pos = vector2d(self.entity.pos.x, self.entity.pos.y)
         # tarcie powoduje hamowanie bo acc bedzie ujemne caly czas (dodatnie tylko w chwili nacisniecia klawisza)
         self.speed.x -= self.friction*self.speed.x
+        
+        
          # reszta to fizyka lore
         self.speed += self.accel
         self.entity.pos += self.speed + self.accel/2
         moved_by_vec = self.entity.pos - prev_pos
-        
+        print(self.speed)
         #
         # (self.entity.pos)
         self.check_colision(moved_by_vec, in_other_entities)
@@ -283,7 +285,9 @@ class Camera:
         player_pos = self.focus_object.pos
         vec_to_player = camera_centre - player_pos;
         
-        self.move_camera(new_camera_pos.lerp(vec_to_player, 0.1), window);
+        focus_object_speed = self.focus_object.last_movement;
+        if abs(focus_object_speed.x) < 0.5 and abs(focus_object_speed.y) < 0.5:
+            self.move_camera(new_camera_pos.lerp(vec_to_player, 0.05), window);
 
 
     def move_camera(self,move_vector, window):
@@ -413,6 +417,7 @@ class Player(Entity): # dziedziczenie po entity
             prev_pos = vector2d(self.pos.x, self.pos.y)
             #get input from player
             move_input = self.input_component.get_movement_vec(self.physics_component.is_on_ground)
+            print(move_input);
             #debug
             if move_input != vector2d(0,0):
                 pass
