@@ -31,6 +31,7 @@ class TextureComponent:
     messageVisibility = False
     messageLifespan = 0
     messageSizeFade = 0
+    tempIcon = None
     @staticmethod
     def scaleBackground(window):
         TextureComponent.backarea = pygame.transform.scale(TextureComponent.backarea,(window.get_width(),window.get_height()))
@@ -94,6 +95,8 @@ class TextureComponent:
         avatarWidth = int(height/1.3)
         avatarHeight = avatarWidth
         border = (height - height/1.3)/2
+        if TextureComponent.tempIcon==None:
+            TextureComponent.tempIcon = pygame.image.load(path.join(AVATARS_DIR,package["icon"])).convert_alpha()
         if TextureComponent.messageFadeFlag and not TextureComponent.messageVisibility:
             if TextureComponent.messageSizeFade>=100:
                 TextureComponent.messageSizeFade=100
@@ -120,7 +123,7 @@ class TextureComponent:
         avatarHeight = int(avatarHeight*TextureComponent.messageSizeFade/100)
         pygame.draw.rect(_window, (0,0,0), pygame.Rect(posX,  posY , width, height))
         if package["icon"]!="None":
-            temparea = pygame.image.load(path.join(AVATARS_DIR,package["icon"])).convert_alpha()
+            temparea = TextureComponent.tempIcon
             temparea = pygame.transform.scale(temparea,(avatarWidth,avatarHeight))
             _window.blit(temparea,(posX + border,posY + border))
             if TextureComponent.messageVisibility and not TextureComponent.messageFadeFlag:
