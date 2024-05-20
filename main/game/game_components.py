@@ -31,6 +31,7 @@ class TextureComponent:
     messageVisibility = False
     messageLifespan = 0
     messageSizeFade = 0
+    tempIcon = None
     @staticmethod
     def scaleBackground(window):
         TextureComponent.backarea = pygame.transform.scale(TextureComponent.backarea,(window.get_width(),window.get_height()))
@@ -94,6 +95,8 @@ class TextureComponent:
         avatarWidth = int(height/1.3)
         avatarHeight = avatarWidth
         border = (height - height/1.3)/2
+        if TextureComponent.tempIcon==None:
+            TextureComponent.tempIcon = pygame.image.load(path.join(AVATARS_DIR,package["icon"])).convert_alpha()
         if TextureComponent.messageFadeFlag and not TextureComponent.messageVisibility:
             if TextureComponent.messageSizeFade>=100:
                 TextureComponent.messageSizeFade=100
@@ -120,7 +123,7 @@ class TextureComponent:
         avatarHeight = int(avatarHeight*TextureComponent.messageSizeFade/100)
         pygame.draw.rect(_window, (0,0,0), pygame.Rect(posX,  posY , width, height))
         if package["icon"]!="None":
-            temparea = pygame.image.load(path.join(AVATARS_DIR,package["icon"])).convert_alpha()
+            temparea = TextureComponent.tempIcon
             temparea = pygame.transform.scale(temparea,(avatarWidth,avatarHeight))
             _window.blit(temparea,(posX + border,posY + border))
             if TextureComponent.messageVisibility and not TextureComponent.messageFadeFlag:
@@ -344,6 +347,12 @@ class Camera:
 # CLASSES FOR GAME ENTITIES
 
 class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
+    def __new__(cls, _window, _x,_y, width=10, height=10, type=None, sprite=None, foreground=False, background=None, triggerType=None, triggerInfo=None):
+        if not isinstance(_x, float) and not isinstance(_x, int):
+            raise TypeError("Pierwszy argument inicjalizacji obiektu klasy Entity (_x) musi być typu numerycznego float lub int!")
+        if not isinstance(_y, float) and not isinstance(_y, int):
+            raise TypeError("Pierwszy argument inicjalizacji obiektu klasy Entity (_y) musi być typu numerycznego float lub int!")
+        return super(Entity, cls).__new__(cls)
      # test wiarygodnosci argumentow
     def __new__(cls, _window, _x,_y, width=10, height=10, type=None, sprite=None, foreground=False, background=None, triggerType=None, triggerInfo=None):
         #do checks for window, height, width later
@@ -418,6 +427,11 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
         self.shape = self.area.get_rect(center = (self.pos.x,self.pos.y))
 
 class Player(Entity): # dziedziczenie po entity
+    def __new__(cls, _window, posX, posY):
+        if not isinstance(posX, (int, float)) or not isinstance(posY, (int, float)):
+            raise TypeError("posX i posY musza byc int lub float")
+        return super(Player, cls).__new__(cls, _window, posX, posY)
+    
     def __init__(self,window,_x,_y, in_width = 38, in_height = 75):
          # X, Y, WYSOKOSC, SZEROKOSC, KOLOR, PED PRZY RUCHU, TARCIE, RUCHOME, MOZNA STEROWAC
                  #grawitacja
@@ -453,6 +467,11 @@ class Player(Entity): # dziedziczenie po entity
             self.last_movement = self.pos - prev_pos
 
 class Grounds(Entity):
+    def __new__(cls, _window, posX, posY, width, height, type, sprite=None, foreground=False,background=None, triggerType=None, triggerInfo=None):
+        if not isinstance(sprite, str) and sprite != None:
+            raise TypeError("sprite musi być str")
+        return super(Grounds, cls).__new__(cls, _window, posX, posY, width, height, "block", sprite=sprite, foreground=foreground, background=background,triggerType=triggerType,triggerInfo=triggerInfo)
+    
     def __init__(self,window, _x, _y, in_width = APP_WIDTH, in_height = 120, _type = "block", sprite=None, foreground=False, background=None, triggerType=None, triggerInfo=None):
         super().__init__(window, _x, _y, in_width, in_height, False, False, sprite=sprite, foreground=foreground)
         self.type = _type
@@ -469,3 +488,24 @@ class Grounds(Entity):
             self.triggerInfo = eval(triggerInfo)
             self.triggerType = triggerType
             self.triggered = False
+
+class Enemy(Entity):
+    def __new__(cls, okno, x, y, szerokosc=38, wysokosc=75):
+        if not isinstance(x, (int, float)) or not isinstance(y, (int, float)):
+            raise TypeError("x i y musza byc liczbami calkowitymi lub zmiennoprzecinkowymi")
+        if not isinstance(szerokosc, int) or not isinstance(wysokosc, int):
+            raise TypeError("szerokosc i wysokosc musza byc liczbami calkowitymi")
+
+        return super(Enemy, cls).__new__(cls, okno, x, y, szerokosc, wysokosc, False, True, type="wrog", sprite="sprite_wroga.png")
+
+    def __init__(self, okno, x, y, szerokosc=38, wysokosc=75):
+        super().__init__(okno, x, y, szerokosc, wysokosc, False, True, type="wrog", sprite="sprite_wroga.png")
+        self.zdrowie = 100  # Przykladowy atrybut dla zdrowia wroga
+
+    def otrzymaj_obrazenia(self, obrazenia):
+        self.zdrowie -= obrazenia
+        if self.zdrowie <= 0:
+            self.zniszcz()
+            
+            
+            
