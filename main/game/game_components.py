@@ -387,12 +387,10 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
         self.shape = self.area.get_rect(center = (self.pos.x,self.pos.y))
 
 class Player(Entity): # dziedziczenie po entity
-    def __new__(cls, _window, posX, posY, width, height):
+    def __new__(cls, _window, posX, posY):
         if not isinstance(posX, (int, float)) or not isinstance(posY, (int, float)):
             raise TypeError("posX i posY musza byc int lub float")
-        if not isinstance(width, int) or not isinstance(height, int):
-            raise TypeError("width i height musza byc int")
-        return super(Player, cls).__new__(cls)
+        return super(Player, cls).__new__(cls, _window, posX, posY)
     
     def __init__(self,window,_x,_y, in_width = 38, in_height = 75):
          # X, Y, WYSOKOSC, SZEROKOSC, KOLOR, PED PRZY RUCHU, TARCIE, RUCHOME, MOZNA STEROWAC
@@ -428,10 +426,10 @@ class Player(Entity): # dziedziczenie po entity
             self.last_movement = self.pos - prev_pos
 
 class Grounds(Entity):
-    def __new__(cls, _window, posX, posY, width, height, sprite):
-        if not isinstance(sprite, str):
+    def __new__(cls, _window, posX, posY, width, height, type, sprite=None, foreground=False,background=None, triggerType=None, triggerInfo=None):
+        if not isinstance(sprite, str) and sprite != None:
             raise TypeError("sprite musi być str")
-        return super(Platform, cls).__new__(cls, _window, posX, posY, width, height, "platform", sprite=sprite)
+        return super(Grounds, cls).__new__(cls, _window, posX, posY, width, height, "block", sprite=sprite, foreground=foreground, background=background,triggerType=triggerType,triggerInfo=triggerInfo)
     
     def __init__(self,window, _x, _y, in_width = APP_WIDTH, in_height = 120, _type = "block", sprite=None, foreground=False, background=None, triggerType=None, triggerInfo=None):
         super().__init__(window, _x, _y, in_width, in_height, False, False, sprite=sprite, foreground=foreground)
