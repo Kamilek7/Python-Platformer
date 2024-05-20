@@ -298,11 +298,20 @@ class Camera:
         Player_is_inside_box = bounding_box.colliderect(focus_object_rect)
         is_stationary = abs(focus_object_speed.x) < 0.5 and abs(focus_object_speed.y) < 0.5;
         no_input = focus_object_input == vector2d(0,0);
-        move_camera = is_stationary or (not Player_is_inside_box);
+        player_not_moving = (is_stationary and no_input)
         
+        move_camera = False
+        camera_speed = 0
         #if True or (abs(focus_object_speed.x) < 0.5 and abs(focus_object_speed.y) < 0.5):
+        if player_not_moving:
+            camera_speed = 0.1
+            move_camera = True
+        elif not Player_is_inside_box:
+            camera_speed = 0.05
+            move_camera = True
         if move_camera:
-            self.move_camera(new_camera_pos.lerp(vec_to_player, 0.05), window);
+            print(camera_speed)
+            self.move_camera(new_camera_pos.lerp(vec_to_player, camera_speed), window);
 
 
     def move_camera(self,move_vector, window):
