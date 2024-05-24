@@ -70,6 +70,8 @@ class TextureComponent:
     def changeBackground(newBackground):
         TextureComponent.currentBGcoords.x = newBackground.pos.x - 40
         TextureComponent.currentBGcoords.y = newBackground.pos.y - 40
+        TextureComponent.currentBGsize.x = newBackground.get_width()+40
+        TextureComponent.currentBGsize.y = newBackground.get_height()
         newBackground = newBackground.background
         if TextureComponent.background!=newBackground:
             TextureComponent.fadedBackground=TextureComponent.background
@@ -92,7 +94,6 @@ class TextureComponent:
     def showMessage(_window,package):
         my_font = pygame.font.SysFont('Comic Sans MS', 30)
         text_surface = my_font.render(package["text"], True, (255, 255, 255))
-        # ratio sie pozniej poprawi
         width = int(_window.get_width()/1.1)
         height = int(_window.get_height()/3.5)
         posX = int((_window.get_width()- width)/2)
@@ -295,54 +296,34 @@ class Camera:
         
 
     def update(self, window):
-        # camera_centre = vector2d(window.get_width()/2,window.get_height()/2)
-        # new_camera_pos = vector2d(0,0)
-        # vec_to_player = camera_centre - player_pos
         focus_object_speed = self.focus_object.last_movement
         self.camera_offset = -self.focus_object.pos
         is_stationary = abs(focus_object_speed.x) < 0.5 and abs(focus_object_speed.y) < 0.5
         if not is_stationary:
             self.centre_camera(vector2d(window.get_width(), window.get_height()))
-            self.move_camera()
-        # focus_object_input = focus_object.input_component.get_movement_vec(focus_object.physics_component.is_on_ground)
-        # bounding_box = pygame.Rect(window.get_width()*(1/3), window.get_height()*(1/4), window.get_width()*(1/3), window.get_height()*(2/4) )
-        
-        # focus_object_rect = pygame.Rect(focus_object.cameraPos, vector2d(focus_object.get_width(), focus_object.get_height()))
-        # Player_is_inside_box = bounding_box.colliderect(focus_object_rect)
-        
-        # no_input = focus_object_input == vector2d(0,0);
-        # player_not_moving = (is_stationary and no_input)
-        
-        # moveCamera = False
-        # camera_speed = 0
-        # if player_not_moving:
-        #     camera_speed = 0.1
-        #     move_camera = True
-        # elif not Player_is_inside_box:
-        #     camera_speed = 0.05
-        #     moveCamera = True
-        # if moveCamera:
-        #     self.move_camera(new_camera_pos.lerp(vec_to_player, camera_speed), window);
+            self.move_camera(window)
 
 
-    def move_camera(self):
-        newOffset = self.camera_offset
-        if (newOffset+self.cameraCenterOffset).x<=-TextureComponent.currentBGcoords.x:
-            newOffset.x +=self.cameraCenterOffset.x
-        else:
-            newOffset.x = -TextureComponent.currentBGcoords.x
-        if (newOffset+self.cameraCenterOffset).y<=-TextureComponent.currentBGcoords.y:
-            newOffset.y +=self.cameraCenterOffset.y
-        else:
-            newOffset.y = -TextureComponent.currentBGcoords.y
+    def move_camera(self,window):
+        newOffset = self.camera_offset + self.cameraCenterOffset
+        backgroundTLCorn = -TextureComponent.currentBGcoords
+        backgroundBRCorn = backgroundTLCorn - TextureComponent.currentBGsize
+        check1 = (newOffset).x>=backgroundTLCorn.x
+        check2 = self.camera_offset.y-backgroundBRCorn.y<240 + 0.5*(window.get_height()-600)
+        if check1:
+            newOffset.x = backgroundTLCorn.x
+        if check2:
+            newOffset.y = backgroundBRCorn.y + window.get_height() - 80
+        if window.get_height()<TextureComponent.currentBGsize.y and (newOffset).y+backgroundTLCorn.y>0:
+            newOffset.y = backgroundTLCorn.y-80
+        if window.get_width()<TextureComponent.currentBGsize.x and self.camera_offset.x-backgroundBRCorn.x<360 + 0.5*(window.get_width()-800):
+            newOffset.x = backgroundBRCorn.x + window.get_width() - 40
         self.focus_object.changeCameraOffset(newOffset)
         for entity in self.other_objects:
             entity.changeCameraOffset(newOffset)
 
     def centre_camera(self, window_dimensions):
         window_centre = window_dimensions/2
-        window_centre.x -= window_dimensions.x/10
-        window_centre.y += window_dimensions.y/6
         self.cameraCenterOffset = window_centre
 
 
