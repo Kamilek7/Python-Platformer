@@ -38,10 +38,13 @@ class TextureComponent:
             if TextureComponent.tempBG2==None:
                 TextureComponent.tempBG2 = pygame.image.load(path.join(BACKGROUNDS_DIR, TextureComponent.backgrounds[1])).convert_alpha()
                 TextureComponent.tempBG2 = pygame.transform.scale(TextureComponent.tempBG2,(window.get_width(),window.get_height()))
+                TextureComponent.tempBG2.set_alpha(0)
             window.blit(TextureComponent.tempBG1,(0, 0))
             window.blit(TextureComponent.tempBG2,(0, 0))
-            if TextureComponent.backgroundAlpha<=255:
+            if TextureComponent.backgroundAlpha<255:
                 TextureComponent.backgroundAlpha+=10
+                if TextureComponent.backgroundAlpha>255:
+                    TextureComponent.backgroundAlpha=255
                 TextureComponent.tempBG2.set_alpha(TextureComponent.backgroundAlpha)
             else:
                 TextureComponent.backgroundAlpha=0
@@ -170,8 +173,8 @@ class PhysicsComponent:
     def check_colision(self, moved_by_vec, other_entities = []):
         check = False
         def iEq0(col_entity, pos_to_check, temp_moved_vec):
-            if col_entity.type=="plat" or col_entity.type=="ladder":
-                if self.speed.y>0 and pos_to_check.y<=col_entity.pos.y-col_entity.get_height():
+            if col_entity.type=="plat" or col_entity.type=="ladder" or col_entity.type=="enemy":
+                if self.speed.y>0 and pos_to_check.y<col_entity.pos.y-col_entity.get_height():
                     self.speed.y = 0
                     self.is_on_ground = True
                     self.entity.move_to_pos(vector2d(self.entity.pos.x, col_entity.pos.y - self.entity.get_height()))
@@ -185,7 +188,7 @@ class PhysicsComponent:
                 else:
                     self.entity.move_to_pos(vector2d(self.entity.pos.x, col_entity.pos.y + col_entity.get_height()))
         def iEq1(col_entity, temp_moved_vec):
-            if col_entity.type!="plat" and col_entity.type!="ladder":
+            if col_entity.type!="plat" and col_entity.type!="enemy" and col_entity.type!="ladder":
                 self.speed.x = 0
                 if temp_moved_vec.x > 0:
                     self.entity.move_to_pos(vector2d(col_entity.pos.x - self.entity.get_width(), self.entity.pos.y))
@@ -263,8 +266,6 @@ class PhysicsComponent:
                     if not removeFlag:
                         removeFlag = mainCollisionHandler(col_entity)
                             
-
-        
     def move(self, move_vec):
         self.speed.x += self.def_speed*move_vec.x
         self.speed.y += self.def_speed*move_vec.y
@@ -312,11 +313,11 @@ class Camera:
         self.cameraCenterOffset = 0
         
 
-    def update(self, window):
+    def update(self, window, force=False):
         focus_object_speed = self.focus_object.last_movement
         self.camera_offset = -self.focus_object.pos
         is_stationary = abs(focus_object_speed.x) < 0.5 and abs(focus_object_speed.y) < 0.5
-        if not is_stationary:
+        if not is_stationary or force:
             self.centre_camera(vector2d(window.get_width(), window.get_height()))
             self.move_camera(window)
 
@@ -327,14 +328,18 @@ class Camera:
         backgroundBRCorn = backgroundTLCorn - TextureComponent.currentBGsize
         check1 = (newOffset).x>=backgroundTLCorn.x
         check2 = self.camera_offset.y-backgroundBRCorn.y<240 + 0.5*(window.get_height()-600)
+        check3 = window.get_height()<=TextureComponent.currentBGsize.y+85 and (newOffset).y+-backgroundTLCorn.y>0
+        check4a = window.get_width()<TextureComponent.currentBGsize.x
+        check4b = self.camera_offset.x-backgroundBRCorn.x<360 + 0.5*(window.get_width()-800)
         if check1:
             newOffset.x = backgroundTLCorn.x
         if check2:
             newOffset.y = backgroundBRCorn.y + window.get_height() - 80
-        if window.get_height()<=TextureComponent.currentBGsize.y+85 and (newOffset).y+-backgroundTLCorn.y>0:
+        if check3:
             newOffset.y = backgroundTLCorn.y
-        if window.get_width()<TextureComponent.currentBGsize.x and self.camera_offset.x-backgroundBRCorn.x<360 + 0.5*(window.get_width()-800):
-            newOffset.x = backgroundBRCorn.x + window.get_width() - 40
+        if check4a:
+            if check4b:
+                newOffset.x = backgroundBRCorn.x + window.get_width() - 40
         else:
             newOffset.x = backgroundTLCorn.x
         self.focus_object.changeCameraOffset(newOffset)

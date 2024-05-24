@@ -45,7 +45,7 @@ while running:
         if event.type == QUIT:
             pygame.quit()
         elif event.type == VIDEORESIZE:
-            main_camera.centre_camera(vector2d(window.get_width(), window.get_height()))
+            main_camera.update(window, force=True)
             TextureComponent.scaleBackground(window)
     TextureComponent.manageBackground(window)
     for entity in moveables:
