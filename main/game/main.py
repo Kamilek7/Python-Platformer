@@ -33,8 +33,8 @@ playerSpawn = package["playerSpawn"]
 platforms = levels[0]
 player = Player(window,playerSpawn[0],playerSpawn[1])
 TextureComponent.setSprites(platforms,player)
-moveables = [player]
-
+moveables = package["moveables"]
+moveables.append(player)
 main_camera = Camera(player, platforms, window.get_height()*0.75)
 
  # game loop
@@ -49,18 +49,14 @@ while running:
             TextureComponent.scaleBackground(window)
     TextureComponent.manageBackground(window)
     for entity in moveables:
-        if entity.spriteChange:
-            TextureComponent.setSprites(platforms,player)
         entity.update(platforms)
 
     main_camera.update(window)
     if len(platforms)<len(TextureComponent.spritesB) + len(TextureComponent.spritesF)-1:
         TextureComponent.setSprites(platforms,player)
     for entity in TextureComponent.spritesB:
-        #,special_flags= BLEND_ADD'
         window.blit(entity.area, entity.shape)
     for entity in TextureComponent.spritesF:
-        #,special_flags= BLEND_ADD'
         window.blit(entity.area, entity.shape)
     for messageBox in TextureComponent.messageBoxes:
         TextureComponent.showMessage(window, messageBox)

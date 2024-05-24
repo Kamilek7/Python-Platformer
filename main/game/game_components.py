@@ -32,6 +32,8 @@ class TextureComponent:
     messageLifespan = 0
     messageSizeFade = 0
     tempIcon = None
+    currentBGcoords = vector2d((0,0))
+    currentBGsize = vector2d((0,0))
     @staticmethod
     def scaleBackground(window):
         TextureComponent.backarea = pygame.transform.scale(TextureComponent.backarea,(window.get_width(),window.get_height()))
@@ -65,12 +67,15 @@ class TextureComponent:
                 TextureComponent.fadeFlag=False
                 TextureComponent.backarea.set_alpha(TextureComponent.alpha)
         window.blit(TextureComponent.backarea, TextureComponent.backshape)
-
     def changeBackground(newBackground):
+        TextureComponent.currentBGcoords.x = newBackground.pos.x - 40
+        TextureComponent.currentBGcoords.y = newBackground.pos.y - 40
+        newBackground = newBackground.background
         if TextureComponent.background!=newBackground:
             TextureComponent.fadedBackground=TextureComponent.background
             TextureComponent.background = newBackground
             TextureComponent.changeFlag = True
+
     def setSprites(platforms, player):
         TextureComponent.spritesB = pygame.sprite.Group()
         TextureComponent.spritesF = pygame.sprite.Group()
@@ -138,6 +143,7 @@ class SystemComponent:
         levels = []
         for files in listdir(MAPS_DIR):
             maps = []
+            moveables = []
             plik = minidom.parse(path.join(MAPS_DIR,files))
             mapa = plik.getElementsByTagName('map')[0]
             for child in mapa.childNodes:
@@ -147,10 +153,14 @@ class SystemComponent:
                     maps.append(Grounds(_window,int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName,  background=child.getAttribute("background")))
                 elif child.tagName=="trigger":
                     maps.append(Grounds(_window,int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName,  triggerType=child.getAttribute("actionType"), triggerInfo=child.getAttribute("actionSpecs")))
+                elif child.tagName=="enemy":
+                    temp = Enemy(_window,int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")), type=child.getAttribute("type"))
+                    moveables.append(temp)
+                    maps.append(temp)
                 else:
                     maps.append(Grounds(_window,int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName, child.getAttribute("sprite"), foreground=child.getAttribute("foreground")))
             levels.append(maps)
-        package = {"levels": levels, "playerSpawn": playerSpawn}
+        package = {"levels": levels, "playerSpawn": playerSpawn, "moveables": moveables}
         return package
     @staticmethod
     def showMessage(package):
@@ -166,13 +176,13 @@ class PhysicsComponent:
         self.friction = vector2d(-0.1,0)
         self.entity = entity
         self.is_on_ground = False
-    
+
     def check_colision(self, moved_by_vec, other_entities = []):
         #collision detection and handling
         #handling is temp need to add more checks later
         self.is_on_ground = False
         for col_entity in other_entities:
-            if col_entity.type=="decor" or col_entity.type=="spawn" or col_entity.type=="spawnE":
+            if col_entity.type=="decor" or col_entity.type=="spawn" or col_entity.type=="spawnE" or (self.entity.type=="enemy" and col_entity.type=="enemy"):
                 pass
             else:
                 for i in range(2):
@@ -197,7 +207,7 @@ class PhysicsComponent:
                                 other_entities.remove(col_entity)
                                 break
                             elif col_entity.type=="background":
-                                TextureComponent.changeBackground(col_entity.background)
+                                TextureComponent.changeBackground(col_entity)
                             elif col_entity.type=="trigger":
                                 if col_entity.triggerType=="messageBox" and not col_entity.triggered:
                                     SystemComponent.showMessage(col_entity.triggerInfo)
@@ -237,7 +247,7 @@ class PhysicsComponent:
                             
 
         
-    def move(self, move_vec, other_entities = None):
+    def move(self, move_vec):
         self.speed.x += self.def_speed*move_vec.x
         self.speed.y += self.def_speed*move_vec.y
 
@@ -246,16 +256,15 @@ class PhysicsComponent:
         # tarcie powoduje hamowanie bo acc bedzie ujemne caly czas (dodatnie tylko w chwili nacisniecia klawisza)
         self.speed.x -= self.friction*self.speed.x
         
-        
          # reszta to fizyka lore
         self.speed += self.accel
         self.entity.pos += self.speed + self.accel/2
         moved_by_vec = self.entity.pos - prev_pos
 
-        #
         # (self.entity.pos)
         self.check_colision(moved_by_vec, in_other_entities)
-        self.entity.shape.topleft = self.entity.pos
+        self.entity.shape.topleft = self.entity.pos + self.entity.cameraPos
+        
 
 class InputComponent:
     def __init__(self) -> None:
@@ -281,68 +290,61 @@ class Camera:
         self.focus_object = focus_object
         self.other_objects = other_objects
         self.y_centre = y_centre
-        self.current_pos = vector2d(0,0)
+        self.camera_offset = 0
+        self.cameraCenterOffset = 0
         
 
     def update(self, window):
-        camera_centre = vector2d(window.get_width()/2,window.get_height()/2)
-        new_camera_pos = vector2d(0,0)
-        player_pos = self.focus_object.pos
-        vec_to_player = camera_centre - player_pos;
-        focus_object_speed = self.focus_object.last_movement;
-
-        focus_object = self.focus_object
-
+        # camera_centre = vector2d(window.get_width()/2,window.get_height()/2)
+        # new_camera_pos = vector2d(0,0)
+        # vec_to_player = camera_centre - player_pos
+        focus_object_speed = self.focus_object.last_movement
+        self.camera_offset = -self.focus_object.pos
+        is_stationary = abs(focus_object_speed.x) < 0.5 and abs(focus_object_speed.y) < 0.5
+        if not is_stationary:
+            self.centre_camera(vector2d(window.get_width(), window.get_height()))
+            self.move_camera()
+        # focus_object_input = focus_object.input_component.get_movement_vec(focus_object.physics_component.is_on_ground)
+        # bounding_box = pygame.Rect(window.get_width()*(1/3), window.get_height()*(1/4), window.get_width()*(1/3), window.get_height()*(2/4) )
         
-        focus_object_input = focus_object.input_component.get_movement_vec(focus_object.physics_component.is_on_ground)
-        bounding_box = pygame.Rect(window.get_width()*(1/3), window.get_height()*(1/4), window.get_width()*(1/3), window.get_height()*(2/4) )
+        # focus_object_rect = pygame.Rect(focus_object.cameraPos, vector2d(focus_object.get_width(), focus_object.get_height()))
+        # Player_is_inside_box = bounding_box.colliderect(focus_object_rect)
         
-        focus_object_rect = pygame.Rect(focus_object.pos, vector2d(focus_object.get_width(), focus_object.get_height()))
-        Player_is_inside_box = bounding_box.colliderect(focus_object_rect)
-        is_stationary = abs(focus_object_speed.x) < 0.5 and abs(focus_object_speed.y) < 0.5;
-        no_input = focus_object_input == vector2d(0,0);
-        player_not_moving = (is_stationary and no_input)
+        # no_input = focus_object_input == vector2d(0,0);
+        # player_not_moving = (is_stationary and no_input)
         
-        move_camera = False
-        camera_speed = 0
-        #if True or (abs(focus_object_speed.x) < 0.5 and abs(focus_object_speed.y) < 0.5):
-        if player_not_moving:
-            camera_speed = 0.1
-            move_camera = True
-        elif not Player_is_inside_box:
-            camera_speed = 0.05
-            move_camera = True
-        if move_camera:
-            print(camera_speed)
-            self.move_camera(new_camera_pos.lerp(vec_to_player, camera_speed), window);
+        # moveCamera = False
+        # camera_speed = 0
+        # if player_not_moving:
+        #     camera_speed = 0.1
+        #     move_camera = True
+        # elif not Player_is_inside_box:
+        #     camera_speed = 0.05
+        #     moveCamera = True
+        # if moveCamera:
+        #     self.move_camera(new_camera_pos.lerp(vec_to_player, camera_speed), window);
 
 
-    def move_camera(self,move_vector, window):
-        
-        #run every tick
-        #moves the camera by changing pos of all objects
-        #move_vec = -self.focus_object.last_movement
-        move_vec = move_vector;
-        #move_vec.y = 0
-        self.focus_object.move_by(move_vec)
-        #window_height = window.get_height()
-        #abs_f_obj_y = abs(self.focus_object.pos.y)
-        #offset = window_height/2.3\
-        
-        #if abs_f_obj_y < window_height/2 - offset or abs_f_obj_y > window_height/2 + offset:
-        #    self.centre_camera(vector2d(window.get_width(), window.get_height()))
+    def move_camera(self):
+        newOffset = self.camera_offset
+        if (newOffset+self.cameraCenterOffset).x<=-TextureComponent.currentBGcoords.x:
+            newOffset.x +=self.cameraCenterOffset.x
+        else:
+            newOffset.x = -TextureComponent.currentBGcoords.x
+        if (newOffset+self.cameraCenterOffset).y<=-TextureComponent.currentBGcoords.y:
+            newOffset.y +=self.cameraCenterOffset.y
+        else:
+            newOffset.y = -TextureComponent.currentBGcoords.y
+        self.focus_object.changeCameraOffset(newOffset)
         for entity in self.other_objects:
-            entity.move_by(vector2d((move_vec.x), (move_vec.y)))
+            entity.changeCameraOffset(newOffset)
 
     def centre_camera(self, window_dimensions):
-        #centers the camera to the middle of window_dimensions
         window_centre = window_dimensions/2
         window_centre.x -= window_dimensions.x/10
         window_centre.y += window_dimensions.y/6
-        move_vec = window_centre - self.focus_object.pos
-        self.focus_object.move_by(move_vec)
-        for entity in self.other_objects:
-            entity.move_by(vector2d((move_vec.x), (move_vec.y)))
+        self.cameraCenterOffset = window_centre
+
 
 # CLASSES FOR GAME ENTITIES
 
@@ -354,13 +356,6 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
             raise TypeError("Pierwszy argument inicjalizacji obiektu klasy Entity (_y) musi być typu numerycznego float lub int!")
         return super(Entity, cls).__new__(cls)
      # test wiarygodnosci argumentow
-    def __new__(cls, _window, _x,_y, width=10, height=10, type=None, sprite=None, foreground=False, background=None, triggerType=None, triggerInfo=None):
-        #do checks for window, height, width later
-        if not isinstance(_x, float) and not isinstance(_x, int):
-            raise TypeError("Pierwszy argument inicjalizacji obiektu klasy Entity (_x) musi być typu numerycznego float lub int!")
-        if not isinstance(_y, float) and not isinstance(_y, int):
-            raise TypeError("Pierwszy argument inicjalizacji obiektu klasy Entity (_y) musi być typu numerycznego float lub int!")
-        return super(Entity, cls).__new__(cls)
     def __init__(self,window,_x,_y, _width, _height, _control,_moveable, type=None,sprite=None, foreground=False, triggerType=None, triggerInfo=None):
         super().__init__()
 
@@ -387,6 +382,7 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
         self.shape = self.area.get_rect(center = (_x,_y))
          # fizyka
         self.pos = vector2d((_x,_y))
+        self.cameraPos = vector2d((_x,_y))
         self.shape.topleft = self.pos
 
          # oblsuga kolizji i ruchu
@@ -405,26 +401,19 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
 
     def move_to_pos(self, in_pos):
         self.pos = in_pos
-        self.shape.topleft = self.pos
-    def move_by(self, movement_vec):
-        self.pos += movement_vec
-        self.shape.topleft = self.pos
-
+    def changeCameraOffset(self, camera_offset):
+        self.cameraPos = camera_offset
+        self.shape.topleft = self.pos + self.cameraPos
 
     def get_height(self):
         return self.area.get_height()
     def get_width(self):
         return self.area.get_width()
 
-    def update(self, in_other_entities = []):
-        if self.MOVEABLE:
-            pass
-            # wstepnie ustawia acc na 0
     def changeSprite(self, spriteDir):
         self.spriteChange = True
         self.area = pygame.image.load(path.join(SPRITES_DIR,spriteDir)).convert_alpha()
         self.area = pygame.transform.scale(self.area,(self.WIDTH,self.HEIGHT))
-        self.shape = self.area.get_rect(center = (self.pos.x,self.pos.y))
 
 class Player(Entity): # dziedziczenie po entity
     def __new__(cls, _window, posX, posY):
@@ -432,12 +421,13 @@ class Player(Entity): # dziedziczenie po entity
             raise TypeError("posX i posY musza byc int lub float")
         return super(Player, cls).__new__(cls, _window, posX, posY)
     
-    def __init__(self,window,_x,_y, in_width = 38, in_height = 75):
+    def __init__(self,window,_x,_y, in_width = 36, in_height = 75):
          # X, Y, WYSOKOSC, SZEROKOSC, KOLOR, PED PRZY RUCHU, TARCIE, RUCHOME, MOZNA STEROWAC
                  #grawitacja
         super().__init__(window,_x, _y, in_width, in_height, True, True, type="player",sprite="brick.png")
 
          # inventory
+        self.type= "player"
         self.keys = {"red":0,"purple":0,"green":0}
     def getKey(self,type):
         self.keys[type]+=1
@@ -452,19 +442,11 @@ class Player(Entity): # dziedziczenie po entity
         
 
     def update(self, in_other_entities = []):
-            prev_pos = vector2d(self.pos.x, self.pos.y)
-            #get input from player
-            move_input = self.input_component.get_movement_vec(self.physics_component.is_on_ground)
-
-            #debug
-            if move_input != vector2d(0,0):
-                pass
-                # debug print("pos: ",self.pos,"accel: ", self.physics_component.accel, "speed: ", self.physics_component.speed)
-            
-            
-            self.physics_component.move(move_input)
-            self.physics_component.update_pos(in_other_entities)
-            self.last_movement = self.pos - prev_pos
+        prev_pos = vector2d(self.pos.x, self.pos.y)
+        move_input = self.input_component.get_movement_vec(self.physics_component.is_on_ground)
+        self.physics_component.move(move_input)
+        self.physics_component.update_pos(in_other_entities)
+        self.last_movement = self.pos - prev_pos
 
 class Grounds(Entity):
     def __new__(cls, _window, posX, posY, width, height, type, sprite=None, foreground=False,background=None, triggerType=None, triggerInfo=None):
@@ -490,22 +472,34 @@ class Grounds(Entity):
             self.triggered = False
 
 class Enemy(Entity):
-    def __new__(cls, okno, x, y, szerokosc=38, wysokosc=75):
+    def __new__(cls, okno, x, y, width, height, type="szczur"):
         if not isinstance(x, (int, float)) or not isinstance(y, (int, float)):
             raise TypeError("x i y musza byc liczbami calkowitymi lub zmiennoprzecinkowymi")
-        if not isinstance(szerokosc, int) or not isinstance(wysokosc, int):
+        if not isinstance(width, int) or not isinstance(height, int):
             raise TypeError("szerokosc i wysokosc musza byc liczbami calkowitymi")
+        return super(Enemy, cls).__new__(cls, okno, x, y, width, height, type="enemy")
 
-        return super(Enemy, cls).__new__(cls, okno, x, y, szerokosc, wysokosc, False, True, type="wrog", sprite="sprite_wroga.png")
-
-    def __init__(self, okno, x, y, szerokosc=38, wysokosc=75):
-        super().__init__(okno, x, y, szerokosc, wysokosc, False, True, type="wrog", sprite="sprite_wroga.png")
-        self.zdrowie = 100  # Przykladowy atrybut dla zdrowia wroga
+    def __init__(self, okno, x, y, width, height, type="szczur"):
+        super().__init__(okno, x, y, width, height, False, True, type="enemy")
+        self.type = "enemy"
+        self.enemType = type
+        self.zdrowie = 1  # Przykladowy atrybut dla zdrowia wroga
+        sprite = type + "_idle.png"
+        self.area = pygame.image.load(path.join(SPRITES_DIR,sprite)).convert_alpha()
+        self.area = pygame.transform.scale(self.area,(self.WIDTH,self.HEIGHT))
 
     def otrzymaj_obrazenia(self, obrazenia):
         self.zdrowie -= obrazenia
         if self.zdrowie <= 0:
             self.zniszcz()
-            
-            
+    
+    def random_movement(self):
+        return vector2d(-0.1,0)
+
+    def update(self, in_other_entities = []):
+        prev_pos = vector2d(self.pos.x, self.pos.y)
+        self.physics_component.move(self.random_movement())
+        self.physics_component.update_pos(in_other_entities)
+        self.last_movement = self.pos - prev_pos
+        
             

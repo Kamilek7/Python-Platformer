@@ -6,6 +6,7 @@ import xml.etree.cElementTree as ET
 from xml.dom import minidom
 
  # stałe
+
 MS = 15
 TILE_SIZE = 40
 CURRENT_DIR = path.dirname(path.abspath(__file__))
@@ -13,7 +14,9 @@ RESOURCES = path.join(path.dirname(CURRENT_DIR),"resources")
 SPRITES_DIR = path.join(RESOURCES,"sprites")
 BACKGROUNDS_DIR = path.join(RESOURCES,"backgrounds")
 AVATARS_DIR = path.join(RESOURCES,"avatars")
+
  # Funkcje do wykorzystania
+
 class Box:
    z=0
    def __init__(self, _x, _y, _width, _height):
@@ -53,7 +56,6 @@ class Trigger(Box):
       temp.set("actionSpecs", str(self.actionSpecs))
 
    def resetZ(self):
-      global windowOffset
       temp = Trigger(windowOffset[0],windowOffset[1],self.width,self.height)
       temp.actionType = self.actionType
       temp.actionSpecs = self.actionSpecs
@@ -105,7 +107,6 @@ class Background(Box):
       self.background = background
 
    def resetZ(self):
-      global windowOffset
       background = self.background
       return Background(windowOffset[0],windowOffset[1],self.width,self.height, background = background)
    
@@ -138,8 +139,6 @@ class Background(Box):
       button.pack()
 
 class Grounds(Box):
-   z = 0
-   backgroundZ = 0
    def __init__(self, _x,_y,_width,_height, _type, sprite=None, foreground=False):
       super().__init__(_x,_y,_width,_height)
       self.foreground=foreground
@@ -166,8 +165,6 @@ class Grounds(Box):
                filename = self.spriteLoc
             spriteLocation = path.join(SPRITES_DIR,filename)
             img = Image.open(spriteLocation)
-            global tileViewSize
-            global TILE_SIZE
             radio = tileViewSize/TILE_SIZE
             img = img.resize((int(radio*self.width),int(radio*self.height)))
             img= ImageTk.PhotoImage(img)
@@ -178,7 +175,6 @@ class Grounds(Box):
             self.spriteLoc="None"
 
    def resetZ(self):
-      global windowOffset
       sprite = self.sprite
       if self.sprite!=None:
          sprite = self.spriteLoc
@@ -231,6 +227,49 @@ class Grounds(Box):
       label = Label(filewin, text="Ground type has no special settings")
       label.pack()
 
+class EnemyPlaceholder(Box):
+   def __init__(self, _x,_y, _width=60, _height=20, _enemyType="szczur"):
+      super().__init__(_x,_y,_width,_height)
+      self.type = _enemyType
+      spriteName = self.type + "_idle.png"
+      spriteLocation = path.join(SPRITES_DIR, spriteName)
+      img = Image.open(spriteLocation)
+      img = img.resize((self.width,self.height))
+      img= ImageTk.PhotoImage(img)
+      self.sprite = img
+      self.spriteLoc =spriteLocation
+
+   def resize(self,newWidth,newHeight):
+      self.width = newWidth
+      self.height = newHeight
+      filename=self.spriteLoc
+      spriteLocation = path.join(SPRITES_DIR,filename)
+      img = Image.open(spriteLocation)
+      radio = tileViewSize/TILE_SIZE
+      img = img.resize((int(radio*self.width),int(radio*self.height)))
+      img= ImageTk.PhotoImage(img)
+      self.sprite = img
+      self.spriteLoc = filename
+
+   def resetZ(self):
+      return EnemyPlaceholder(windowOffset[0],windowOffset[1],self.width,self.height,self.type)
+   
+   def representXML(self, map):
+      temp = ET.SubElement(map, "enemy")
+      temp.set("x", str(self.x))
+      temp.set("y", str(self.y))
+      temp.set("width", str(self.width))
+      temp.set("height",str(self.height))
+      temp.set("type", self.type)
+
+   def spriteWindow(self, filewin):
+      label = Label(filewin, text="Enemy type has no sprite settings - check special settings to change enemy type")
+      label.pack()
+
+   def specialWindow(self,filewin):
+      label = Label(filewin, text="Ground type has no special settings")
+      label.pack()
+
 timer = 0
 mapSize = (80,60)
 tileViewSize = TILE_SIZE
@@ -240,8 +279,8 @@ copyboard = None
 loadedFilename = False
 selected = False
 grounds = []
- # Flagi klawiszowe
 keyFlags = {"Shift": False, "Ctrl": False}
+
 def donothing():
    filewin = Toplevel(root)
    button = Button(filewin, text="Do nothing button")
@@ -258,11 +297,12 @@ def saveFile():
    for ground in grounds:
       ground.representXML(map)
    plik = ET.ElementTree(map)
-   fileNum = len(listdir(CURRENT_DIR))-1
+   fileNum = len(listdir(CURRENT_DIR))
    filename = path.join(CURRENT_DIR, "mapa" + str(fileNum) +".xml")
    if loadedFilename!=False:
       filename = path.join(CURRENT_DIR, loadedFilename)
    plik.write(filename)
+   loadedFilename = filename
 
 def loadfile(_filename,filewin):
    filename = _filename.get(1.0, "end-1c")
@@ -279,6 +319,8 @@ def loadfile(_filename,filewin):
             grounds.append(Background(int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")), background=child.getAttribute("background")))
          elif child.tagName=="trigger":
             grounds.append(Trigger(int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")), actionSpecs=child.getAttribute("actionSpecs"),actionType=child.getAttribute("actionType")))
+         elif child.tagName=="enemy":
+            grounds.append(EnemyPlaceholder(int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")), child.getAttribute("type")))
          else:
             grounds.append(Grounds(int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName, sprite=child.getAttribute("sprite"), foreground=child.getAttribute("foreground")))
       filewin.destroy()
@@ -297,7 +339,6 @@ def load():
    button.pack()
 
 def addTerrain(type):
-      global windowOffsetoffset
       if type=="block":
          grounds.append(Grounds(windowOffset[0],windowOffset[1],40,40,type, sprite="floor.png"))
       elif type=="plat":
@@ -318,26 +359,22 @@ def addTerrain(type):
          grounds.append(Background(windowOffset[0],windowOffset[1],80,80))
       elif type=="trigger":
          grounds.append(Trigger(windowOffset[0],windowOffset[1],40,40))
+      elif type=="enemy":
+         grounds.append(EnemyPlaceholder(windowOffset[0],windowOffset[1]))
 
 def copy():
    global copyboard
-   global selected
    if selected!=False:
       copyboard = selected
 def paste():
-   global copyboard
    if copyboard!=None:
       new = copyboard.resetZ()
       grounds.append(new)
 def cut():
-   global selected
-   global grounds
-   global copyboard
    copy()
    delete()
 def delete():
    global selected
-   global grounds
    if selected!=False:
       for i in grounds:
          if i == selected:
@@ -346,7 +383,6 @@ def delete():
 
 def scaleMap(how):
    global tileViewSize
-   global mapSize
    if how =="bigger" and tileViewSize<250:
       tileViewSize +=5
    elif how =="smaller" and tileViewSize>10:
@@ -364,11 +400,9 @@ def openMapEditWindow():
    tempY = mapSize[1]
    def showX(a):
       global tempX
-      global tempY
       tempX = int(float(a))
       label2.config(text="Map size: (" + str(tempX) + ", " + str(tempY) + ")")
    def showY(a):
-      global tempX
       global tempY
       tempY = int(float(a))
       label2.config(text="Map size: (" + str(tempX) + ", " + str(tempY) + ")")
@@ -378,8 +412,6 @@ def openMapEditWindow():
    height.set(mapSize[1])
    def updateFromSlider():
       global mapSize
-      global canvas
-      global tileViewSize
       mapSize= (int(width.get()), int(height.get()))
       canvas.config(scrollregion=(0,0,mapSize[0]*tileViewSize,mapSize[1]*tileViewSize))
    button = Button(filewin, text="Save changes", command=updateFromSlider)
@@ -398,10 +430,6 @@ def mouseWheelEvents(event):
         scaleMap("bigger")
 
 def keyBoardInput(event):
-   global copyboard
-   global selected
-   global keyFlags
-   global windowOffset
    if event.keysym == "Shift_L":
       keyFlags["Shift"] = True
    if event.keysym == "Control_L":
@@ -426,7 +454,6 @@ def keyBoardInputRelease(event):
       keyFlags["Ctrl"] = False
 
 def openSpriteEditWindow():
-   global selected
    filewin = Toplevel(root)
    if selected==False:
       label = Label(filewin, text="Nothing selected")
@@ -435,7 +462,6 @@ def openSpriteEditWindow():
       selected.spriteWindow(filewin)
 
 def openSizeEditWindow():
-   global selected
    filewin = Toplevel(root)
    if selected!=False:
       label1 = Label(filewin, text="Width (" + str(selected.width) + ")")
@@ -459,7 +485,6 @@ def openSizeEditWindow():
       label.pack()
 
 def openSpecialEditWindow():
-   global selected
    filewin = Toplevel(root)
    if selected==False:
       label = Label(filewin, text="Nothing selected")
@@ -469,7 +494,6 @@ def openSpecialEditWindow():
 
 def canvasUpdate():
    global timer
-   global tileViewSize, TILE_SIZE
    timer+=MS
    canvas.delete("all")
    radio = tileViewSize/TILE_SIZE
@@ -551,12 +575,7 @@ canvas.config(xscrollcommand=hbar.set, yscrollcommand=vbar.set)
 # obsluga przyciskow myszy (musialem tutaj dac zeby wszystko bylo "swieze")
 mouseTimer = False
 def mouseSelect(event):
-   global mouseTimer
-   global selected
-   global offset
-   global windowOffset
-   global TILE_SIZE
-   global tileViewSize
+   global mouseTimer, selected, offset
    radio = tileViewSize/TILE_SIZE
    x = canvas.canvasx(event.x)
    y = canvas.canvasy(event.y)
@@ -575,11 +594,6 @@ def mouseSelect(event):
          mouseTimer= False
 
 def mouseMoveBlock(event):
-   global mouseTimer
-   global offset
-   global keyFlags
-   global TILE_SIZE
-   global tileViewSize
    radio = tileViewSize/TILE_SIZE
    if mouseTimer:
       global selected
@@ -589,8 +603,8 @@ def mouseMoveBlock(event):
          tileHold = TILE_SIZE
          if selected.width<TILE_SIZE or selected.height<TILE_SIZE:
             tileHold/=2
-         selected.x = round((x/radio + offset[0])/tileHold)*tileHold
-         selected.y = round((y/radio + offset[1])/tileHold)*tileHold
+         selected.x = int(round((x/radio + offset[0])/tileHold)*tileHold)
+         selected.y = int(round((y/radio + offset[1])/tileHold)*tileHold)
       else:
          selected.x = int(x/radio + offset[0])
          selected.y = int(y/radio + offset[1])
@@ -619,6 +633,7 @@ Terrains.menu.add_checkbutton (label="Decoration", command=lambda: addTerrain("d
 Terrains.menu.add_checkbutton (label="Key", command=lambda: addTerrain("key"))
 Terrains.menu.add_checkbutton (label="Door", command=lambda: addTerrain("door"))
 Terrains.menu.add_checkbutton (label="Ladder", command=lambda: addTerrain("ladder"))
+Terrains.menu.add_checkbutton (label="Special enemy", command=lambda: addTerrain("enemy"))
 Terrains.menu.add_checkbutton (label="Enemy spawn", command=lambda: addTerrain("spawnE"))
 Terrains.menu.add_checkbutton (label="Player spawn", command=lambda: addTerrain("spawn"))
 Terrains.menu.add_checkbutton (label="Background", command=lambda: addTerrain("background"))
