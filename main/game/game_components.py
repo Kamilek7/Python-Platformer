@@ -171,9 +171,8 @@ class PhysicsComponent:
         self.is_on_ground = False
 
     def check_colision(self, moved_by_vec, other_entities = []):
-        check = False
         def iEq0(col_entity, pos_to_check, temp_moved_vec):
-            if col_entity.type=="plat" or col_entity.type=="ladder" or col_entity.type=="enemy":
+            if self.entity.type!="enemy" and (col_entity.type=="plat" or col_entity.type=="ladder" or col_entity.type=="enemy"):
                 if self.speed.y>0 and pos_to_check.y<col_entity.pos.y-col_entity.get_height():
                     self.speed.y = 0
                     self.is_on_ground = True
@@ -181,12 +180,13 @@ class PhysicsComponent:
                 elif col_entity.type=="ladder":
                     self.speed.y = -7
             else:
-                self.speed.y = 0
-                if temp_moved_vec.y > 0:
-                    self.is_on_ground = True
-                    self.entity.move_to_pos(vector2d(self.entity.pos.x, col_entity.pos.y - self.entity.get_height()))
-                else:
-                    self.entity.move_to_pos(vector2d(self.entity.pos.x, col_entity.pos.y + col_entity.get_height()))
+                if not (self.entity.type=="enemy" and col_entity.type=="ladder"):
+                    self.speed.y = 0
+                    if temp_moved_vec.y > 0:
+                        self.is_on_ground = True
+                        self.entity.move_to_pos(vector2d(self.entity.pos.x, col_entity.pos.y - self.entity.get_height()))
+                    else:
+                        self.entity.move_to_pos(vector2d(self.entity.pos.x, col_entity.pos.y + col_entity.get_height()))
         def iEq1(col_entity, temp_moved_vec):
             if col_entity.type!="plat" and col_entity.type!="enemy" and col_entity.type!="ladder":
                 self.speed.x = 0
@@ -443,8 +443,6 @@ class Player(Entity): # dziedziczenie po entity
             return True
         else:
             return False
-        
-        
 
     def update(self, in_other_entities = []):
         prev_pos = vector2d(self.pos.x, self.pos.y)
