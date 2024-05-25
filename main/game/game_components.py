@@ -485,8 +485,10 @@ class Enemy(Entity):
         self.area = pygame.transform.scale(self.area, (self.WIDTH, self.HEIGHT))
         
         # Nowe atrybuty
-        self.direction = vector2d(0.5, 0)  # Kierunek ruchu (zmniejszony krok dla wolniejszego ruchu)
+        self.speed = 0.25
+        self.direction = vector2d(self.speed, 0)  # Kierunek ruchu (zmniejszony krok dla wolniejszego ruchu)
         self.steps_taken = 0  # Licznik kroków
+        self.wait = True
 
     def otrzymaj_obrazenia(self, obrazenia):
         self.zdrowie -= obrazenia
@@ -495,19 +497,25 @@ class Enemy(Entity):
     
     def update(self, in_other_entities=[], player_pos=None):
         prev_pos = vector2d(self.pos.x, self.pos.y)
-        
         # Sprawdź odległość między graczem a wrogiem
-        if player_pos and self.pos.distance_to(player_pos) < 75:
+        if player_pos and self.pos.distance_to(player_pos) < 200:
             # Jeśli gracz jest w odległości mniejszej niż 75, zmień kierunek ruchu na kierunek gracza
-            self.direction = (player_pos - self.pos).normalize()
+            self.direction = player_pos - self.pos
+            self.direction.y = 0
+            self.direction.x = self.direction.x/abs(self.direction.x)*self.speed*3
             self.physics_component.move(self.direction)
         else:
             # W przeciwnym razie kontynuuj zwykły schemat ruchu
             if self.steps_taken < 75:
-                self.physics_component.move(self.direction)
+                if not self.wait:
+                    if self.direction.x>self.speed:
+                        self.direction.x = self.speed
+                    self.physics_component.move(self.direction)
                 self.steps_taken += 1
             else:
-                self.direction.x *= -1  # Zmień kierunek ruchu
+                if not self.wait:
+                    self.direction.x *= -1  # Zmień kierunek ruchu
+                self.wait = not self.wait
                 self.steps_taken = 0  # Zresetuj licznik kroków
         
         self.physics_component.update_pos(in_other_entities)
