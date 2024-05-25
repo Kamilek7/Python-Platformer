@@ -477,34 +477,44 @@ class Grounds(Entity):
             self.triggered = False
 
 class Enemy(Entity):
-    def __new__(cls, okno, x, y, width, height, type="szczur"):
-        if not isinstance(x, (int, float)) or not isinstance(y, (int, float)):
-            raise TypeError("x i y musza byc liczbami calkowitymi lub zmiennoprzecinkowymi")
-        if not isinstance(width, int) or not isinstance(height, int):
-            raise TypeError("szerokosc i wysokosc musza byc liczbami calkowitymi")
-        return super(Enemy, cls).__new__(cls, okno, x, y, width, height, type="enemy")
-
     def __init__(self, okno, x, y, width, height, type="szczur"):
         super().__init__(okno, x, y, width, height, False, True, type="enemy")
         self.type = "enemy"
         self.enemType = type
         self.zdrowie = 1  # Przykladowy atrybut dla zdrowia wroga
         sprite = type + "_idle.png"
-        self.area = pygame.image.load(path.join(SPRITES_DIR,sprite)).convert_alpha()
-        self.area = pygame.transform.scale(self.area,(self.WIDTH,self.HEIGHT))
+        self.area = pygame.image.load(path.join(SPRITES_DIR, sprite)).convert_alpha()
+        self.area = pygame.transform.scale(self.area, (self.WIDTH, self.HEIGHT))
+        
+        # Nowe atrybuty
+        self.direction = vector2d(0.5, 0)  # Kierunek ruchu (zmniejszony krok dla wolniejszego ruchu)
+        self.steps_taken = 0  # Licznik kroków
 
     def otrzymaj_obrazenia(self, obrazenia):
         self.zdrowie -= obrazenia
         if self.zdrowie <= 0:
             self.zniszcz()
     
-    def random_movement(self):
-        return vector2d(-0.1,0)
-
-    def update(self, in_other_entities = []):
+    def update(self, in_other_entities=[], player_pos=None):
         prev_pos = vector2d(self.pos.x, self.pos.y)
-        self.physics_component.move(self.random_movement())
+        
+        # Sprawdź odległość między graczem a wrogiem
+        if player_pos and self.pos.distance_to(player_pos) < 75:
+            # Jeśli gracz jest w odległości mniejszej niż 75, zmień kierunek ruchu na kierunek gracza
+            self.direction = (player_pos - self.pos).normalize()
+            self.physics_component.move(self.direction)
+        else:
+            # W przeciwnym razie kontynuuj zwykły schemat ruchu
+            if self.steps_taken < 75:
+                self.physics_component.move(self.direction)
+                self.steps_taken += 1
+            else:
+                self.direction.x *= -1  # Zmień kierunek ruchu
+                self.steps_taken = 0  # Zresetuj licznik kroków
+        
         self.physics_component.update_pos(in_other_entities)
         self.last_movement = self.pos - prev_pos
+
         
+
             

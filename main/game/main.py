@@ -47,13 +47,22 @@ while running:
         elif event.type == VIDEORESIZE:
             main_camera.update(window, force=True)
             TextureComponent.scaleBackground(window)
+    
+    # Pobranie pozycji gracza
+    player_pos = player.pos
+    
     TextureComponent.manageBackground(window)
-    for entity in moveables:
-        entity.update(platforms)
+    
+    # Aktualizacja wrogów, przekazując im pozycję gracza
+    for enemy in moveables:
+        if isinstance(enemy, Enemy):
+            enemy.update(platforms, player_pos)
+        else:
+            enemy.update(platforms)
 
     main_camera.update(window)
-    if len(platforms)<len(TextureComponent.spritesB) + len(TextureComponent.spritesF)-1:
-        TextureComponent.setSprites(platforms,player)
+    if len(platforms) < len(TextureComponent.spritesB) + len(TextureComponent.spritesF) - 1:
+        TextureComponent.setSprites(platforms, player)
     for entity in TextureComponent.spritesB:
         window.blit(entity.area, entity.shape)
     for entity in TextureComponent.spritesF:
