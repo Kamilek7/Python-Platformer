@@ -54,11 +54,18 @@ while running:
     TextureComponent.manageBackground(window)
     
     # Aktualizacja wrogów, przekazując im pozycję gracza
-    for enemy in moveables:
-        if isinstance(enemy, Enemy):
-            enemy.update(platforms, player_pos)
+    for entity in moveables:
+        if not entity.destroyed:
+            if isinstance(entity, Enemy):
+                entity.update(platforms, player_pos)
+            else:
+                entity.update(platforms)
         else:
-            enemy.update(platforms)
+            if isinstance(entity, Enemy):
+                platforms.remove(entity)
+            else:
+                player.changeSprite(None)
+            moveables.remove(entity)
 
     main_camera.update(window)
     if len(platforms) < len(TextureComponent.spritesB) + len(TextureComponent.spritesF) - 1:

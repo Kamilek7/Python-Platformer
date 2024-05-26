@@ -177,8 +177,12 @@ class PhysicsComponent:
                     self.speed.y = 0
                     self.is_on_ground = True
                     self.entity.move_to_pos(vector2d(self.entity.pos.x, col_entity.pos.y - self.entity.get_height()))
+                    if col_entity.type=="enemy":
+                        col_entity.takeDamage()
                 elif col_entity.type=="ladder":
                     self.speed.y = -7
+                elif col_entity.type=="enemy":
+                    self.entity.takeDamage()
             else:
                 if not (self.entity.type=="enemy" and col_entity.type=="ladder"):
                     self.speed.y = 0
@@ -243,7 +247,7 @@ class PhysicsComponent:
                     removeFlag = temp[0]
                     check = temp[1]
                 if not check:
-                    if col_entity.type=="key" or col_entity.type=="background" or col_entity.type=="trigger":
+                    if col_entity.type=="key" or col_entity.type=="background" or col_entity.type=="trigger" or col_entity=="player":
                         pass
                     elif i == 0:
                         iEq0(col_entity, pos_to_check, temp_moved_vec)
@@ -417,8 +421,11 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
 
     def changeSprite(self, spriteDir):
         self.spriteChange = True
-        self.area = pygame.image.load(path.join(SPRITES_DIR,spriteDir)).convert_alpha()
-        self.area = pygame.transform.scale(self.area,(self.WIDTH,self.HEIGHT))
+        if spriteDir!=None:
+            self.area = pygame.image.load(path.join(SPRITES_DIR,spriteDir)).convert_alpha()
+            self.area = pygame.transform.scale(self.area,(self.WIDTH,self.HEIGHT))
+        else:
+            self.area = pygame.Surface((self.WIDTH, self.HEIGHT), pygame.SRCALPHA, 32)
 
 class Player(Entity): # dziedziczenie po entity
     def __new__(cls, _window, posX, posY):
@@ -432,6 +439,9 @@ class Player(Entity): # dziedziczenie po entity
         super().__init__(window,_x, _y, in_width, in_height, True, True, type="player",sprite="brick.png")
 
          # inventory
+        self.coolDown = 0
+        self.zdrowie = 4
+        self.destroyed = False
         self.type= "player"
         self.keys = {"red":0,"purple":0,"green":0}
     def getKey(self,type):
@@ -444,12 +454,25 @@ class Player(Entity): # dziedziczenie po entity
         else:
             return False
 
+    def zniszcz(self):
+        self.destroyed=True
+
+    def takeDamage(self, obrazenia=1):
+        if self.coolDown<=0:
+            print("damage taken")
+            self.zdrowie -= obrazenia
+            self.coolDown = 200
+        if self.zdrowie <= 0:
+            self.zniszcz()
+
     def update(self, in_other_entities = []):
         prev_pos = vector2d(self.pos.x, self.pos.y)
         move_input = self.input_component.get_movement_vec(self.physics_component.is_on_ground)
         self.physics_component.move(move_input)
         self.physics_component.update_pos(in_other_entities)
         self.last_movement = self.pos - prev_pos
+        if self.coolDown>0:
+            self.coolDown-=1
 
 class Grounds(Entity):
     def __new__(cls, _window, posX, posY, width, height, type, sprite=None, foreground=False,background=None, triggerType=None, triggerInfo=None):
@@ -483,15 +506,22 @@ class Enemy(Entity):
         sprite = type + "_idle.png"
         self.area = pygame.image.load(path.join(SPRITES_DIR, sprite)).convert_alpha()
         self.area = pygame.transform.scale(self.area, (self.WIDTH, self.HEIGHT))
-        
+
         # Nowe atrybuty
+        self.destroyed = False
         self.speed = 0.25
         self.direction = vector2d(self.speed, 0)  # Kierunek ruchu (zmniejszony krok dla wolniejszego ruchu)
         self.steps_taken = 0  # Licznik kroków
         self.wait = True
+        self.coolDown = 0
+    
+    def zniszcz(self):
+        self.destroyed=True
 
-    def otrzymaj_obrazenia(self, obrazenia):
-        self.zdrowie -= obrazenia
+    def takeDamage(self, obrazenia=1):
+        if self.coolDown<=0:
+            self.zdrowie -= obrazenia
+            self.coolDown=100
         if self.zdrowie <= 0:
             self.zniszcz()
     
@@ -502,7 +532,8 @@ class Enemy(Entity):
             # Jeśli gracz jest w odległości mniejszej niż 75, zmień kierunek ruchu na kierunek gracza
             self.direction = player_pos - self.pos
             self.direction.y = 0
-            self.direction.x = self.direction.x/abs(self.direction.x)*self.speed*3
+            if self.direction.x!=0:
+                self.direction.x = self.direction.x/abs(self.direction.x)*self.speed*3
             self.physics_component.move(self.direction)
         else:
             # W przeciwnym razie kontynuuj zwykły schemat ruchu
@@ -517,7 +548,8 @@ class Enemy(Entity):
                     self.direction.x *= -1  # Zmień kierunek ruchu
                 self.wait = not self.wait
                 self.steps_taken = 0  # Zresetuj licznik kroków
-        
+        if self.coolDown>0:
+            self.coolDown-=1
         self.physics_component.update_pos(in_other_entities)
         self.last_movement = self.pos - prev_pos
 
