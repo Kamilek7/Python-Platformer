@@ -3,7 +3,6 @@
  # meow
 
 from os import *
-from xml.dom import minidom
 from game_components import *
 
 BIDEN_CHECK = path.join(CURRENT_DIR, "joe_mama.jpg")
@@ -48,16 +47,13 @@ while running:
             main_camera.update(window, force=True)
             TextureComponent.scaleBackground(window)
     
-    # Pobranie pozycji gracza
-    player_pos = player.pos
-    
     TextureComponent.manageBackground(window)
     
     # Aktualizacja wrogów, przekazując im pozycję gracza
     for entity in moveables:
         if not entity.destroyed:
             if isinstance(entity, Enemy):
-                entity.update(platforms, player_pos)
+                entity.update(platforms, player.pos)
             else:
                 entity.update(platforms)
         else:

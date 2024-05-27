@@ -14,7 +14,6 @@ APP_WIDTH = 800
 vector2d = pygame.math.Vector2
 
 # MAIN GAME COMPONENTS
-
 class TextureComponent:
     spritesB = pygame.sprite.Group()
     spritesF = pygame.sprite.Group()
@@ -33,6 +32,7 @@ class TextureComponent:
     @staticmethod
     def scaleBackground(window):
         TextureComponent.tempBG1 = pygame.transform.scale(TextureComponent.tempBG1,(window.get_width(),window.get_height()))
+    @staticmethod
     def manageBackground(window):
         if len(TextureComponent.backgrounds)==2:
             if TextureComponent.tempBG2==None:
@@ -58,7 +58,7 @@ class TextureComponent:
                 TextureComponent.tempBG1 = pygame.transform.scale(TextureComponent.tempBG1,(window.get_width(),window.get_height()))
             window.blit(TextureComponent.tempBG1,(0, 0))
         
-
+    @staticmethod
     def changeBackground(newBackground):
         TextureComponent.currentBGcoords.x = newBackground.pos.x - 40
         TextureComponent.currentBGcoords.y = newBackground.pos.y - 40
@@ -70,6 +70,7 @@ class TextureComponent:
         if check:
             TextureComponent.backgrounds.append(newBackground.background)
 
+    @staticmethod
     def setSprites(platforms, player):
         TextureComponent.spritesB = pygame.sprite.Group()
         TextureComponent.spritesF = pygame.sprite.Group()
@@ -80,9 +81,11 @@ class TextureComponent:
                 TextureComponent.spritesF.add(p)
         TextureComponent.spritesB.add(player)
 
+    @staticmethod
     def appendMessages(package):
         TextureComponent.messageBoxes.append(package)
 
+    @staticmethod
     def showMessage(_window,package):
         my_font = pygame.font.SysFont('Comic Sans MS', 30)
         text_surface = my_font.render(package["text"], True, (255, 255, 255))
@@ -354,7 +357,6 @@ class Camera:
         window_centre = window_dimensions/2
         self.cameraCenterOffset = window_centre
 
-
 # CLASSES FOR GAME ENTITIES
 
 class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
@@ -382,7 +384,10 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
         self.CONTROL = _control
         self.spriteChange = False
         self.foreground = foreground
-
+        self.animationDelayConst = 15
+        self.animationDelay = 0
+        self.animationFrame = -1
+        self.animationFrameList = []
          # definiowanie elementow obiektu
         self.area = pygame.Surface((self.WIDTH, self.HEIGHT), pygame.SRCALPHA, 32)
         if sprite!=None and sprite!="None":
@@ -419,6 +424,14 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
     def get_width(self):
         return self.area.get_width()
 
+    def animate(self):
+        if self.animationFrame>-1:
+            if self.animationDelay >= self.animationDelayConst:
+                self.changeSprite(self.animationFrameList[self.animationFrame])
+                self.animationDelay = -1
+            self.animationDelay+=1
+
+    
     def changeSprite(self, spriteDir):
         self.spriteChange = True
         if spriteDir!=None:
@@ -459,7 +472,6 @@ class Player(Entity): # dziedziczenie po entity
 
     def takeDamage(self, obrazenia=1):
         if self.coolDown<=0:
-            print("damage taken")
             self.zdrowie -= obrazenia
             self.coolDown = 200
         if self.zdrowie <= 0:

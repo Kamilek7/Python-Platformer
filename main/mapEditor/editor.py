@@ -267,7 +267,11 @@ class EnemyPlaceholder(Box):
       label.pack()
 
    def specialWindow(self,filewin):
-      label = Label(filewin, text="Ground type has no special settings")
+      label = Label(filewin, text="Select type for enemy:")
+      sprites = Listbox(filewin)
+      spriters = listdir(BACKGROUNDS_DIR)
+      for i in range(len(spriters)):
+         sprites.insert(i, spriters[i])
       label.pack()
 
 timer = 0
