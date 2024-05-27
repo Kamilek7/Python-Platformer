@@ -150,7 +150,7 @@ class SystemComponent:
                 elif child.tagName=="trigger":
                     maps.append(Grounds(_window,int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName,  triggerType=child.getAttribute("actionType"), triggerInfo=child.getAttribute("actionSpecs")))
                 elif child.tagName=="enemy":
-                    temp = Enemy(_window,int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")), type=child.getAttribute("type"))
+                    temp = Enemy(_window,int(child.getAttribute("x")),int(child.getAttribute("y")), type=child.getAttribute("type"))
                     moveables.append(temp)
                     maps.append(temp)
                 else:
@@ -510,8 +510,9 @@ class Grounds(Entity):
             self.triggered = False
 
 class Enemy(Entity):
-    def __init__(self, okno, x, y, width, height, type="szczur"):
-        super().__init__(okno, x, y, width, height, False, True, type="enemy")
+    def __init__(self, okno, x, y, type="szczur"):
+        self.specsChart = {"szczur" : {"width":60,"height":20,"speed":0.20},"szczurBoss" : {"width":180,"height":60,"speed":0.05}, "matkaKacpra" : {"width":40,"height":80,"speed":0.10}}
+        super().__init__(okno, x, y,self.specsChart[type]["width"],self.specsChart[type]["height"],False, True, type="enemy")
         self.type = "enemy"
         self.enemType = type
         self.zdrowie = 1  # Przykladowy atrybut dla zdrowia wroga
@@ -521,7 +522,7 @@ class Enemy(Entity):
 
         # Nowe atrybuty
         self.destroyed = False
-        self.speed = 0.25
+        self.speed = self.specsChart[type]["speed"]
         self.direction = vector2d(self.speed, 0)  # Kierunek ruchu (zmniejszony krok dla wolniejszego ruchu)
         self.steps_taken = 0  # Licznik kroków
         self.wait = True

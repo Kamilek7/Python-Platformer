@@ -32,6 +32,24 @@ class Box:
       self.width = newWidth
       self.height = newHeight
 
+   def sizeWindow(self,filewin):
+      label1 = Label(filewin, text="Width (" + str(selected.width) + ")")
+      label2 = Label(filewin, text="Height (" + str(selected.height) + ")")
+      var1 = IntVar()
+      var2 = IntVar()
+      def updateFromSlider(cos):
+         selected.resize(20*var1.get(),20*var2.get())
+         label1.config(text="Width (" + str(selected.width) + ")")
+         label2.config(text="Height (" + str(selected.height) + ")")
+      width = Scale(filewin, from_=1, to=120, variable=var1,  command=updateFromSlider)
+      height = Scale(filewin, from_=1, to=120, variable=var2, command=updateFromSlider)
+      var1.set (int(selected.width/20)) 
+      var2.set (int(selected.height/20)) 
+      label1.pack()
+      width.pack()
+      label2.pack()
+      height.pack()
+
    def spriteWindow(self, filewin):
       label = Label(filewin, text="This ground type has no sprite settings")
       label.pack()
@@ -127,13 +145,13 @@ class Background(Box):
       spriters = listdir(BACKGROUNDS_DIR)
       for i in range(len(spriters)):
          sprites.insert(i, spriters[i])
-      def updateFromSlider():
+      def updateFromList():
          selection = None
          for i in sprites.curselection():
             selection = sprites.get(i)
          self.background = selection
          label1.config(text="Current sprite: " + self.background)
-      button = Button(filewin, text="Load", command=updateFromSlider)
+      button = Button(filewin, text="Load", command=updateFromList)
       label1.pack()
       sprites.pack()
       button.pack()
@@ -228,8 +246,12 @@ class Grounds(Box):
       label.pack()
 
 class EnemyPlaceholder(Box):
-   def __init__(self, _x,_y, _width=60, _height=20, _enemyType="szczur"):
-      super().__init__(_x,_y,_width,_height)
+   def __init__(self, _x,_y, _enemyType="szczur", id=None):
+      self.sizeChart = {"szczur" : [60,20],"szczurBoss" : [180,60], "matkaKacpra" : [40,80]}
+      super().__init__(_x,_y,self.sizeChart[_enemyType][0],self.sizeChart[_enemyType][1])
+      self.id = id
+      if id=="None":
+         self.id=None
       self.type = _enemyType
       spriteName = self.type + "_idle.png"
       spriteLocation = path.join(SPRITES_DIR, spriteName)
@@ -239,10 +261,12 @@ class EnemyPlaceholder(Box):
       self.sprite = img
       self.spriteLoc =spriteLocation
 
-   def resize(self,newWidth,newHeight):
+   def resize(self,newWidth,newHeight,sprite=None):
       self.width = newWidth
       self.height = newHeight
       filename=self.spriteLoc
+      if sprite!=None:
+         filename = self.type + "_idle.png"
       spriteLocation = path.join(SPRITES_DIR,filename)
       img = Image.open(spriteLocation)
       radio = tileViewSize/TILE_SIZE
@@ -251,28 +275,47 @@ class EnemyPlaceholder(Box):
       self.sprite = img
       self.spriteLoc = filename
 
+   def sizeWindow(self,filewin):
+      label1 = Label(filewin, text="Size edit option not available for enemy type.")
+      label1.pack()
+
    def resetZ(self):
-      return EnemyPlaceholder(windowOffset[0],windowOffset[1],self.width,self.height,self.type)
+      return EnemyPlaceholder(windowOffset[0],windowOffset[1],self.type)
    
    def representXML(self, map):
       temp = ET.SubElement(map, "enemy")
       temp.set("x", str(self.x))
       temp.set("y", str(self.y))
-      temp.set("width", str(self.width))
-      temp.set("height",str(self.height))
       temp.set("type", self.type)
+      temp.set("id", str(self.id))
 
    def spriteWindow(self, filewin):
       label = Label(filewin, text="Enemy type has no sprite settings - check special settings to change enemy type")
       label.pack()
 
    def specialWindow(self,filewin):
+      idlabel = Label(filewin, text="Type in character ID for cutscene handling (leave blank for none)")
+      id = Text(filewin, height=1, width=10)
       label = Label(filewin, text="Select type for enemy:")
-      sprites = Listbox(filewin)
-      spriters = listdir(BACKGROUNDS_DIR)
-      for i in range(len(spriters)):
-         sprites.insert(i, spriters[i])
+      typesList = Listbox(filewin)
+      types = ["szczur", "szczurBoss", "matkaKacpra"]
+      for i in range(len(types)):
+         typesList.insert(i, types[i])
+      def updateEnemyType():
+         selection = self.type
+         for i in typesList.curselection():
+            selection = typesList.get(i)
+         self.type = selection
+         self.resize(newHeight=self.sizeChart[self.type][1],newWidth=self.sizeChart[self.type][0],sprite=True)
+         idTemp = id.get(1.0, "end-1c")
+         if idTemp!="":
+            self.id = idTemp
+      button = Button(filewin, text="Save", command=updateEnemyType)
+      idlabel.pack()
+      id.pack()
       label.pack()
+      typesList.pack()
+      button.pack()
 
 timer = 0
 mapSize = (80,60)
@@ -324,7 +367,7 @@ def loadfile(_filename,filewin):
          elif child.tagName=="trigger":
             grounds.append(Trigger(int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")), actionSpecs=child.getAttribute("actionSpecs"),actionType=child.getAttribute("actionType")))
          elif child.tagName=="enemy":
-            grounds.append(EnemyPlaceholder(int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")), child.getAttribute("type")))
+            grounds.append(EnemyPlaceholder(int(child.getAttribute("x")),int(child.getAttribute("y")), child.getAttribute("type"), id=child.getAttribute("id")))
          else:
             grounds.append(Grounds(int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName, sprite=child.getAttribute("sprite"), foreground=child.getAttribute("foreground")))
       filewin.destroy()
@@ -355,8 +398,6 @@ def addTerrain(type):
          grounds.append(Grounds(windowOffset[0],windowOffset[1],20,80,type, sprite="door_side_red.png"))
       elif type=="ladder":
          grounds.append(Grounds(windowOffset[0],windowOffset[1],40,40,type, sprite="ladder.png"))
-      elif type=="spawnE":
-         grounds.append(Grounds(windowOffset[0],windowOffset[1],80,20,type))
       elif type=="spawn":
          grounds.append(Grounds(windowOffset[0],windowOffset[1],40,80,type))
       elif type=="background":
@@ -467,26 +508,12 @@ def openSpriteEditWindow():
 
 def openSizeEditWindow():
    filewin = Toplevel(root)
-   if selected!=False:
-      label1 = Label(filewin, text="Width (" + str(selected.width) + ")")
-      label2 = Label(filewin, text="Height (" + str(selected.height) + ")")
-      var1 = IntVar()
-      var2 = IntVar()
-      def updateFromSlider(cos):
-         selected.resize(20*var1.get(),20*var2.get())
-         label1.config(text="Width (" + str(selected.width) + ")")
-         label2.config(text="Height (" + str(selected.height) + ")")
-      width = Scale(filewin, from_=1, to=120, variable=var1,  command=updateFromSlider)
-      height = Scale(filewin, from_=1, to=120, variable=var2, command=updateFromSlider)
-      var1.set (int(selected.width/20)) 
-      var2.set (int(selected.height/20)) 
-      label1.pack()
-      width.pack()
-      label2.pack()
-      height.pack()
-   else:
+   if selected==False:
       label = Label(filewin, text="Nothing selected")
       label.pack()
+   else:
+      selected.sizeWindow(filewin)
+
 
 def openSpecialEditWindow():
    filewin = Toplevel(root)
@@ -637,8 +664,7 @@ Terrains.menu.add_checkbutton (label="Decoration", command=lambda: addTerrain("d
 Terrains.menu.add_checkbutton (label="Key", command=lambda: addTerrain("key"))
 Terrains.menu.add_checkbutton (label="Door", command=lambda: addTerrain("door"))
 Terrains.menu.add_checkbutton (label="Ladder", command=lambda: addTerrain("ladder"))
-Terrains.menu.add_checkbutton (label="Special enemy", command=lambda: addTerrain("enemy"))
-Terrains.menu.add_checkbutton (label="Enemy spawn", command=lambda: addTerrain("spawnE"))
+Terrains.menu.add_checkbutton (label="Enemy", command=lambda: addTerrain("enemy"))
 Terrains.menu.add_checkbutton (label="Player spawn", command=lambda: addTerrain("spawn"))
 Terrains.menu.add_checkbutton (label="Background", command=lambda: addTerrain("background"))
 Terrains.menu.add_checkbutton (label="Trigger", command=lambda: addTerrain("trigger"))
