@@ -5,12 +5,8 @@
 from os import *
 from game_components import *
 
-BIDEN_CHECK = path.join(CURRENT_DIR, "joe_mama.jpg")
-if not path.isfile(BIDEN_CHECK):
-    raise ImportError("GDZIE JEST BIDEN")
-else:
-    pygame.init()
-    pygame.font.init()
+pygame.init()
+pygame.font.init()
     
  # definicja dla wektora, dla latwych przeksztalcen
 vector2d = pygame.math.Vector2
@@ -21,11 +17,26 @@ MAX_FPS = 60
  # definicje dla okna
 current_fps = pygame.time.Clock()
 window = pygame.display.set_mode((APP_WIDTH, APP_HEIGHT), RESIZABLE)
-pygame.display.set_caption("Matka Kacpra - the GAYM")
-running = True
+pygame.display.set_caption("MATKA KACPRA - THE GAME")
+mainMenu = True
 
  # elementy gry
 
+while mainMenu:
+    key = pygame.key.get_pressed()
+    if key[K_RETURN]:
+        TextureComponent.menuFadeFlag=True
+        mainMenu=False
+    for event in pygame.event.get():
+        if event.type == QUIT:
+            pygame.quit()
+        elif event.type == VIDEORESIZE:
+            TextureComponent.scaleMenu(window)
+    TextureComponent.manageMenu(window)
+    pygame.display.update()
+    current_fps.tick(MAX_FPS)
+
+running=True
 package = SystemComponent.loadMaps(window)
 levels = package["levels"]
 playerSpawn = package["playerSpawn"]
@@ -38,7 +49,6 @@ main_camera = Camera(player, platforms, window.get_height()*0.75)
 
  # game loop
 main_camera.centre_camera(vector2d(window.get_width(), window.get_height()))
-
 while running:
     for event in pygame.event.get():
         if event.type == QUIT:
@@ -46,6 +56,8 @@ while running:
         elif event.type == VIDEORESIZE:
             main_camera.update(window, force=True)
             TextureComponent.scaleBackground(window)
+            if TextureComponent.menuFlag:
+                TextureComponent.scaleMenu(window)
     
     TextureComponent.manageBackground(window)
     
@@ -55,7 +67,7 @@ while running:
             if isinstance(entity, Enemy):
                 entity.update(platforms, player.pos)
             else:
-                entity.update(platforms)
+                entity.update(platforms, moveables)
         else:
             if isinstance(entity, Enemy):
                 platforms.remove(entity)
@@ -72,5 +84,7 @@ while running:
         window.blit(entity.area, entity.shape)
     for messageBox in TextureComponent.messageBoxes:
         TextureComponent.showMessage(window, messageBox)
+    if TextureComponent.menuFlag:
+        TextureComponent.manageMenu(window)
     pygame.display.update()
     current_fps.tick(MAX_FPS)
