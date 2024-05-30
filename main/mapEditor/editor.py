@@ -127,7 +127,6 @@ class Trigger(Box):
                      temp+= int(num)*i
                      num=""
                return temp
-
             label2 = Label(nextWindow, text="Enter entity id:")
             id = Text(nextWindow, height=1, width=10)
             labelMov = Label(nextWindow, text="Current movement:\nNone")

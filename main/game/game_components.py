@@ -179,7 +179,7 @@ class SystemComponent:
                 elif child.tagName=="trigger":
                     maps.append(Grounds(_window,int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName,  triggerType=child.getAttribute("actionType"), triggerInfo=child.getAttribute("actionSpecs")))
                 elif child.tagName=="enemy":
-                    temp = Enemy(_window,int(child.getAttribute("x")),int(child.getAttribute("y")), type=child.getAttribute("type"))
+                    temp = Enemy(_window,int(child.getAttribute("x")),int(child.getAttribute("y")), type=child.getAttribute("type"), id=child.getAttribute("id"))
                     moveables.append(temp)
                     maps.append(temp)
                 else:
@@ -201,17 +201,23 @@ class PhysicsComponent:
         self.entity = entity
         self.is_on_ground = False
 
-    def check_colision(self, moved_by_vec, other_entities = []):
+    def check_colision(self, moved_by_vec, other_entities = [], others=[]):
         def iEq0(col_entity, pos_to_check, temp_moved_vec):
+            key = pygame.key.get_pressed()
             if self.entity.type!="enemy" and (col_entity.type=="plat" or col_entity.type=="ladder" or col_entity.type=="enemy"):
-                if self.speed.y>0 and pos_to_check.y<col_entity.pos.y-col_entity.get_height():
+                if self.speed.y>0 and pos_to_check.y<col_entity.pos.y-col_entity.get_height() and not (key[K_DOWN] or key[K_s] or key[K_SEMICOLON]):
                     self.speed.y = 0
                     self.is_on_ground = True
                     self.entity.move_to_pos(vector2d(self.entity.pos.x, col_entity.pos.y - self.entity.get_height()))
                     if col_entity.type=="enemy" and col_entity.enemType!="matkaKacpra":
                         col_entity.takeDamage()
                 elif col_entity.type=="ladder":
-                    self.speed.y = -7
+                    if key[K_UP] or key[K_w] or key[K_SPACE] or key[K_p]:
+                        self.speed.y = -7
+                    elif key[K_DOWN] or key[K_s] or key[K_SEMICOLON]:
+                        self.speed.y = 0
+                    else:
+                        self.speed.y = 7
                 elif col_entity.type=="enemy" and col_entity.enemType!="matkaKacpra":
                     self.entity.takeDamage()
             else:
@@ -252,6 +258,10 @@ class PhysicsComponent:
                 if col_entity.triggerType=="messageBox" and not col_entity.triggered:
                     SystemComponent.showMessage(col_entity.triggerInfo)
                     col_entity.triggered = True
+                elif col_entity.triggerType=="moveEntity" and not col_entity.triggered:
+                    for i in others:
+                        if i.id == col_entity.triggerInfo["id"]:
+                            col_entity.manageTrigger(i)
             else:
                 check = doorCheck(col_entity)
             return [removeFlag,check]
@@ -305,7 +315,7 @@ class PhysicsComponent:
         self.speed.x += self.def_speed*move_vec.x
         self.speed.y += self.def_speed*move_vec.y
 
-    def update_pos(self, in_other_entities = None):
+    def update_pos(self, in_other_entities = None, others=[]):
         prev_pos = vector2d(self.entity.pos.x, self.entity.pos.y)
         # tarcie powoduje hamowanie bo acc bedzie ujemne caly czas (dodatnie tylko w chwili nacisniecia klawisza)
         self.speed.x -= self.friction*self.speed.x
@@ -316,7 +326,7 @@ class PhysicsComponent:
         moved_by_vec = self.entity.pos - prev_pos
 
         # (self.entity.pos)
-        self.check_colision(moved_by_vec, in_other_entities)
+        self.check_colision(moved_by_vec, in_other_entities, others=others)
         self.entity.shape.topleft = self.entity.pos + self.entity.cameraPos
         
 class InputComponent:
@@ -332,8 +342,6 @@ class InputComponent:
              move_vec.x = 1*speed
         if (key[K_UP] or key[K_w] or key[K_SPACE] or key[K_p]) and is_colliding:
             move_vec.y = -speed*25
-        if key[K_DOWN] or key[K_s]:
-            move_vec.y = 1
         return move_vec
     
 # CAMERA
@@ -387,7 +395,7 @@ class Camera:
 # CLASSES FOR GAME ENTITIES
 
 class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
-    def __new__(cls, _window, _x,_y, width=10, height=10, type=None, sprite=None, foreground=False, background=None, triggerType=None, triggerInfo=None):
+    def __new__(cls, _window, _x,_y, width=10, height=10, type=None, sprite=None, foreground=False, background=None, triggerType=None, triggerInfo=None, id=None):
         if not isinstance(_x, float) and not isinstance(_x, int):
             raise TypeError("Pierwszy argument inicjalizacji obiektu klasy Entity (_x) musi być typu numerycznego float lub int!")
         if not isinstance(_y, float) and not isinstance(_y, int):
@@ -402,13 +410,11 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
         # "stałe" dla klasy
         self.HEIGHT = _height
         self.WIDTH = _width
-        # self.input_component = _speed
-
         # moveable ze dziala na niego kolizja
         self.MOVEABLE = _moveable
-
         # control ze mozna sie nim poruszac
         self.CONTROL = _control
+
         self.spriteChange = False
         self.foreground = foreground
         self.animationDelayConst = 15
@@ -458,7 +464,6 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
                 self.animationDelay = -1
             self.animationDelay+=1
 
-    
     def changeSprite(self, spriteDir):
         self.spriteChange = True
         if spriteDir!=None:
@@ -479,6 +484,7 @@ class Player(Entity): # dziedziczenie po entity
         super().__init__(window,_x, _y, in_width, in_height, True, True, type="player",sprite="brick.png")
 
          # inventory
+        self.id = "player"
         self.coolDown = 0
         self.zdrowie = 4
         self.destroyed = False
@@ -504,11 +510,11 @@ class Player(Entity): # dziedziczenie po entity
         if self.zdrowie <= 0:
             self.zniszcz()
 
-    def update(self, in_other_entities = []):
+    def update(self, in_other_entities = [], in_other_moveables = []):
         prev_pos = vector2d(self.pos.x, self.pos.y)
         move_input = self.input_component.get_movement_vec(self.physics_component.is_on_ground)
         self.physics_component.move(move_input)
-        self.physics_component.update_pos(in_other_entities)
+        self.physics_component.update_pos(in_other_entities, others = in_other_moveables)
         self.last_movement = self.pos - prev_pos
         if self.coolDown>0:
             self.coolDown-=1
@@ -536,11 +542,18 @@ class Grounds(Entity):
             self.triggerType = triggerType
             self.triggered = False
 
+    def manageTrigger(self, other_entity):
+        other_entity.triggerPass(self.triggerInfo["movement"])
+        self.triggered = True
+
 class Enemy(Entity):
-    def __init__(self, okno, x, y, type="szczur"):
+    def __init__(self, okno, x, y, type="szczur", id=None):
         self.specsChart = {"szczur" : {"width":60,"height":20,"speed":0.20},"szczurBoss" : {"width":180,"height":60,"speed":0.05}, "matkaKacpra" : {"width":40,"height":80,"speed":0.10}}
         super().__init__(okno, x, y,self.specsChart[type]["width"],self.specsChart[type]["height"],False, True, type="enemy")
         self.type = "enemy"
+        self.id = id
+        if self.id=="None":
+            self.id = None
         self.enemType = type
         self.zdrowie = 1  # Przykladowy atrybut dla zdrowia wroga
         sprite = type + "_idle.png"
@@ -548,6 +561,7 @@ class Enemy(Entity):
         self.area = pygame.transform.scale(self.area, (self.WIDTH, self.HEIGHT))
 
         # Nowe atrybuty
+        self.movementToMake = None
         self.destroyed = False
         self.speed = self.specsChart[type]["speed"]
         self.direction = vector2d(self.speed, 0)  # Kierunek ruchu (zmniejszony krok dla wolniejszego ruchu)
@@ -565,34 +579,61 @@ class Enemy(Entity):
         if self.zdrowie <= 0:
             self.zniszcz()
     
+    def triggerPass(self, triggerMovement):
+        def decompress(tekst):
+            temp=""
+            num = ""
+            for i in tekst:
+                if i.isdigit():
+                    num+= i
+                else:
+                    temp+= int(num)*i
+                    num=""
+            return temp
+        self.movementToMake = decompress(triggerMovement)
+        self.steps_taken = 0
+
+    def triggerManagement(self):
+        if self.steps_taken < 45:
+            self.steps_taken += 1
+            if self.movementToMake[0]=="L":
+                self.physics_component.move(vector2d(-self.speed, 0))
+            else:
+                self.physics_component.move(vector2d(self.speed, 0))
+        else:
+            self.steps_taken = 0
+            if len(self.movementToMake)>1:
+                self.movementToMake = self.movementToMake[1:]
+            else:
+                self.movementToMake = None
+
     def update(self, in_other_entities=[], player_pos=None):
         prev_pos = vector2d(self.pos.x, self.pos.y)
         # Sprawdź odległość między graczem a wrogiem
-        if player_pos and self.pos.distance_to(player_pos) < 200 and self.enemType!="matkaKacpra":
-            # Jeśli gracz jest w odległości mniejszej niż 75, zmień kierunek ruchu na kierunek gracza
-            self.direction = player_pos - self.pos
-            self.direction.y = 0
-            if self.direction.x!=0:
-                self.direction.x = self.direction.x/abs(self.direction.x)*self.speed*3
-            self.physics_component.move(self.direction)
+        if self.movementToMake!=None:
+            self.triggerManagement()
         else:
-            # W przeciwnym razie kontynuuj zwykły schemat ruchu
-            if self.steps_taken < 75:
-                if not self.wait:
-                    if self.direction.x>self.speed:
-                        self.direction.x = self.speed
-                    self.physics_component.move(self.direction)
-                self.steps_taken += 1
+            if player_pos and self.pos.distance_to(player_pos) < 200 and self.enemType!="matkaKacpra":
+                # Jeśli gracz jest w odległości mniejszej niż 75, zmień kierunek ruchu na kierunek gracza
+                self.direction = player_pos - self.pos
+                self.direction.y = 0
+                if self.direction.x!=0:
+                    self.direction.x = self.direction.x/abs(self.direction.x)*self.speed*3
+                self.physics_component.move(self.direction)
             else:
-                if not self.wait:
-                    self.direction.x *= -1  # Zmień kierunek ruchu
-                self.wait = not self.wait
-                self.steps_taken = 0  # Zresetuj licznik kroków
+                # W przeciwnym razie kontynuuj zwykły schemat ruchu
+                if self.steps_taken < 75:
+                    if not self.wait:
+                        if self.direction.x>self.speed:
+                            self.direction.x = self.speed
+                        self.physics_component.move(self.direction)
+                    self.steps_taken += 1
+                else:
+                    if not self.wait:
+                        self.direction.x *= -1  # Zmień kierunek ruchu
+                    self.wait = not self.wait
+                    self.steps_taken = 0  # Zresetuj licznik kroków
         if self.coolDown>0:
             self.coolDown-=1
         self.physics_component.update_pos(in_other_entities)
         self.last_movement = self.pos - prev_pos
-
-        
-
-            

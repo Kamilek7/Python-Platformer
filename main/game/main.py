@@ -67,7 +67,7 @@ while running:
             if isinstance(entity, Enemy):
                 entity.update(platforms, player.pos)
             else:
-                entity.update(platforms)
+                entity.update(platforms, moveables)
         else:
             if isinstance(entity, Enemy):
                 platforms.remove(entity)
