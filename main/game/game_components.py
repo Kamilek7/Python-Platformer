@@ -5,6 +5,7 @@ from pygame.locals import *
 
 CURRENT_DIR = path.dirname(path.abspath(__file__))
 RESOURCES = path.join(path.dirname(CURRENT_DIR),"resources")
+SYSTEM_DIR = path.join(RESOURCES,"system")
 SPRITES_DIR = path.join(RESOURCES,"sprites")
 BACKGROUNDS_DIR = path.join(RESOURCES,"backgrounds")
 MAPS_DIR = path.join(RESOURCES,"maps")
@@ -19,6 +20,9 @@ class TextureComponent:
     spritesF = pygame.sprite.Group()
     messageBoxes = []
     backgrounds = []
+    menuFlag = True
+    menuFadeFlag = False
+    menu = None
     tempBG2 = None
     tempBG1 = None
     backgroundAlpha = 0
@@ -32,6 +36,8 @@ class TextureComponent:
     @staticmethod
     def scaleBackground(window):
         TextureComponent.tempBG1 = pygame.transform.scale(TextureComponent.tempBG1,(window.get_width(),window.get_height()))
+    def scaleMenu(window):
+        TextureComponent.menu = pygame.transform.scale(TextureComponent.menu,(window.get_width(),window.get_height()))
     @staticmethod
     def manageBackground(window):
         if len(TextureComponent.backgrounds)==2:
@@ -56,7 +62,7 @@ class TextureComponent:
             if TextureComponent.tempBG1==None:
                 TextureComponent.tempBG1 = pygame.image.load(path.join(BACKGROUNDS_DIR, TextureComponent.backgrounds[0])).convert_alpha()
                 TextureComponent.tempBG1 = pygame.transform.scale(TextureComponent.tempBG1,(window.get_width(),window.get_height()))
-            window.blit(TextureComponent.tempBG1,(0, 0))
+            window.blit(TextureComponent.tempBG1,(0, 0))       
         
     @staticmethod
     def changeBackground(newBackground):
@@ -69,6 +75,29 @@ class TextureComponent:
         check = checkLengthLess and (checkIfNotDefined or TextureComponent.backgrounds[0]!=newBackground.background)
         if check:
             TextureComponent.backgrounds.append(newBackground.background)
+
+    @staticmethod
+    def manageMenu(window):
+        if TextureComponent.messageLifespan<=0 and not TextureComponent.menuFadeFlag:
+            TextureComponent.backgroundAlpha = 255
+            if TextureComponent.messageFadeFlag:
+                TextureComponent.menu = pygame.image.load(path.join(SYSTEM_DIR, "menu2.png")).convert_alpha()
+                TextureComponent.menu = pygame.transform.scale(TextureComponent.menu,(window.get_width(),window.get_height()))
+            else:
+                TextureComponent.menu = pygame.image.load(path.join(SYSTEM_DIR, "menu1.png")).convert_alpha()
+                TextureComponent.menu = pygame.transform.scale(TextureComponent.menu,(window.get_width(),window.get_height()))
+            TextureComponent.messageFadeFlag= not TextureComponent.messageFadeFlag
+            TextureComponent.messageLifespan=40
+        elif TextureComponent.menuFadeFlag:
+            TextureComponent.backgroundAlpha-=10
+            if TextureComponent.backgroundAlpha<0:
+                TextureComponent.backgroundAlpha=0
+                TextureComponent.menuFadeFlag = False
+                TextureComponent.menuFlag = False
+                TextureComponent.messageLifespan=0
+            TextureComponent.menu.set_alpha(TextureComponent.backgroundAlpha)
+        TextureComponent.messageLifespan-=1
+        window.blit(TextureComponent.menu,(0, 0))     
 
     @staticmethod
     def setSprites(platforms, player):
@@ -163,7 +192,6 @@ class SystemComponent:
         TextureComponent.appendMessages(package)
         TextureComponent.messageFadeFlag = True
 
-
 class PhysicsComponent:
     def __init__(self, entity) -> None:
         self.def_speed = 1
@@ -180,11 +208,11 @@ class PhysicsComponent:
                     self.speed.y = 0
                     self.is_on_ground = True
                     self.entity.move_to_pos(vector2d(self.entity.pos.x, col_entity.pos.y - self.entity.get_height()))
-                    if col_entity.type=="enemy":
+                    if col_entity.type=="enemy" and col_entity.enemType!="matkaKacpra":
                         col_entity.takeDamage()
                 elif col_entity.type=="ladder":
                     self.speed.y = -7
-                elif col_entity.type=="enemy":
+                elif col_entity.type=="enemy" and col_entity.enemType!="matkaKacpra":
                     self.entity.takeDamage()
             else:
                 if not (self.entity.type=="enemy" and col_entity.type=="ladder"):
@@ -291,7 +319,6 @@ class PhysicsComponent:
         self.check_colision(moved_by_vec, in_other_entities)
         self.entity.shape.topleft = self.entity.pos + self.entity.cameraPos
         
-
 class InputComponent:
     def __init__(self) -> None:
         self.move_vec = vector2d(0,0)
@@ -541,7 +568,7 @@ class Enemy(Entity):
     def update(self, in_other_entities=[], player_pos=None):
         prev_pos = vector2d(self.pos.x, self.pos.y)
         # Sprawdź odległość między graczem a wrogiem
-        if player_pos and self.pos.distance_to(player_pos) < 200:
+        if player_pos and self.pos.distance_to(player_pos) < 200 and self.enemType!="matkaKacpra":
             # Jeśli gracz jest w odległości mniejszej niż 75, zmień kierunek ruchu na kierunek gracza
             self.direction = player_pos - self.pos
             self.direction.y = 0
