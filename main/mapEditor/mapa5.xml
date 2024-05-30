@@ -1,0 +1,1 @@
+<map><trigger x="71" y="244" width="40" height="40" actionType="messageBox" actionSpecs="{'text': 'DSFDFSDFSDF', 'icon': 'monke.jpg'}" /><trigger x="330" y="306" width="40" height="40" actionType="moveEntity" actionSpecs="{'movement': '5L3R', 'id': 'dfdsfsdf'}" /></map>
