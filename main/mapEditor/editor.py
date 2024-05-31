@@ -55,16 +55,14 @@ class Box:
       label.pack()
 
 class Trigger(Box):
-   def __init__(self, _x, _y, _width, _height, actionType=None, actionSpecs=None):
+   def __init__(self, _x, _y, _width, _height, cutsceneInfo="[]"):
       super().__init__(_x,_y,_width,_height)
-      self.actionType = actionType
-      self.actionSpecs = actionSpecs
-      if actionSpecs=="None":
-         self.actionSpecs=None
+      self.cutsceneInfo = eval(cutsceneInfo)
 
-   def setMessage(self,message):
-      self.actionType = "message"
-      self.actionSpecs = message
+   def setMessage(self,message, icon, delay = 0):
+      actionSpecs = {"type": "message","text": message, "icon" : icon, "delay": delay}
+      self.cutsceneInfo.append(actionSpecs)
+
 
    def representXML(self, map):
       temp = ET.SubElement(map, "trigger")
@@ -72,116 +70,118 @@ class Trigger(Box):
       temp.set("y", str(self.y))
       temp.set("width", str(self.width))
       temp.set("height",str(self.height))
-      temp.set("actionType",str(self.actionType))
-      temp.set("actionSpecs", str(self.actionSpecs))
+      temp.set("cutsceneInfo",str(self.cutsceneInfo))
 
    def resetZ(self):
-      temp = Trigger(windowOffset[0],windowOffset[1],self.width,self.height)
-      temp.actionType = self.actionType
-      temp.actionSpecs = self.actionSpecs
+      temp = Trigger(windowOffset[0],windowOffset[1],self.width,self.height, cutsceneInfo=self.cutsceneInfo)
       return temp
    
    def specialWindow(self,filewin):
-      label1 = Label(filewin, text="Configure trigger specs")
-      trigType = Listbox(filewin)
-      trigTypes = ["messageBox","moveEntity"]
+      label1 = Label(filewin, text="Configure cutscene")
+      actions = Listbox(filewin)
+      trigTypes = [i["type"] for i in self.cutsceneInfo]
       for i in range(len(trigTypes)):
-         trigType.insert(i, trigTypes[i])
-      def idk():
-         nextWindow = Toplevel(root)
-         selection = None
-         for i in trigType.curselection():
-            selection = trigType.get(i)
-         if self.actionType!=selection:
-            self.actionSpecs = None
-         self.actionType = selection
-         if selection=="messageBox":
-            label2 = Label(nextWindow, text="Enter messageBox text")
-            text = Text(nextWindow, height = 5, width = 20)
-            if self.actionSpecs!=None:
-               text.insert(END,self.actionSpecs["text"])
-            spriters = listdir(AVATARS_DIR)
-            list2 = Listbox(nextWindow)
-            for i in range(len(spriters)):
-               list2.insert(i, spriters[i])
-            def idk2():
-               selection2 = None
-               for i in list2.curselection():
-                  selection2 = list2.get(i)
-               self.actionSpecs = {"text" : text.get("1.0", "end-1c"), "icon" : selection2}
-               nextWindow.destroy()
-               filewin.destroy()
-            button2 = Button(nextWindow,text="Confirm",command=idk2)
-            label2.pack()
-            text.pack()
-            list2.pack()
-            button2.pack()
-         else:
-            def decompress(tekst):
-               temp=""
-               num = ""
-               for i in tekst:
-                  if i.isdigit():
-                     num+= i
-                  else:
-                     temp+= int(num)*i
-                     num=""
-               return temp
-            label2 = Label(nextWindow, text="Enter entity id:")
-            id = Text(nextWindow, height=1, width=10)
-            labelMov = Label(nextWindow, text="Current movement:\nNone")
-            if self.actionSpecs!=None:
-               temp = decompress(self.actionSpecs["movement"])
-               temp1 = ""
-               for i in temp:
-                  if i=="L":
-                     temp1+="Left\n"
-                  elif i=="R":
-                     temp1+="Right\n"
-               labelMov.config(text="Current movement:\n" + temp1)
-               id.insert(END,self.actionSpecs["id"])
-            move = []
-            def idk2(direction,move):
-               move.append(direction)
-               if labelMov.cget("text") == "Current movement:\nNone":
-                  labelMov.config(text="Current movement:\n" + direction + "\n")
-               else:
-                  labelMov.config(text=labelMov.cget("text")+ direction + "\n")
+         actions.insert(i, trigTypes[i])
+      # def idk():
+      #    nextWindow = Toplevel(root)
+      #    selection = None
+      #    for i in trigType.curselection():
+      #       selection = trigType.get(i)
+      #    if self.actionType!=selection:
+      #       self.actionSpecs = None
+      #    self.actionType = selection
+      #    if selection=="messageBox":
+      #       label2 = Label(nextWindow, text="Enter messageBox text")
+      #       text = Text(nextWindow, height = 5, width = 20)
+      #       if self.actionSpecs!=None:
+      #          text.insert(END,self.actionSpecs["text"])
+      #       spriters = listdir(AVATARS_DIR)
+      #       list2 = Listbox(nextWindow)
+      #       for i in range(len(spriters)):
+      #          list2.insert(i, spriters[i])
+      #       def idk2():
+      #          selection2 = None
+      #          for i in list2.curselection():
+      #             selection2 = list2.get(i)
+      #          self.actionSpecs = {"text" : text.get("1.0", "end-1c"), "icon" : selection2}
+      #          nextWindow.destroy()
+      #          filewin.destroy()
+      #       button2 = Button(nextWindow,text="Confirm",command=idk2)
+      #       label2.pack()
+      #       text.pack()
+      #       list2.pack()
+      #       button2.pack()
+      #    else:
+      #       def decompress(tekst):
+      #          temp=""
+      #          num = ""
+      #          for i in tekst:
+      #             if i.isdigit():
+      #                num+= i
+      #             else:
+      #                temp+= int(num)*i
+      #                num=""
+      #          return temp
+      #       label2 = Label(nextWindow, text="Enter entity id:")
+      #       id = Text(nextWindow, height=1, width=10)
+      #       labelMov = Label(nextWindow, text="Current movement:\nNone")
+      #       if self.actionSpecs!=None:
+      #          temp = decompress(self.actionSpecs["movement"])
+      #          temp1 = ""
+      #          for i in temp:
+      #             if i=="L":
+      #                temp1+="Left\n"
+      #             elif i=="R":
+      #                temp1+="Right\n"
+      #          labelMov.config(text="Current movement:\n" + temp1)
+      #          id.insert(END,self.actionSpecs["id"])
+      #       move = []
+      #       def idk2(direction,move):
+      #          move.append(direction)
+      #          if labelMov.cget("text") == "Current movement:\nNone":
+      #             labelMov.config(text="Current movement:\n" + direction + "\n")
+      #          else:
+      #             labelMov.config(text=labelMov.cget("text")+ direction + "\n")
             
-            buttonLeft = Button(nextWindow, text="Move entity 1 block left",command=lambda: idk2("Left",move))
-            buttonRight = Button(nextWindow, text="Move entity 1 block left",command=lambda: idk2("Right",move))
-            def end():
-               def compress(tekst):
-                  temp = ""
-                  dig = 0
-                  while dig<len(tekst):
-                     num = 0
-                     letter = tekst[dig]
-                     while (tekst[dig+num:len(tekst)].find(letter))==(tekst[dig+num+1:len(tekst)].find(letter)):
-                           num+=1
-                     num+=1
-                     dig+=num
-                     temp+= (str(num) + letter)
-                  return temp
-               temp = ""
-               for i in move:
-                  if i=="Left":
-                     temp+="L"
-                  elif i=="Right":
-                     temp+="R"
-               temp = {"movement":compress(temp), "id": id.get("1.0", "end-1c")}
-               self.actionSpecs = temp
-            buttonEnd = Button(nextWindow, text="Save", command=end)
-            label2.pack()
-            id.pack()
-            labelMov.pack()
-            buttonLeft.pack()
-            buttonRight.pack()
-            buttonEnd.pack()
-      button = Button(filewin, text="Proceed with edit",command=idk)
+      #       buttonLeft = Button(nextWindow, text="Move entity 1 block left",command=lambda: idk2("Left",move))
+      #       buttonRight = Button(nextWindow, text="Move entity 1 block left",command=lambda: idk2("Right",move))
+      #       def end():
+      #          def compress(tekst):
+      #             temp = ""
+      #             dig = 0
+      #             while dig<len(tekst):
+      #                num = 0
+      #                letter = tekst[dig]
+      #                while (tekst[dig+num:len(tekst)].find(letter))==(tekst[dig+num+1:len(tekst)].find(letter)):
+      #                      num+=1
+      #                num+=1
+      #                dig+=num
+      #                temp+= (str(num) + letter)
+      #             return temp
+      #          temp = ""
+      #          for i in move:
+      #             if i=="Left":
+      #                temp+="L"
+      #             elif i=="Right":
+      #                temp+="R"
+      #          temp = {"movement":compress(temp), "id": id.get("1.0", "end-1c")}
+      #          self.actionSpecs = temp
+      #       buttonEnd = Button(nextWindow, text="Save", command=end)
+      #       label2.pack()
+      #       id.pack()
+      #       labelMov.pack()
+      #       buttonLeft.pack()
+      #       buttonRight.pack()
+      #       buttonEnd.pack()
+      
+      button = Button(filewin, text="Edit selected")
+      button1 = Button(filewin, text="Add new")
+      if len(trigTypes)==0:
+         button["state"] = DISABLED
       label1.pack()
-      trigType.pack()
+      actions.pack()
       button.pack()
+      button1.pack()
 
 class Background(Box):
    z = 0
