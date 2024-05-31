@@ -481,7 +481,7 @@ class Player(Entity): # dziedziczenie po entity
     def __init__(self,window,_x,_y, in_width = 36, in_height = 75):
          # X, Y, WYSOKOSC, SZEROKOSC, KOLOR, PED PRZY RUCHU, TARCIE, RUCHOME, MOZNA STEROWAC
                  #grawitacja
-        super().__init__(window,_x, _y, in_width, in_height, True, True, type="player",sprite="brick.png")
+        super().__init__(window,_x, _y, in_width, in_height, True, True, type="player",sprite="protag.png")
 
          # inventory
         self.id = "player"
