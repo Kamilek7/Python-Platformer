@@ -173,8 +173,9 @@ class Trigger(Box):
       #       buttonLeft.pack()
       #       buttonRight.pack()
       #       buttonEnd.pack()
-      
-      button = Button(filewin, text="Edit selected")
+      def showActionTypes(editFlag):
+         pass
+      button = Button(filewin, text="Edit selected", command=lambda: showActionTypes(editFlag=True))
       button1 = Button(filewin, text="Add new")
       if len(trigTypes)==0:
          button["state"] = DISABLED
