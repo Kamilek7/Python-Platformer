@@ -82,14 +82,7 @@ class Trigger(Box):
       trigTypes = [i["type"] for i in self.cutsceneInfo]
       for i in range(len(trigTypes)):
          actions.insert(i, trigTypes[i])
-      # def idk():
-      #    nextWindow = Toplevel(root)
-      #    selection = None
-      #    for i in trigType.curselection():
-      #       selection = trigType.get(i)
-      #    if self.actionType!=selection:
-      #       self.actionSpecs = None
-      #    self.actionType = selection
+      def idk():
       #    if selection=="messageBox":
       #       label2 = Label(nextWindow, text="Enter messageBox text")
       #       text = Text(nextWindow, height = 5, width = 20)
@@ -173,12 +166,38 @@ class Trigger(Box):
       #       buttonLeft.pack()
       #       buttonRight.pack()
       #       buttonEnd.pack()
-      def showActionTypes(editFlag):
          pass
-      button = Button(filewin, text="Edit selected", command=lambda: showActionTypes(editFlag=True))
-      button1 = Button(filewin, text="Add new")
+      def showActionTypes(editFlag):
+         nextWindow = Toplevel(root)
+         actionsType = ["messageBox", "moveEntity"]
+         actionTypes = Listbox(nextWindow)
+         selectionID = 0
+         for i in range(len(actionsType)):
+            actionTypes.insert(i, actionsType[i])
+         selectionType = "messageBox"
+         if editFlag:
+            for i in range (len(actionTypes.curselection())):
+               selectionType = self.cutsceneInfo[i]
+               selectionID = i
+            selectionType = selectionType["type"]
+         actionTypes.select_set(actionsType.index(selectionType))
+         def getToEditWindow(editflag):
+            nextWindowNext = Toplevel(root)
+            selection = {}
+            if editFlag:
+               selection = self.cutsceneInfo[selectionID]
+               if selectionType==selection["type"]:
+                  pass
+               
+         button = Button(nextWindow, text="Proceed", command=lambda: getToEditWindow(editFlag))
+         actionTypes.pack()
+         button.pack()
+      button = Button(filewin, text="Edit selected", command=lambda: showActionTypes(True))
+      button1 = Button(filewin, text="Add new", command=lambda: showActionTypes(False))
       if len(trigTypes)==0:
          button["state"] = DISABLED
+      else:
+         actions.select_set(0)
       label1.pack()
       actions.pack()
       button.pack()

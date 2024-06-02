@@ -347,17 +347,15 @@ class InputComponent:
 # CAMERA
 
 class Camera:
-    def __init__(self, focus_object, other_objects = [], y_centre = 400) -> None:
+    def __init__(self, focus_object, other_objects = []) -> None:
         self.focus_object = focus_object
         self.other_objects = other_objects
-        self.y_centre = y_centre
         self.camera_offset = 0
         self.cameraCenterOffset = 0
         
 
     def update(self, window, force=False):
         focus_object_speed = self.focus_object.last_movement
-        self.camera_offset = -self.focus_object.pos
         is_stationary = abs(focus_object_speed.x) < 0.5 and abs(focus_object_speed.y) < 0.5
         if not is_stationary or force:
             self.centre_camera(vector2d(window.get_width(), window.get_height()))
@@ -365,7 +363,14 @@ class Camera:
 
 
     def move_camera(self,window):
+        self.camera_offset = -self.focus_object.pos
         newOffset = self.camera_offset + self.cameraCenterOffset
+        newOffset = self.get_checks_for_background_bounds(window, newOffset)
+        self.focus_object.changeCameraOffset(newOffset)
+        for entity in self.other_objects:
+            entity.changeCameraOffset(newOffset)
+
+    def get_checks_for_background_bounds(self, window, newOffset):
         backgroundTLCorn = -TextureComponent.currentBGcoords
         backgroundBRCorn = backgroundTLCorn - TextureComponent.currentBGsize
         check1 = (newOffset).x>=backgroundTLCorn.x
@@ -384,9 +389,7 @@ class Camera:
                 newOffset.x = backgroundBRCorn.x + window.get_width() - 40
         else:
             newOffset.x = backgroundTLCorn.x
-        self.focus_object.changeCameraOffset(newOffset)
-        for entity in self.other_objects:
-            entity.changeCameraOffset(newOffset)
+        return newOffset
 
     def centre_camera(self, window_dimensions):
         window_centre = window_dimensions/2
