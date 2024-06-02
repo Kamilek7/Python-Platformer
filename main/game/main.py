@@ -45,7 +45,7 @@ player = Player(window,playerSpawn[0],playerSpawn[1])
 TextureComponent.setSprites(platforms,player)
 moveables = package["moveables"]
 moveables.append(player)
-main_camera = Camera(player, platforms, window.get_height()*0.75)
+main_camera = Camera(player, platforms)
 
  # game loop
 main_camera.centre_camera(vector2d(window.get_width(), window.get_height()))
