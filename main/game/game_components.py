@@ -16,6 +16,8 @@ vector2d = pygame.math.Vector2
 
 # MAIN GAME COMPONENTS
 class TextureComponent:
+    delay = 0
+    who = None
     spritesB = pygame.sprite.Group()
     spritesF = pygame.sprite.Group()
     messageBoxes = []
@@ -116,50 +118,54 @@ class TextureComponent:
 
     @staticmethod
     def showMessage(_window,package):
-        my_font = pygame.font.SysFont('Comic Sans MS', 30)
-        text_surface = my_font.render(package["text"], True, (255, 255, 255))
-        width = int(_window.get_width()/1.1)
-        height = int(_window.get_height()/3.5)
-        posX = int((_window.get_width()- width)/2)
-        posY = int(_window.get_height() - _window.get_height()/3)
-        avatarWidth = int(height/1.3)
-        avatarHeight = avatarWidth
-        border = (height - height/1.3)/2
-        if TextureComponent.tempIcon==None:
-            TextureComponent.tempIcon = pygame.image.load(path.join(AVATARS_DIR,package["icon"])).convert_alpha()
-        if TextureComponent.messageFadeFlag and not TextureComponent.messageVisibility:
-            if TextureComponent.messageSizeFade>=100:
-                TextureComponent.messageSizeFade=100
-                TextureComponent.messageFadeFlag=False
-                TextureComponent.messageVisibility=True
-                TextureComponent.messageLifespan=100
-            else:
-                TextureComponent.messageSizeFade+=5
-        elif not TextureComponent.messageFadeFlag and TextureComponent.messageVisibility:
-            if TextureComponent.messageLifespan>0:
-                TextureComponent.messageLifespan-=1
-            else:
-                TextureComponent.messageLifespan=0
-                TextureComponent.messageFadeFlag=True
-        elif TextureComponent.messageFadeFlag and TextureComponent.messageVisibility:
-            if TextureComponent.messageSizeFade<=0:
-                TextureComponent.messageSizeFade=0
-                TextureComponent.messageFadeFlag=False
-                TextureComponent.messageVisibility=False
-                TextureComponent.messageBoxes.remove(package)
-            else:
-                TextureComponent.messageSizeFade-=5
-        height = int(height*TextureComponent.messageSizeFade/100)
-        avatarHeight = int(avatarHeight*TextureComponent.messageSizeFade/100)
-        pygame.draw.rect(_window, (0,0,0), pygame.Rect(posX,  posY , width, height))
-        if package["icon"]!="None":
-            temparea = TextureComponent.tempIcon
-            temparea = pygame.transform.scale(temparea,(avatarWidth,avatarHeight))
-            _window.blit(temparea,(posX + border,posY + border))
-            if TextureComponent.messageVisibility and not TextureComponent.messageFadeFlag:
-                _window.blit(text_surface,(posX+avatarWidth + 2*border, posY + border))
-        elif TextureComponent.messageVisibility and not TextureComponent.messageFadeFlag:
-            _window.blit(text_surface,(posX+ border, posY + border))
+        if TextureComponent.delay>0:
+            TextureComponent.delay -=1
+        else:
+            my_font = pygame.font.SysFont('Comic Sans MS', 30)
+            text_surface = my_font.render(package["text"], True, (255, 255, 255))
+            width = int(_window.get_width()/1.1)
+            height = int(_window.get_height()/3.5)
+            posX = int((_window.get_width()- width)/2)
+            posY = int(_window.get_height() - _window.get_height()/3)
+            avatarWidth = int(height/1.3)
+            avatarHeight = avatarWidth
+            border = (height - height/1.3)/2
+            if TextureComponent.tempIcon==None:
+                TextureComponent.tempIcon = pygame.image.load(path.join(AVATARS_DIR,package["icon"])).convert_alpha()
+            if TextureComponent.messageFadeFlag and not TextureComponent.messageVisibility:
+                if TextureComponent.messageSizeFade>=100:
+                    TextureComponent.messageSizeFade=100
+                    TextureComponent.messageFadeFlag=False
+                    TextureComponent.messageVisibility=True
+                    TextureComponent.messageLifespan=100
+                else:
+                    TextureComponent.messageSizeFade+=5
+            elif not TextureComponent.messageFadeFlag and TextureComponent.messageVisibility:
+                if TextureComponent.messageLifespan>0:
+                    TextureComponent.messageLifespan-=1
+                else:
+                    TextureComponent.messageLifespan=0
+                    TextureComponent.messageFadeFlag=True
+            elif TextureComponent.messageFadeFlag and TextureComponent.messageVisibility:
+                if TextureComponent.messageSizeFade<=0:
+                    TextureComponent.messageSizeFade=0
+                    TextureComponent.messageFadeFlag=False
+                    TextureComponent.messageVisibility=False
+                    TextureComponent.messageBoxes.remove(package)
+                    TextureComponent.who.catchEndOfAction()
+                else:
+                    TextureComponent.messageSizeFade-=5
+            height = int(height*TextureComponent.messageSizeFade/100)
+            avatarHeight = int(avatarHeight*TextureComponent.messageSizeFade/100)
+            pygame.draw.rect(_window, (0,0,0), pygame.Rect(posX,  posY , width, height))
+            if package["icon"]!="None":
+                temparea = TextureComponent.tempIcon
+                temparea = pygame.transform.scale(temparea,(avatarWidth,avatarHeight))
+                _window.blit(temparea,(posX + border,posY + border))
+                if TextureComponent.messageVisibility and not TextureComponent.messageFadeFlag:
+                    _window.blit(text_surface,(posX+avatarWidth + 2*border, posY + border))
+            elif TextureComponent.messageVisibility and not TextureComponent.messageFadeFlag:
+                _window.blit(text_surface,(posX+ border, posY + border))
     
 class SystemComponent:
     @staticmethod
@@ -177,7 +183,7 @@ class SystemComponent:
                 elif child.tagName=="background":
                     maps.append(Grounds(_window,int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName,  background=child.getAttribute("background")))
                 elif child.tagName=="trigger":
-                    maps.append(Grounds(_window,int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName,  triggerType=child.getAttribute("actionType"), triggerInfo=child.getAttribute("actionSpecs")))
+                    maps.append(Grounds(_window,int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName,  cutsceneInfo=child.getAttribute("cutsceneInfo")))
                 elif child.tagName=="enemy":
                     temp = Enemy(_window,int(child.getAttribute("x")),int(child.getAttribute("y")), type=child.getAttribute("type"), id=child.getAttribute("id"))
                     moveables.append(temp)
@@ -188,9 +194,11 @@ class SystemComponent:
         package = {"levels": levels, "playerSpawn": playerSpawn, "moveables": moveables}
         return package
     @staticmethod
-    def showMessage(package):
+    def showMessage(package, sender):
         TextureComponent.appendMessages(package)
         TextureComponent.messageFadeFlag = True
+        TextureComponent.who = sender
+        TextureComponent.delay = int(package["delay"])
 
 class PhysicsComponent:
     def __init__(self, entity) -> None:
@@ -255,13 +263,7 @@ class PhysicsComponent:
             elif col_entity.type=="background":
                 TextureComponent.changeBackground(col_entity)
             elif col_entity.type=="trigger":
-                if col_entity.triggerType=="messageBox" and not col_entity.triggered:
-                    SystemComponent.showMessage(col_entity.triggerInfo)
-                    col_entity.triggered = True
-                elif col_entity.triggerType=="moveEntity" and not col_entity.triggered:
-                    for i in others:
-                        if i.id == col_entity.triggerInfo["id"]:
-                            col_entity.manageTrigger(i)
+                col_entity.manageTrigger(others)
             else:
                 check = doorCheck(col_entity)
             return [removeFlag,check]
@@ -396,14 +398,14 @@ class Camera:
 # CLASSES FOR GAME ENTITIES
 
 class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
-    def __new__(cls, _window, _x,_y, width=10, height=10, type=None, sprite=None, foreground=False, background=None, triggerType=None, triggerInfo=None, id=None):
+    def __new__(cls, _window, _x,_y, width=10, height=10, type=None, sprite=None, foreground=False, background=None, triggerType=None, cutsceneInfo=None, id=None):
         if not isinstance(_x, float) and not isinstance(_x, int):
             raise TypeError("Pierwszy argument inicjalizacji obiektu klasy Entity (_x) musi być typu numerycznego float lub int!")
         if not isinstance(_y, float) and not isinstance(_y, int):
             raise TypeError("Pierwszy argument inicjalizacji obiektu klasy Entity (_y) musi być typu numerycznego float lub int!")
         return super(Entity, cls).__new__(cls)
      # test wiarygodnosci argumentow
-    def __init__(self,window,_x,_y, _width, _height, _control,_moveable, type=None,sprite=None, foreground=False, triggerType=None, triggerInfo=None):
+    def __init__(self,window,_x,_y, _width, _height, _control,_moveable, type=None,sprite=None, foreground=False, triggerType=None, cutsceneInfo=None):
         super().__init__()
 
         self.window = window
@@ -521,12 +523,12 @@ class Player(Entity): # dziedziczenie po entity
             self.coolDown-=1
 
 class Grounds(Entity):
-    def __new__(cls, _window, posX, posY, width, height, type, sprite=None, foreground=False,background=None, triggerType=None, triggerInfo=None):
+    def __new__(cls, _window, posX, posY, width, height, type, sprite=None, foreground=False,background=None, cutsceneInfo=None):
         if not isinstance(sprite, str) and sprite != None:
             raise TypeError("sprite musi być str")
-        return super(Grounds, cls).__new__(cls, _window, posX, posY, width, height, "block", sprite=sprite, foreground=foreground, background=background,triggerType=triggerType,triggerInfo=triggerInfo)
+        return super(Grounds, cls).__new__(cls, _window, posX, posY, width, height, "block", sprite=sprite, foreground=foreground, background=background,cutsceneInfo=None)
     
-    def __init__(self,window, _x, _y, in_width = APP_WIDTH, in_height = 120, _type = "block", sprite=None, foreground=False, background=None, triggerType=None, triggerInfo=None):
+    def __init__(self,window, _x, _y, in_width = APP_WIDTH, in_height = 120, _type = "block", sprite=None, foreground=False, background=None, cutsceneInfo=None):
         super().__init__(window, _x, _y, in_width, in_height, False, False, sprite=sprite, foreground=foreground)
         self.type = _type
         if self.type=="key" or self.type=="door":
@@ -539,13 +541,26 @@ class Grounds(Entity):
         elif self.type == "background":
             self.background = background
         elif self.type =="trigger":
-            self.triggerInfo = eval(triggerInfo)
-            self.triggerType = triggerType
+            self.cutsceneInfo = eval(cutsceneInfo)
             self.triggered = False
+            self.others = []
 
-    def manageTrigger(self, other_entity):
-        other_entity.triggerPass(self.triggerInfo["movement"])
-        self.triggered = True
+    def manageTrigger(self, others):
+        if not self.triggered:
+            self.others = others
+            self.triggered = True
+            self.catchEndOfAction()
+
+    def catchEndOfAction(self):
+        if len(self.cutsceneInfo)>0:
+            tempTrigger = self.cutsceneInfo[0]
+            self.cutsceneInfo = self.cutsceneInfo[1:]
+            if tempTrigger["type"]=="messageBox":
+                SystemComponent.showMessage(tempTrigger, self)
+            elif tempTrigger["type"]=="moveEntity":
+                for i in self.others:
+                    if i.id == tempTrigger["id"]:
+                        i.triggerPass(tempTrigger, self)
 
 class Enemy(Entity):
     def __init__(self, okno, x, y, type="szczur", id=None):
@@ -562,6 +577,8 @@ class Enemy(Entity):
         self.area = pygame.transform.scale(self.area, (self.WIDTH, self.HEIGHT))
 
         # Nowe atrybuty
+        self.delay = 0
+        self.who = None
         self.movementToMake = None
         self.destroyed = False
         self.speed = self.specsChart[type]["speed"]
@@ -580,7 +597,7 @@ class Enemy(Entity):
         if self.zdrowie <= 0:
             self.zniszcz()
     
-    def triggerPass(self, triggerMovement):
+    def triggerPass(self, triggerMovement, sender):
         def decompress(tekst):
             temp=""
             num = ""
@@ -591,22 +608,29 @@ class Enemy(Entity):
                     temp+= int(num)*i
                     num=""
             return temp
-        self.movementToMake = decompress(triggerMovement)
+        self.delay = int(triggerMovement["delay"])
+        self.movementToMake = decompress(triggerMovement["movement"])
         self.steps_taken = 0
+        self.who = sender
 
     def triggerManagement(self):
-        if self.steps_taken < 45:
-            self.steps_taken += 1
-            if self.movementToMake[0]=="L":
-                self.physics_component.move(vector2d(-self.speed, 0))
-            else:
-                self.physics_component.move(vector2d(self.speed, 0))
+        if self.delay>0:
+            self.delay -=1
         else:
-            self.steps_taken = 0
-            if len(self.movementToMake)>1:
-                self.movementToMake = self.movementToMake[1:]
+            if self.steps_taken < 45:
+                self.steps_taken += 1
+                if self.movementToMake[0]=="L":
+                    self.physics_component.move(vector2d(-self.speed, 0))
+                elif self.movementToMake[0]=="R":
+                    self.physics_component.move(vector2d(self.speed, 0))
             else:
-                self.movementToMake = None
+                self.steps_taken = 0
+                if len(self.movementToMake)>1:
+                    self.movementToMake = self.movementToMake[1:]
+                else:
+                    self.movementToMake = None
+                    self.who.catchEndOfAction()
+
 
     def update(self, in_other_entities=[], player_pos=None):
         prev_pos = vector2d(self.pos.x, self.pos.y)
