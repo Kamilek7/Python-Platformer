@@ -599,6 +599,17 @@ class Grounds(Entity):
                 for i in self.others:
                     if i.id == tempTrigger["id"]:
                         i.triggerPass(tempTrigger, self)
+            elif tempTrigger["type"]=="endGame":
+                for i in self.others:
+                    if i.id == "player":
+                        i.zdrowie = 0
+                self.catchEndOfAction()
+            elif tempTrigger["type"]=="killEntity":
+                for i in self.others:
+                    if i.id == tempTrigger["id"]:
+                        if isinstance(i,Enemy):
+                            i.zniszcz()
+                self.catchEndOfAction()
 
 class Enemy(Entity):
     def __init__(self, okno, x, y, type="szczur", id=None):

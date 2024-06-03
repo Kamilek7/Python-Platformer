@@ -84,7 +84,7 @@ class Trigger(Box):
          actions.insert(i, trigTypes[i])
       def showActionTypes(editFlag):
          nextWindow = Toplevel(root)
-         actionsType = ["messageBox", "moveEntity"]
+         actionsType = ["messageBox", "moveEntity", "killEntity", "endGame"]
          actionTypes = Listbox(nextWindow)
          selectionID = 0
          for i in range(len(actionsType)):
@@ -110,8 +110,10 @@ class Trigger(Box):
                if selectionType==selection["type"]:
                   values = list(selection.values())
                   movement_or_text = values[1]
-                  icon_or_id = values[2]
-                  delay = values[3]
+                  if selectionType!="endGame":
+                     icon_or_id = values[2]
+                     if selectionType!="killEntity":
+                        delay = values[3]
                else:
                   selection = {}
             delayText = Label(nextWindowNext,text="Enter action delay")
@@ -228,6 +230,32 @@ class Trigger(Box):
                delayText.pack()
                delayT.pack()
                buttonEnd.pack()
+            elif selectionType=="killEntity":
+               labelID = Label(nextWindowNext, text="Enter entity ID")
+               id = Text(nextWindowNext, height=1, width=10)
+               id.insert(END,movement_or_text)
+               def end():
+                  temp = {"type": "killEntity", "id": id.get("1.0", "end-1c")}
+                  if editFlag:
+                     self.cutsceneInfo[selectionID] = temp
+                  else:
+                     self.cutsceneInfo.append(temp)
+                  nextWindow.destroy()
+                  nextWindowNext.destroy()
+                  filewin.destroy()
+               button2 = Button(nextWindowNext, text="Save", command=end)
+               labelID.pack()
+               id.pack()
+               button2.pack()
+            elif selectionType=="endGame":
+               temp = {"type": "endGame"}
+               if editFlag:
+                  self.cutsceneInfo[selectionID] = temp
+               else:
+                  self.cutsceneInfo.append(temp)
+               nextWindow.destroy()
+               nextWindowNext.destroy()
+               filewin.destroy()
          button = Button(nextWindow, text="Proceed", command=lambda: getToEditWindow(editFlag))
          actionTypes.pack()
          button.pack()
