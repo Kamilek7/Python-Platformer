@@ -168,7 +168,7 @@ class TextureComponent:
             avatarWidth = int(height/1.3)
             avatarHeight = avatarWidth
             border = (height - height/1.3)/2
-            if TextureComponent.tempIcon==None:
+            if TextureComponent.tempIcon==None and package["icon"]!="None":
                 TextureComponent.tempIcon = pygame.image.load(path.join(AVATARS_DIR,package["icon"])).convert_alpha()
             if TextureComponent.messageFadeFlag and not TextureComponent.messageVisibility:
                 if TextureComponent.messageSizeFade>=100:
@@ -522,7 +522,7 @@ class Player(Entity): # dziedziczenie po entity
     def __init__(self,window,_x,_y, in_width = 36, in_height = 75):
          # X, Y, WYSOKOSC, SZEROKOSC, KOLOR, PED PRZY RUCHU, TARCIE, RUCHOME, MOZNA STEROWAC
                  #grawitacja
-        super().__init__(window,_x, _y, in_width, in_height, True, True, type="player",sprite="protag.png")
+        super().__init__(window,_x, _y, in_width, in_height, True, True, type="player",sprite="protag_idle.png")
 
          # inventory
         self.id = "player"

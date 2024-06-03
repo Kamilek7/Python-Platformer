@@ -401,7 +401,7 @@ class Grounds(Box):
 
 class EnemyPlaceholder(Box):
    def __init__(self, _x,_y, _enemyType="szczur", id=None):
-      self.sizeChart = {"szczur" : [60,20],"szczurBoss" : [180,60], "matkaKacpra" : [40,80]}
+      self.sizeChart = {"szczur" : [60,20],"zombieSzczur" : [60,20],"roboSzczur" : [60,20], "matkaKacpra" : [40,80]}
       super().__init__(_x,_y,self.sizeChart[_enemyType][0],self.sizeChart[_enemyType][1])
       self.id = id
       if id=="None":
@@ -452,7 +452,7 @@ class EnemyPlaceholder(Box):
       id = Text(filewin, height=1, width=10)
       label = Label(filewin, text="Select type for enemy:")
       typesList = Listbox(filewin)
-      types = ["szczur", "szczurBoss", "matkaKacpra"]
+      types = ["szczur", "roboSzczur","zombieSzczur", "matkaKacpra"]
       for i in range(len(types)):
          typesList.insert(i, types[i])
       def updateEnemyType():

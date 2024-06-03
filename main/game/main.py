@@ -94,6 +94,8 @@ while True:
             for event in pygame.event.get():
                 if event.type == QUIT:
                     pygame.quit()
+                elif event.type == VIDEORESIZE:
+                    TextureComponent.scaleMenu(window)
             key = pygame.key.get_pressed()
             if key[K_RETURN]:
                 TextureComponent.menuFadeFlag=True
