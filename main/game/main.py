@@ -36,55 +36,69 @@ while mainMenu:
     pygame.display.update()
     current_fps.tick(MAX_FPS)
 
-running=True
-package = SystemComponent.loadMaps(window)
-levels = package["levels"]
-playerSpawn = package["playerSpawn"]
-platforms = levels[0]
-player = Player(window,playerSpawn[0],playerSpawn[1])
-TextureComponent.setSprites(platforms,player)
-moveables = package["moveables"]
-moveables.append(player)
-main_camera = Camera(player, platforms)
-
- # game loop
-main_camera.centre_camera(vector2d(window.get_width(), window.get_height()))
-while running:
-    for event in pygame.event.get():
-        if event.type == QUIT:
-            pygame.quit()
-        elif event.type == VIDEORESIZE:
-            main_camera.update(window, force=True)
-            TextureComponent.scaleBackground(window)
-            if TextureComponent.menuFlag:
-                TextureComponent.scaleMenu(window)
-    
-    TextureComponent.manageBackground(window)
-    
-    # Aktualizacja wrogów, przekazując im pozycję gracza
-    for entity in moveables:
-        if not entity.destroyed:
-            if isinstance(entity, Enemy):
-                entity.update(platforms, player.pos)
+while True:
+    running=True
+    package = SystemComponent.loadMaps(window)
+    levels = package["levels"]
+    playerSpawn = package["playerSpawn"]
+    platforms = levels[0]
+    player = Player(window,playerSpawn[0],playerSpawn[1])
+    TextureComponent.setSprites(platforms,player)
+    moveables = package["moveables"]
+    moveables.append(player)
+    main_camera = Camera(player, platforms)
+    # game loop
+    main_camera.centre_camera(vector2d(window.get_width(), window.get_height()))
+    while running:
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+            elif event.type == VIDEORESIZE:
+                main_camera.update(window, force=True)
+                TextureComponent.scaleBackground(window)
+                if TextureComponent.menuFlag:
+                    TextureComponent.scaleMenu(window)
+        
+        TextureComponent.manageBackground(window)
+        
+        # Aktualizacja wrogów, przekazując im pozycję gracza
+        for entity in moveables:
+            if not entity.destroyed:
+                if isinstance(entity, Enemy):
+                    entity.update(platforms, player.pos)
+                else:
+                    entity.update(platforms, moveables)
             else:
-                entity.update(platforms, moveables)
-        else:
-            if isinstance(entity, Enemy):
-                platforms.remove(entity)
-            else:
-                player.changeSprite(None)
-            moveables.remove(entity)
+                if isinstance(entity, Enemy):
+                    platforms.remove(entity)
+                else:
+                    player.changeSprite(None)
+                moveables.remove(entity)
 
-    main_camera.update(window)
-    if len(platforms) < len(TextureComponent.spritesB) + len(TextureComponent.spritesF) - 1:
-        TextureComponent.setSprites(platforms, player)
-    for entity in TextureComponent.spritesB:
-        window.blit(entity.area, entity.shape)
-    for entity in TextureComponent.spritesF:
-        window.blit(entity.area, entity.shape)
-    for messageBox in TextureComponent.messageBoxes:
-        TextureComponent.showMessage(window, messageBox)
-    if TextureComponent.menuFlag:
-        TextureComponent.manageMenu(window)
-    pygame.display.update()
-    current_fps.tick(MAX_FPS)
+        main_camera.update(window)
+        if len(platforms) < len(TextureComponent.spritesB) + len(TextureComponent.spritesF) - 1:
+            TextureComponent.setSprites(platforms, player)
+        for entity in TextureComponent.spritesB:
+            window.blit(entity.area, entity.shape)
+        for entity in TextureComponent.spritesF:
+            window.blit(entity.area, entity.shape)
+        for messageBox in TextureComponent.messageBoxes:
+            TextureComponent.showMessage(window, messageBox)
+        if TextureComponent.menuFlag:
+                TextureComponent.manageMenu(window)
+        if TextureComponent.gameOverFlag:
+            TextureComponent.manageGameOver(window)
+        pygame.display.update()
+        current_fps.tick(MAX_FPS)
+        while player.zdrowie <= 0:
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    pygame.quit()
+            key = pygame.key.get_pressed()
+            if key[K_RETURN]:
+                TextureComponent.menuFadeFlag=True
+                running=False
+                player.zdrowie=1
+            TextureComponent.manageGameOver(window)
+            pygame.display.update()
+            current_fps.tick(MAX_FPS)

@@ -35,6 +35,7 @@ class TextureComponent:
     tempIcon = None
     currentBGcoords = vector2d((0,0))
     currentBGsize = vector2d((0,0))
+    gameOverFlag = False
     @staticmethod
     def scaleBackground(window):
         TextureComponent.tempBG1 = pygame.transform.scale(TextureComponent.tempBG1,(window.get_width(),window.get_height()))
@@ -99,6 +100,43 @@ class TextureComponent:
                 TextureComponent.messageLifespan=0
             TextureComponent.menu.set_alpha(TextureComponent.backgroundAlpha)
         TextureComponent.messageLifespan-=1
+        window.blit(TextureComponent.menu,(0, 0))     
+
+    @staticmethod
+    def manageGameOver(window):
+        if TextureComponent.messageLifespan<=0 and (not TextureComponent.menuFadeFlag) and TextureComponent.gameOverFlag:
+            TextureComponent.backgroundAlpha = 255
+            TextureComponent.messageFadeFlag= not TextureComponent.messageFadeFlag
+            if TextureComponent.messageFadeFlag:
+                TextureComponent.menu = pygame.image.load(path.join(SYSTEM_DIR, "gameOver1.png")).convert_alpha()
+                TextureComponent.menu = pygame.transform.scale(TextureComponent.menu,(window.get_width(),window.get_height()))
+            else:
+                TextureComponent.menu = pygame.image.load(path.join(SYSTEM_DIR, "gameOver2.png")).convert_alpha()
+                TextureComponent.menu = pygame.transform.scale(TextureComponent.menu,(window.get_width(),window.get_height()))
+            TextureComponent.messageLifespan=40
+        elif TextureComponent.menuFadeFlag:
+            TextureComponent.backgroundAlpha-=10
+            if TextureComponent.backgroundAlpha<0:
+                TextureComponent.gameOverFlag = False
+                TextureComponent.backgroundAlpha=0
+                TextureComponent.menuFadeFlag = False
+                TextureComponent.menuFlag = False
+                TextureComponent.messageLifespan=0
+            TextureComponent.menu.set_alpha(TextureComponent.backgroundAlpha)
+        if not TextureComponent.gameOverFlag:
+            if TextureComponent.backgroundAlpha==0:
+                TextureComponent.menu = pygame.image.load(path.join(SYSTEM_DIR, "gameOver1.png")).convert_alpha()
+                TextureComponent.menu = pygame.transform.scale(TextureComponent.menu,(window.get_width(),window.get_height()))
+                TextureComponent.backgroundAlpha=10
+                TextureComponent.messageFadeFlag = True
+            else:
+                TextureComponent.backgroundAlpha+=10
+                if TextureComponent.backgroundAlpha>=255:
+                    TextureComponent.backgroundAlpha=255
+                    TextureComponent.gameOverFlag=True
+            TextureComponent.menu.set_alpha(TextureComponent.backgroundAlpha)
+        else:
+            TextureComponent.messageLifespan-=1
         window.blit(TextureComponent.menu,(0, 0))     
 
     @staticmethod
