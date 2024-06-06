@@ -1,6 +1,7 @@
 from os import *
 from xml.dom import minidom
 import pygame
+import copy
 from pygame.locals import *
 
 CURRENT_DIR = path.dirname(path.abspath(__file__))
@@ -392,19 +393,50 @@ class Camera:
         self.other_objects = other_objects
         self.camera_offset = 0
         self.cameraCenterOffset = 0
+        self.lerpFlagX = False
+        self.lerpFlagY = False
+        self.targetOffset = vector2d(0,0)
+        self.previousOffset = vector2d(0,0)
+        self.beginFlag = True
+        self.forceUpdate = False
         
     def update(self, window, force=False):
         focus_object_speed = self.focus_object.last_movement
         is_stationary = abs(focus_object_speed.x) < 0.5 and abs(focus_object_speed.y) < 0.5
-        if not is_stationary or force:
+        if not is_stationary or force or self.forceUpdate:
             self.centre_camera(vector2d(window.get_width(), window.get_height()))
             self.move_camera(window)
 
     def move_camera(self,window):
+
         self.camera_offset = -self.focus_object.pos
         newOffset = self.camera_offset + self.cameraCenterOffset
         newOffset = self.get_checks_for_background_bounds(window, newOffset)
+        if abs(self.previousOffset.x-newOffset.x)>100 and not self.beginFlag:
+            self.lerpFlagX = True
+            self.targetOffset = copy.deepcopy(newOffset)
+            self.forceUpdate = True
+        if abs(self.previousOffset.y-newOffset.y)>100 and not self.beginFlag:
+            self.lerpFlagY = True
+            self.targetOffset = copy.deepcopy(newOffset)
+            self.forceUpdate = True
+        if self.lerpFlagX:
+            if not(self.previousOffset-newOffset==vector2d(0,0)):
+                newOffset.x = self.previousOffset.x - abs(self.previousOffset.x-newOffset.x)/(self.previousOffset.x-newOffset.x)*10
+            if newOffset.x == self.targetOffset.x:
+                self.lerpFlagX = False
+                self.forceUpdate = False
+        if self.lerpFlagY:
+            if not(self.previousOffset-newOffset==vector2d(0,0)):
+                newOffset.y = self.previousOffset.y - abs(self.previousOffset.y-newOffset.y)/(self.previousOffset.y-newOffset.y)*10
+            if newOffset.y == self.targetOffset.y:
+                self.lerpFlagY = False
+                self.forceUpdate = False
+
         self.focus_object.changeCameraOffset(newOffset)
+        self.previousOffset = newOffset
+        if self.beginFlag:
+            self.beginFlag = False
         for entity in self.other_objects:
             entity.changeCameraOffset(newOffset)
 
