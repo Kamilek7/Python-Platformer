@@ -687,12 +687,14 @@ def canvasUpdate():
       width = 2
       if ground==selected:
          width=4
-      if ground.sprite!=None:
-         ground.resize(ground.width, ground.height)
-         canvas.create_rectangle(int(ground.x*radio), int(ground.y*radio), int(ground.x*radio) + int(ground.width*radio), int(ground.y*radio + ground.height*radio), width=width)
-         canvas.create_image(int(ground.x*radio), int(ground.y*radio), anchor=NW, image=ground.sprite)
-      else:
-            canvas.create_rectangle(int(ground.x*radio), int(ground.y*radio), int(ground.x*radio + ground.width*radio), int(ground.y*radio + ground.height*radio), width=width)
+      bounds = (windowOffset[0]-ground.width*radio, windowOffset[1]-ground.height*radio, radio+windowOffset[0]+ canvas.winfo_width(),windowOffset[1]+ canvas.winfo_height())
+      if (int(ground.x*radio)>=bounds[0] and int(ground.y*radio)>=bounds[1] and int(ground.x*radio)<=bounds[2] and int(ground.y*radio)<=bounds[3]):
+         if ground.sprite!=None:
+            ground.resize(ground.width, ground.height)
+            canvas.create_rectangle(int(ground.x*radio), int(ground.y*radio), int(ground.x*radio) + int(ground.width*radio), int(ground.y*radio + ground.height*radio), width=width)
+            canvas.create_image(int(ground.x*radio), int(ground.y*radio), anchor=NW, image=ground.sprite)
+         else:
+               canvas.create_rectangle(int(ground.x*radio), int(ground.y*radio), int(ground.x*radio + ground.width*radio), int(ground.y*radio + ground.height*radio), width=width)
    xLines = mapSize[0] - 1
    yLines = mapSize[1] - 1
    for i in range (xLines):

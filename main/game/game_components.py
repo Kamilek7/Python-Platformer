@@ -302,7 +302,7 @@ class PhysicsComponent:
             elif col_entity.type=="background":
                 TextureComponent.changeBackground(col_entity)
             elif col_entity.type=="trigger":
-                col_entity.manageTrigger(others)
+                col_entity.manageTrigger(others, self.entity)
             else:
                 check = doorCheck(col_entity)
             return [removeFlag,check]
@@ -416,22 +416,26 @@ class Camera:
             self.lerpFlagX = True
             self.targetOffset = copy.deepcopy(newOffset)
             self.forceUpdate = True
+            self.focus_object.blockedMovement = True
         if abs(self.previousOffset.y-newOffset.y)>100 and not self.beginFlag:
             self.lerpFlagY = True
             self.targetOffset = copy.deepcopy(newOffset)
             self.forceUpdate = True
+            self.focus_object.blockedMovement = True
         if self.lerpFlagX:
             if not(self.previousOffset-newOffset==vector2d(0,0)):
                 newOffset.x = self.previousOffset.x - abs(self.previousOffset.x-newOffset.x)/(self.previousOffset.x-newOffset.x)*10
             if newOffset.x == self.targetOffset.x:
                 self.lerpFlagX = False
                 self.forceUpdate = False
+                self.focus_object.blockedMovement = False
         if self.lerpFlagY:
             if not(self.previousOffset-newOffset==vector2d(0,0)):
                 newOffset.y = self.previousOffset.y - abs(self.previousOffset.y-newOffset.y)/(self.previousOffset.y-newOffset.y)*10
             if newOffset.y == self.targetOffset.y:
                 self.lerpFlagY = False
                 self.forceUpdate = False
+                self.focus_object.blockedMovement = False
 
         self.focus_object.changeCameraOffset(newOffset)
         self.previousOffset = newOffset
@@ -556,6 +560,7 @@ class Player(Entity): # dziedziczenie po entity
                  #grawitacja
         super().__init__(window,_x, _y, in_width, in_height, True, True, type="player",sprite="protag_idle.png")
 
+        self.blockedMovement = False
          # inventory
         self.id = "player"
         self.coolDown = 0
@@ -585,8 +590,9 @@ class Player(Entity): # dziedziczenie po entity
 
     def update(self, in_other_entities = [], in_other_moveables = []):
         prev_pos = vector2d(self.pos.x, self.pos.y)
-        move_input = self.input_component.get_movement_vec(self.physics_component.is_on_ground)
-        self.physics_component.move(move_input)
+        if not self.blockedMovement:
+            move_input = self.input_component.get_movement_vec(self.physics_component.is_on_ground)
+            self.physics_component.move(move_input)
         self.physics_component.update_pos(in_other_entities, others = in_other_moveables)
         self.last_movement = self.pos - prev_pos
         if self.coolDown>0:
@@ -614,12 +620,15 @@ class Grounds(Entity):
             self.cutsceneInfo = eval(cutsceneInfo)
             self.triggered = False
             self.others = []
+            self.player = None
 
-    def manageTrigger(self, others):
+    def manageTrigger(self, others, player):
         if not self.triggered:
             self.others = others
             self.triggered = True
             self.catchEndOfAction()
+            self.player = player
+            self.player.blockedMovement= True
 
     def catchEndOfAction(self):
         if len(self.cutsceneInfo)>0:
@@ -642,6 +651,8 @@ class Grounds(Entity):
                         if isinstance(i,Enemy):
                             i.zniszcz()
                 self.catchEndOfAction()
+        else:
+            self.player.blockedMovement = False
 
 class Enemy(Entity):
     def __init__(self, okno, x, y, type="szczur", id=None):
