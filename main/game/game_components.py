@@ -471,6 +471,8 @@ class Camera:
 
 # CLASSES FOR GAME ENTITIES
 
+
+
 class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
     def __new__(cls, _window, _x,_y, width=10, height=10, type=None, sprite=None, foreground=False, background=None, triggerType=None, cutsceneInfo=None, id=None):
         if not isinstance(_x, float) and not isinstance(_x, int):
@@ -548,6 +550,28 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
             self.area = pygame.transform.scale(self.area,(self.WIDTH,self.HEIGHT))
         else:
             self.area = pygame.Surface((self.WIDTH, self.HEIGHT), pygame.SRCALPHA, 32)
+
+        
+class Animation(Entity):
+    def __init__(self, window, _x, _y, animationFrameList):
+        super().__init__(window, _x, _y, sprite=None)
+        self.animationFrameList = animationFrameList
+
+    def animate(self):
+     
+            if self.animationDelay >= self.animationDelayConst:
+                self.animationFrame = (self.animationFrame + 1) % len(self.animationFrameList)
+                self.changeSprite(self.animationFrameList[self.animationFrame])
+                self.animationDelay = 0
+            else:
+                self.animationDelay += 1
+      
+    def flip_img(self):
+        flip_sprites = []
+        
+            
+
+            
 
 class Player(Entity): # dziedziczenie po entity
     def __new__(cls, _window, posX, posY):
@@ -678,7 +702,9 @@ class Enemy(Entity):
         self.steps_taken = 0  # Licznik kroków
         self.wait = True
         self.coolDown = 0
-    
+        self.animationFrameList = ["szczur_idle.png", "szczur_left1.png", "szczur_left2.png"]
+        self.animation = Animation
+
     def zniszcz(self):
         self.destroyed=True
 
@@ -688,6 +714,8 @@ class Enemy(Entity):
             self.coolDown=100
         if self.zdrowie <= 0:
             self.zniszcz()
+    
+    
     
     def triggerPass(self, triggerMovement, sender):
         def decompress(tekst):
@@ -702,6 +730,7 @@ class Enemy(Entity):
             return temp
         self.delay = int(triggerMovement["delay"])
         self.movementToMake = decompress(triggerMovement["movement"])
+        
         self.steps_taken = 0
         self.who = sender
 
@@ -750,7 +779,13 @@ class Enemy(Entity):
                         self.direction.x *= -1  # Zmień kierunek ruchu
                     self.wait = not self.wait
                     self.steps_taken = 0  # Zresetuj licznik kroków
+        
+        self.animation.animate(self)
+        
         if self.coolDown>0:
             self.coolDown-=1
         self.physics_component.update_pos(in_other_entities)
         self.last_movement = self.pos - prev_pos
+        
+
+
