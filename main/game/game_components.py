@@ -15,196 +15,213 @@ APP_HEIGHT = 600
 APP_WIDTH = 800
 vector2d = pygame.math.Vector2
 
-# MAIN GAME COMPONENTS
-class TextureComponent:
-    delay = 0
-    who = None
-    spritesB = pygame.sprite.Group()
-    spritesF = pygame.sprite.Group()
-    messageBoxes = []
+class BackgroundManager:
     backgrounds = []
+    tempBG1 = None
+    tempBG2 = None
+    backgroundAlpha = 0
+    currentBGcoords = vector2d((0, 0))
+    currentBGsize = vector2d((0, 0))
+    
+    @staticmethod
+    def scaleBackground(window):
+        if BackgroundManager.tempBG1:
+            BackgroundManager.tempBG1 = pygame.transform.scale(BackgroundManager.tempBG1, (window.get_width(), window.get_height()))
+    
+    @staticmethod
+    def manageBackground(window):
+        if len(BackgroundManager.backgrounds) == 2:
+            if BackgroundManager.tempBG2 is None:
+                BackgroundManager.tempBG2 = pygame.image.load(path.join(BACKGROUNDS_DIR, BackgroundManager.backgrounds[1])).convert_alpha()
+                BackgroundManager.tempBG2 = pygame.transform.scale(BackgroundManager.tempBG2, (window.get_width(), window.get_height()))
+                BackgroundManager.tempBG2.set_alpha(0)
+            window.blit(BackgroundManager.tempBG1, (0, 0))
+            window.blit(BackgroundManager.tempBG2, (0, 0))
+            if BackgroundManager.backgroundAlpha < 255:
+                BackgroundManager.backgroundAlpha += 10
+                if BackgroundManager.backgroundAlpha > 255:
+                    BackgroundManager.backgroundAlpha = 255
+                BackgroundManager.tempBG2.set_alpha(BackgroundManager.backgroundAlpha)
+            else:
+                BackgroundManager.backgroundAlpha = 0
+                BackgroundManager.tempBG1 = pygame.image.load(path.join(BACKGROUNDS_DIR, BackgroundManager.backgrounds[1])).convert_alpha()
+                BackgroundManager.tempBG1 = pygame.transform.scale(BackgroundManager.tempBG1, (window.get_width(), window.get_height()))
+                BackgroundManager.backgrounds.remove(BackgroundManager.backgrounds[0])
+                BackgroundManager.tempBG2 = None
+        elif len(BackgroundManager.backgrounds) == 1:
+            if BackgroundManager.tempBG1 is None:
+                BackgroundManager.tempBG1 = pygame.image.load(path.join(BACKGROUNDS_DIR, BackgroundManager.backgrounds[0])).convert_alpha()
+                BackgroundManager.tempBG1 = pygame.transform.scale(BackgroundManager.tempBG1, (window.get_width(), window.get_height()))
+            window.blit(BackgroundManager.tempBG1, (0, 0))
+    
+    @staticmethod
+    def changeBackground(newBackground):
+        BackgroundManager.currentBGcoords.x = newBackground.pos.x - 40
+        BackgroundManager.currentBGcoords.y = newBackground.pos.y - 40
+        BackgroundManager.currentBGsize.x = newBackground.get_width() + 40
+        BackgroundManager.currentBGsize.y = newBackground.get_height()
+        checkLengthLess = len(BackgroundManager.backgrounds) < 2
+        checkIfNotDefined = len(BackgroundManager.backgrounds) == 0
+        check = checkLengthLess and (checkIfNotDefined or BackgroundManager.backgrounds[0] != newBackground.background)
+        if check:
+            BackgroundManager.backgrounds.append(newBackground.background)
+
+class MenuManager:
     menuFlag = True
     menuFadeFlag = False
     menu = None
-    tempBG2 = None
-    tempBG1 = None
     backgroundAlpha = 0
+    messageFadeFlag = False
+    messageLifespan = 0
+    gameOverFlag = False
+    
+    @staticmethod
+    def scaleMenu(window):
+        if MenuManager.menu:
+            MenuManager.menu = pygame.transform.scale(MenuManager.menu, (window.get_width(), window.get_height()))
+    
+    @staticmethod
+    def manageMenu(window):
+        if MenuManager.messageLifespan <= 0 and not MenuManager.menuFadeFlag:
+            MenuManager.backgroundAlpha = 255
+            if MenuManager.messageFadeFlag:
+                MenuManager.menu = pygame.image.load(path.join(SYSTEM_DIR, "menu2.png")).convert_alpha()
+                MenuManager.menu = pygame.transform.scale(MenuManager.menu, (window.get_width(), window.get_height()))
+            else:
+                MenuManager.menu = pygame.image.load(path.join(SYSTEM_DIR, "menu1.png")).convert_alpha()
+                MenuManager.menu = pygame.transform.scale(MenuManager.menu, (window.get_width(), window.get_height()))
+            MenuManager.messageFadeFlag = not MenuManager.messageFadeFlag
+            MenuManager.messageLifespan = 40
+        elif MenuManager.menuFadeFlag:
+            MenuManager.backgroundAlpha -= 10
+            if MenuManager.backgroundAlpha < 0:
+                MenuManager.backgroundAlpha = 0
+                MenuManager.menuFadeFlag = False
+                MenuManager.menuFlag = False
+                MenuManager.messageLifespan = 0
+            MenuManager.menu.set_alpha(MenuManager.backgroundAlpha)
+        MenuManager.messageLifespan -= 1
+        window.blit(MenuManager.menu, (0, 0))
+    
+    @staticmethod
+    def manageGameOver(window):
+        if MenuManager.messageLifespan <= 0 and (not MenuManager.menuFadeFlag) and MenuManager.gameOverFlag:
+            MenuManager.backgroundAlpha = 255
+            MenuManager.messageFadeFlag = not MenuManager.messageFadeFlag
+            if MenuManager.messageFadeFlag:
+                MenuManager.menu = pygame.image.load(path.join(SYSTEM_DIR, "gameOver1.png")).convert_alpha()
+                MenuManager.menu = pygame.transform.scale(MenuManager.menu, (window.get_width(), window.get_height()))
+            else:
+                MenuManager.menu = pygame.image.load(path.join(SYSTEM_DIR, "gameOver2.png")).convert_alpha()
+                MenuManager.menu = pygame.transform.scale(MenuManager.menu, (window.get_width(), window.get_height()))
+            MenuManager.messageLifespan = 40
+        elif MenuManager.menuFadeFlag:
+            MenuManager.backgroundAlpha -= 10
+            if MenuManager.backgroundAlpha < 0:
+                MenuManager.gameOverFlag = False
+                MenuManager.backgroundAlpha = 0
+                MenuManager.menuFadeFlag = False
+                MenuManager.menuFlag = False
+                MenuManager.messageLifespan = 0
+            MenuManager.menu.set_alpha(MenuManager.backgroundAlpha)
+        if not MenuManager.gameOverFlag:
+            if MenuManager.backgroundAlpha == 0:
+                MenuManager.menu = pygame.image.load(path.join(SYSTEM_DIR, "gameOver1.png")).convert_alpha()
+                MenuManager.menu = pygame.transform.scale(MenuManager.menu, (window.get_width(), window.get_height()))
+                MenuManager.backgroundAlpha = 10
+                MenuManager.messageFadeFlag = True
+            else:
+                MenuManager.backgroundAlpha += 10
+                if MenuManager.backgroundAlpha >= 255:
+                    MenuManager.backgroundAlpha = 255
+                    MenuManager.gameOverFlag = True
+            MenuManager.menu.set_alpha(MenuManager.backgroundAlpha)
+        else:
+            MenuManager.messageLifespan -= 1
+        window.blit(MenuManager.menu, (0, 0))
+
+class MessageManager:
+    delay = 0
+    who = None
+    messageBoxes = []
+    tempIcon = None
     messageFadeFlag = False
     messageVisibility = False
     messageLifespan = 0
     messageSizeFade = 0
-    tempIcon = None
-    currentBGcoords = vector2d((0,0))
-    currentBGsize = vector2d((0,0))
-    gameOverFlag = False
-    @staticmethod
-    def scaleBackground(window):
-        TextureComponent.tempBG1 = pygame.transform.scale(TextureComponent.tempBG1,(window.get_width(),window.get_height()))
-    def scaleMenu(window):
-        TextureComponent.menu = pygame.transform.scale(TextureComponent.menu,(window.get_width(),window.get_height()))
-    @staticmethod
-    def manageBackground(window):
-        if len(TextureComponent.backgrounds)==2:
-            if TextureComponent.tempBG2==None:
-                TextureComponent.tempBG2 = pygame.image.load(path.join(BACKGROUNDS_DIR, TextureComponent.backgrounds[1])).convert_alpha()
-                TextureComponent.tempBG2 = pygame.transform.scale(TextureComponent.tempBG2,(window.get_width(),window.get_height()))
-                TextureComponent.tempBG2.set_alpha(0)
-            window.blit(TextureComponent.tempBG1,(0, 0))
-            window.blit(TextureComponent.tempBG2,(0, 0))
-            if TextureComponent.backgroundAlpha<255:
-                TextureComponent.backgroundAlpha+=10
-                if TextureComponent.backgroundAlpha>255:
-                    TextureComponent.backgroundAlpha=255
-                TextureComponent.tempBG2.set_alpha(TextureComponent.backgroundAlpha)
-            else:
-                TextureComponent.backgroundAlpha=0
-                TextureComponent.tempBG1 = pygame.image.load(path.join(BACKGROUNDS_DIR, TextureComponent.backgrounds[1])).convert_alpha()
-                TextureComponent.tempBG1 = pygame.transform.scale(TextureComponent.tempBG1,(window.get_width(),window.get_height()))
-                TextureComponent.backgrounds.remove(TextureComponent.backgrounds[0])
-                TextureComponent.tempBG2 = None
-        elif len(TextureComponent.backgrounds)==1:
-            if TextureComponent.tempBG1==None:
-                TextureComponent.tempBG1 = pygame.image.load(path.join(BACKGROUNDS_DIR, TextureComponent.backgrounds[0])).convert_alpha()
-                TextureComponent.tempBG1 = pygame.transform.scale(TextureComponent.tempBG1,(window.get_width(),window.get_height()))
-            window.blit(TextureComponent.tempBG1,(0, 0))       
-        
-    @staticmethod
-    def changeBackground(newBackground):
-        TextureComponent.currentBGcoords.x = newBackground.pos.x - 40
-        TextureComponent.currentBGcoords.y = newBackground.pos.y - 40
-        TextureComponent.currentBGsize.x = newBackground.get_width()+40
-        TextureComponent.currentBGsize.y = newBackground.get_height()
-        checkLengthLess = len(TextureComponent.backgrounds)<2
-        checkIfNotDefined = len(TextureComponent.backgrounds)==0
-        check = checkLengthLess and (checkIfNotDefined or TextureComponent.backgrounds[0]!=newBackground.background)
-        if check:
-            TextureComponent.backgrounds.append(newBackground.background)
-
-    @staticmethod
-    def manageMenu(window):
-        if TextureComponent.messageLifespan<=0 and not TextureComponent.menuFadeFlag:
-            TextureComponent.backgroundAlpha = 255
-            if TextureComponent.messageFadeFlag:
-                TextureComponent.menu = pygame.image.load(path.join(SYSTEM_DIR, "menu2.png")).convert_alpha()
-                TextureComponent.menu = pygame.transform.scale(TextureComponent.menu,(window.get_width(),window.get_height()))
-            else:
-                TextureComponent.menu = pygame.image.load(path.join(SYSTEM_DIR, "menu1.png")).convert_alpha()
-                TextureComponent.menu = pygame.transform.scale(TextureComponent.menu,(window.get_width(),window.get_height()))
-            TextureComponent.messageFadeFlag= not TextureComponent.messageFadeFlag
-            TextureComponent.messageLifespan=40
-        elif TextureComponent.menuFadeFlag:
-            TextureComponent.backgroundAlpha-=10
-            if TextureComponent.backgroundAlpha<0:
-                TextureComponent.backgroundAlpha=0
-                TextureComponent.menuFadeFlag = False
-                TextureComponent.menuFlag = False
-                TextureComponent.messageLifespan=0
-            TextureComponent.menu.set_alpha(TextureComponent.backgroundAlpha)
-        TextureComponent.messageLifespan-=1
-        window.blit(TextureComponent.menu,(0, 0))     
-
-    @staticmethod
-    def manageGameOver(window):
-        if TextureComponent.messageLifespan<=0 and (not TextureComponent.menuFadeFlag) and TextureComponent.gameOverFlag:
-            TextureComponent.backgroundAlpha = 255
-            TextureComponent.messageFadeFlag= not TextureComponent.messageFadeFlag
-            if TextureComponent.messageFadeFlag:
-                TextureComponent.menu = pygame.image.load(path.join(SYSTEM_DIR, "gameOver1.png")).convert_alpha()
-                TextureComponent.menu = pygame.transform.scale(TextureComponent.menu,(window.get_width(),window.get_height()))
-            else:
-                TextureComponent.menu = pygame.image.load(path.join(SYSTEM_DIR, "gameOver2.png")).convert_alpha()
-                TextureComponent.menu = pygame.transform.scale(TextureComponent.menu,(window.get_width(),window.get_height()))
-            TextureComponent.messageLifespan=40
-        elif TextureComponent.menuFadeFlag:
-            TextureComponent.backgroundAlpha-=10
-            if TextureComponent.backgroundAlpha<0:
-                TextureComponent.gameOverFlag = False
-                TextureComponent.backgroundAlpha=0
-                TextureComponent.menuFadeFlag = False
-                TextureComponent.menuFlag = False
-                TextureComponent.messageLifespan=0
-            TextureComponent.menu.set_alpha(TextureComponent.backgroundAlpha)
-        if not TextureComponent.gameOverFlag:
-            if TextureComponent.backgroundAlpha==0:
-                TextureComponent.menu = pygame.image.load(path.join(SYSTEM_DIR, "gameOver1.png")).convert_alpha()
-                TextureComponent.menu = pygame.transform.scale(TextureComponent.menu,(window.get_width(),window.get_height()))
-                TextureComponent.backgroundAlpha=10
-                TextureComponent.messageFadeFlag = True
-            else:
-                TextureComponent.backgroundAlpha+=10
-                if TextureComponent.backgroundAlpha>=255:
-                    TextureComponent.backgroundAlpha=255
-                    TextureComponent.gameOverFlag=True
-            TextureComponent.menu.set_alpha(TextureComponent.backgroundAlpha)
-        else:
-            TextureComponent.messageLifespan-=1
-        window.blit(TextureComponent.menu,(0, 0))     
-
-    @staticmethod
-    def setSprites(platforms, player):
-        TextureComponent.spritesB = pygame.sprite.Group()
-        TextureComponent.spritesF = pygame.sprite.Group()
-        for p in platforms:
-            if not p.foreground=="True":
-                TextureComponent.spritesB.add(p)
-            else:
-                TextureComponent.spritesF.add(p)
-        TextureComponent.spritesB.add(player)
-
+    
     @staticmethod
     def appendMessages(package):
-        TextureComponent.messageBoxes.append(package)
-
+        MessageManager.messageBoxes.append(package)
+    
     @staticmethod
-    def showMessage(_window,package):
-        if TextureComponent.delay>0:
-            TextureComponent.delay -=1
+    def showMessage(_window, package):
+        if MessageManager.delay > 0:
+            MessageManager.delay -= 1
         else:
             my_font = pygame.font.SysFont('Comic Sans MS', 30)
             text_surface = my_font.render(package["text"], True, (255, 255, 255))
-            width = int(_window.get_width()/1.1)
-            height = int(_window.get_height()/3.5)
-            posX = int((_window.get_width()- width)/2)
-            posY = int(_window.get_height() - _window.get_height()/3)
-            avatarWidth = int(height/1.3)
+            width = int(_window.get_width() / 1.1)
+            height = int(_window.get_height() / 3.5)
+            posX = int((_window.get_width() - width) / 2)
+            posY = int(_window.get_height() - _window.get_height() / 3)
+            avatarWidth = int(height / 1.3)
             avatarHeight = avatarWidth
-            border = (height - height/1.3)/2
-            if TextureComponent.tempIcon==None and package["icon"]!="None":
-                TextureComponent.tempIcon = pygame.image.load(path.join(AVATARS_DIR,package["icon"])).convert_alpha()
-            if TextureComponent.messageFadeFlag and not TextureComponent.messageVisibility:
-                if TextureComponent.messageSizeFade>=100:
-                    TextureComponent.messageSizeFade=100
-                    TextureComponent.messageFadeFlag=False
-                    TextureComponent.messageVisibility=True
-                    TextureComponent.messageLifespan=100
+            border = (height - height / 1.3) / 2
+            if MessageManager.tempIcon is None and package["icon"] != "None":
+                MessageManager.tempIcon = pygame.image.load(path.join(AVATARS_DIR, package["icon"])).convert_alpha()
+            if MessageManager.messageFadeFlag and not MessageManager.messageVisibility:
+                if MessageManager.messageSizeFade >= 100:
+                    MessageManager.messageSizeFade = 100
+                    MessageManager.messageFadeFlag = False
+                    MessageManager.messageVisibility = True
+                    MessageManager.messageLifespan = 100
                 else:
-                    TextureComponent.messageSizeFade+=5
-            elif not TextureComponent.messageFadeFlag and TextureComponent.messageVisibility:
-                if TextureComponent.messageLifespan>0:
-                    TextureComponent.messageLifespan-=1
+                    MessageManager.messageSizeFade += 5
+            elif not MessageManager.messageFadeFlag and MessageManager.messageVisibility:
+                if MessageManager.messageLifespan > 0:
+                    MessageManager.messageLifespan -= 1
                 else:
-                    TextureComponent.messageLifespan=0
-                    TextureComponent.messageFadeFlag=True
-            elif TextureComponent.messageFadeFlag and TextureComponent.messageVisibility:
-                if TextureComponent.messageSizeFade<=0:
-                    TextureComponent.messageSizeFade=0
-                    TextureComponent.messageFadeFlag=False
-                    TextureComponent.messageVisibility=False
-                    TextureComponent.messageBoxes.remove(package)
-                    TextureComponent.who.catchEndOfAction()
+                    MessageManager.messageLifespan = 0
+                    MessageManager.messageFadeFlag = True
+            elif MessageManager.messageFadeFlag and MessageManager.messageVisibility:
+                if MessageManager.messageSizeFade <= 0:
+                    MessageManager.messageSizeFade = 0
+                    MessageManager.messageFadeFlag = False
+                    MessageManager.messageVisibility = False
+                    MessageManager.messageBoxes.remove(package)
+                    MessageManager.who.catchEndOfAction()
                 else:
-                    TextureComponent.messageSizeFade-=5
-            height = int(height*TextureComponent.messageSizeFade/100)
-            avatarHeight = int(avatarHeight*TextureComponent.messageSizeFade/100)
-            pygame.draw.rect(_window, (0,0,0), pygame.Rect(posX,  posY , width, height))
-            if package["icon"]!="None":
-                temparea = TextureComponent.tempIcon
-                temparea = pygame.transform.scale(temparea,(avatarWidth,avatarHeight))
-                _window.blit(temparea,(posX + border,posY + border))
-                if TextureComponent.messageVisibility and not TextureComponent.messageFadeFlag:
-                    _window.blit(text_surface,(posX+avatarWidth + 2*border, posY + border))
-            elif TextureComponent.messageVisibility and not TextureComponent.messageFadeFlag:
-                _window.blit(text_surface,(posX+ border, posY + border))
+                    MessageManager.messageSizeFade -= 5
+            height = int(height * MessageManager.messageSizeFade / 100)
+            avatarHeight = int(avatarHeight * MessageManager.messageSizeFade / 100)
+            pygame.draw.rect(_window, (0, 0, 0), pygame.Rect(posX, posY, width, height))
+            if package["icon"] != "None":
+                temparea = MessageManager.tempIcon
+                temparea = pygame.transform.scale(temparea, (avatarWidth, avatarHeight))
+                _window.blit(temparea, (posX + border, posY + border))
+                if MessageManager.messageVisibility and not MessageManager.messageFadeFlag:
+                    _window.blit(text_surface, (posX + avatarWidth + 2 * border, posY + border))
+            elif MessageManager.messageVisibility and not MessageManager.messageFadeFlag:
+                _window.blit(text_surface, (posX + border, posY + border))
+
+
+class SpriteManager:
+    spritesB = pygame.sprite.Group()
+    spritesF = pygame.sprite.Group()
+    
+    @staticmethod
+    def setSprites(platforms, player):
+        SpriteManager.spritesB = pygame.sprite.Group()
+        SpriteManager.spritesF = pygame.sprite.Group()
+        for p in platforms:
+            if not p.foreground == "True":
+                SpriteManager.spritesB.add(p)
+            else:
+                SpriteManager.spritesF.add(p)
+        SpriteManager.spritesB.add(player)
+
+
     
 class SystemComponent:
     @staticmethod
@@ -234,10 +251,10 @@ class SystemComponent:
         return package
     @staticmethod
     def showMessage(package, sender):
-        TextureComponent.appendMessages(package)
-        TextureComponent.messageFadeFlag = True
-        TextureComponent.who = sender
-        TextureComponent.delay = int(package["delay"])
+        MessageManager.appendMessages(package)
+        MenuManager.messageFadeFlag = True
+        MessageManager.who = sender
+        MessageManager.delay = int(package["delay"])
 
 class PhysicsComponent:
     def __init__(self, entity) -> None:
@@ -300,7 +317,7 @@ class PhysicsComponent:
                 other_entities.remove(col_entity)
                 removeFlag=True
             elif col_entity.type=="background":
-                TextureComponent.changeBackground(col_entity)
+                BackgroundManager.changeBackground(col_entity)
             elif col_entity.type=="trigger":
                 col_entity.manageTrigger(others, self.entity)
             else:
@@ -336,8 +353,6 @@ class PhysicsComponent:
                     elif i == 1:
                         iEq1(col_entity, temp_moved_vec)
             return removeFlag
-        #collision detection and handling
-        #handling is temp need to add more checks later
         self.is_on_ground = False
         for col_entity in other_entities:
             decor = col_entity.type=="decor"
@@ -445,12 +460,12 @@ class Camera:
             entity.changeCameraOffset(newOffset)
 
     def get_checks_for_background_bounds(self, window, newOffset):
-        backgroundTLCorn = -TextureComponent.currentBGcoords
-        backgroundBRCorn = backgroundTLCorn - TextureComponent.currentBGsize
+        backgroundTLCorn = -BackgroundManager.currentBGcoords
+        backgroundBRCorn = backgroundTLCorn - BackgroundManager.currentBGsize
         check1 = (newOffset).x>=backgroundTLCorn.x
         check2 = self.camera_offset.y-backgroundBRCorn.y<240 + 0.5*(window.get_height()-600)
-        check3 = window.get_height()<=TextureComponent.currentBGsize.y+85 and (newOffset).y+-backgroundTLCorn.y>0
-        check4a = window.get_width()<TextureComponent.currentBGsize.x
+        check3 = window.get_height()<=BackgroundManager.currentBGsize.y+85 and (newOffset).y+-backgroundTLCorn.y>0
+        check4a = window.get_width()<BackgroundManager.currentBGsize.x
         check4b = self.camera_offset.x-backgroundBRCorn.x<360 + 0.5*(window.get_width()-800)
         if check1:
             newOffset.x = backgroundTLCorn.x
@@ -470,6 +485,8 @@ class Camera:
         self.cameraCenterOffset = window_centre
 
 # CLASSES FOR GAME ENTITIES
+
+
 
 class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
     def __new__(cls, _window, _x,_y, width=10, height=10, type=None, sprite=None, foreground=False, background=None, triggerType=None, cutsceneInfo=None, id=None):
@@ -548,6 +565,28 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
             self.area = pygame.transform.scale(self.area,(self.WIDTH,self.HEIGHT))
         else:
             self.area = pygame.Surface((self.WIDTH, self.HEIGHT), pygame.SRCALPHA, 32)
+
+        
+class Animation(Entity):
+    def __init__(self, window, _x, _y, animationFrameList):
+        super().__init__(window, _x, _y, sprite=None)
+        self.animationFrameList = animationFrameList
+
+    def animate(self):
+     
+            if self.animationDelay >= self.animationDelayConst:
+                self.animationFrame = (self.animationFrame + 1) % len(self.animationFrameList)
+                self.changeSprite(self.animationFrameList[self.animationFrame])
+                self.animationDelay = 0
+            else:
+                self.animationDelay += 1
+      
+    def flip_img(self):
+        flip_sprites = []
+        
+            
+
+            
 
 class Player(Entity): # dziedziczenie po entity
     def __new__(cls, _window, posX, posY):
@@ -678,7 +717,9 @@ class Enemy(Entity):
         self.steps_taken = 0  # Licznik kroków
         self.wait = True
         self.coolDown = 0
-    
+        self.animationFrameList = ["szczur_idle.png", "szczur_left1.png", "szczur_left2.png"]
+        self.animation = Animation
+
     def zniszcz(self):
         self.destroyed=True
 
@@ -688,6 +729,8 @@ class Enemy(Entity):
             self.coolDown=100
         if self.zdrowie <= 0:
             self.zniszcz()
+    
+    
     
     def triggerPass(self, triggerMovement, sender):
         def decompress(tekst):
@@ -702,6 +745,7 @@ class Enemy(Entity):
             return temp
         self.delay = int(triggerMovement["delay"])
         self.movementToMake = decompress(triggerMovement["movement"])
+        
         self.steps_taken = 0
         self.who = sender
 
@@ -750,7 +794,13 @@ class Enemy(Entity):
                         self.direction.x *= -1  # Zmień kierunek ruchu
                     self.wait = not self.wait
                     self.steps_taken = 0  # Zresetuj licznik kroków
+        
+        self.animation.animate(self)
+        
         if self.coolDown>0:
             self.coolDown-=1
         self.physics_component.update_pos(in_other_entities)
         self.last_movement = self.pos - prev_pos
+        
+
+
