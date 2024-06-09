@@ -3,7 +3,7 @@ from xml.dom import minidom
 import pygame
 import copy
 from pygame.locals import *
-
+from pygame.math import lerp
 CURRENT_DIR = path.dirname(path.abspath(__file__))
 RESOURCES = path.join(path.dirname(CURRENT_DIR),"resources")
 SYSTEM_DIR = path.join(RESOURCES,"system")
@@ -408,8 +408,8 @@ class Camera:
         self.other_objects = other_objects
         self.camera_offset = 0
         self.cameraCenterOffset = 0
-        self.lerpFlagX = False
-        self.lerpFlagY = False
+        self.lerpBgFlagX = False
+        self.lerpBgFlagY = False
         self.targetOffset = vector2d(0,0)
         self.previousOffset = vector2d(0,0)
         self.beginFlag = True
@@ -427,28 +427,34 @@ class Camera:
         self.camera_offset = -self.focus_object.pos
         newOffset = self.camera_offset + self.cameraCenterOffset
         newOffset = self.get_checks_for_background_bounds(window, newOffset)
+
+        #speed effect
+        if (not self.lerpBgFlagX and not self.focus_object.blockedMovement) or True:
+            foc_obj_spd = self.focus_object.physics_component.speed
+            newOffset.x -= foc_obj_spd.x*5
         if abs(self.previousOffset.x-newOffset.x)>100 and not self.beginFlag:
-            self.lerpFlagX = True
+            self.lerpBgFlagX = True
             self.targetOffset = copy.deepcopy(newOffset)
             self.forceUpdate = True
             self.focus_object.blockedMovement = True
         if abs(self.previousOffset.y-newOffset.y)>100 and not self.beginFlag:
-            self.lerpFlagY = True
+            self.lerpBgFlagY = True
             self.targetOffset = copy.deepcopy(newOffset)
             self.forceUpdate = True
             self.focus_object.blockedMovement = True
-        if self.lerpFlagX:
+        if self.lerpBgFlagX:
             if not(self.previousOffset-newOffset==vector2d(0,0)):
-                newOffset.x = self.previousOffset.x - abs(self.previousOffset.x-newOffset.x)/(self.previousOffset.x-newOffset.x)*10
-            if newOffset.x == self.targetOffset.x:
-                self.lerpFlagX = False
+                newOffset.x = lerp(self.previousOffset.x, newOffset.x, 0.30)
+            lerpx_tol = 0.1
+            if abs(newOffset.x - self.targetOffset.x) < lerpx_tol:
+                self.lerpBgFlagX = False
                 self.forceUpdate = False
                 self.focus_object.blockedMovement = False
-        if self.lerpFlagY:
+        if self.lerpBgFlagY:
             if not(self.previousOffset-newOffset==vector2d(0,0)):
-                newOffset.y = self.previousOffset.y - abs(self.previousOffset.y-newOffset.y)/(self.previousOffset.y-newOffset.y)*10
-            if newOffset.y == self.targetOffset.y:
-                self.lerpFlagY = False
+                newOffset.y = lerp(self.previousOffset.y, newOffset.y, 0.30)
+            if newOffset.y == newOffset.y:
+                self.lerpBgFlagY = False
                 self.forceUpdate = False
                 self.focus_object.blockedMovement = False
 
