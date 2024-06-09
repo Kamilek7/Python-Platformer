@@ -521,6 +521,7 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
         self.animationDelay = 0
         self.animationFrame = -1
         self.animationFrameList = []
+        self.flip = -1
          # definiowanie elementow obiektu
         self.area = pygame.Surface((self.WIDTH, self.HEIGHT), pygame.SRCALPHA, 32)
         if sprite!=None and sprite!="None":
@@ -575,22 +576,39 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
         
 class Animation(Entity):
     def __init__(self, window, _x, _y, animationFrameList):
-        super().__init__(window, _x, _y, sprite=None)
-        self.animationFrameList = animationFrameList
+            super().__init__(window, _x, _y, sprite=None)
+            self.animationFrameList = animationFrameList
 
-    def animate(self):
-     
-            if self.animationDelay >= self.animationDelayConst:
-                self.animationFrame = (self.animationFrame + 1) % len(self.animationFrameList)
-                self.changeSprite(self.animationFrameList[self.animationFrame])
-                self.animationDelay = 0
-            else:
-                self.animationDelay += 1
-      
+    def animate(self, typ):
+            if typ != "matkaKacpra":
+                if typ == "szczur":
+                    self.animationFrameList = ["szczur_idle.png", "szczur_left1.png", "szczur_left2.png"]
+                if typ == "szczurBoss":
+                    self.animationFrameList = ["szczurBoss_idle.png", "szczurBoss_left1.png", "szczurBoss_left2.png", "szczurBoss_left3.png"]
+                if self.animationDelay >= self.animationDelayConst:
+                    self.animationFrame = (self.animationFrame + 1) % len(self.animationFrameList)
+                    self.changeSprite(self.animationFrameList[self.animationFrame])
+                    self.animationDelay = 0
+                else:
+                    self.animationDelay += 1
+
     def flip_img(self):
-        flip_sprites = []
-        
+    
+        for sprite in self.animationFrameList:
+            image_path = path.join(SPRITES_DIR, sprite)
+  
+
+            # Load the image
+            image = pygame.image.load(image_path).convert_alpha()
+
+            # Flip the image horizontally
+            flipped_image = pygame.transform.flip(image, True, False)
+
+            # Save the flipped image
+            pygame.image.save(flipped_image, image_path)
+            self.flip *= -1
             
+                          
 
             
 
@@ -723,7 +741,7 @@ class Enemy(Entity):
         self.steps_taken = 0  # Licznik kroków
         self.wait = True
         self.coolDown = 0
-        self.animationFrameList = ["szczur_idle.png", "szczur_left1.png", "szczur_left2.png"]
+        self.animationFrameList = []
         self.animation = Animation
 
     def zniszcz(self):
@@ -798,10 +816,12 @@ class Enemy(Entity):
                 else:
                     if not self.wait:
                         self.direction.x *= -1  # Zmień kierunek ruchu
+                        self.flip *= -1
                     self.wait = not self.wait
                     self.steps_taken = 0  # Zresetuj licznik kroków
-        
-        self.animation.animate(self)
+        if self.flip > 0:
+            self.animation.flip_img(self)
+        self.animation.animate(self, self.enemType)
         
         if self.coolDown>0:
             self.coolDown-=1
