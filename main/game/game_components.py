@@ -428,10 +428,8 @@ class Camera:
         newOffset = self.camera_offset + self.cameraCenterOffset
         newOffset = self.get_checks_for_background_bounds(window, newOffset)
 
-        #speed effect
-        if (not self.lerpBgFlagX and not self.focus_object.blockedMovement) or True:
-            foc_obj_spd = self.focus_object.physics_component.speed
-            newOffset.x -= foc_obj_spd.x*5
+
+
         if abs(self.previousOffset.x-newOffset.x)>100 and not self.beginFlag:
             self.lerpBgFlagX = True
             self.targetOffset = copy.deepcopy(newOffset)

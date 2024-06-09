@@ -49,6 +49,7 @@ while True:
     main_camera = Camera(player, platforms)
     # game loop
     
+
     main_camera.centre_camera(vector2d(window.get_width(), window.get_height()))
     while running:
         for event in pygame.event.get():
