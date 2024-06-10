@@ -92,6 +92,7 @@ while True:
             MenuManager.manageGameOver(window)
         pygame.display.update()
         current_fps.tick(MAX_FPS)
+        
         while player.zdrowie <= 0:
             for event in pygame.event.get():
                 if event.type == QUIT:

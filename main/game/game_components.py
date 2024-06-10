@@ -205,7 +205,6 @@ class MessageManager:
             elif MessageManager.messageVisibility and not MessageManager.messageFadeFlag:
                 _window.blit(text_surface, (posX + border, posY + border))
 
-
 class SpriteManager:
     spritesB = pygame.sprite.Group()
     spritesF = pygame.sprite.Group()
@@ -221,8 +220,6 @@ class SpriteManager:
                 SpriteManager.spritesF.add(p)
         SpriteManager.spritesB.add(player)
 
-
-    
 class SystemComponent:
     @staticmethod
     def loadMaps(_window):
@@ -252,7 +249,7 @@ class SystemComponent:
     @staticmethod
     def showMessage(package, sender):
         MessageManager.appendMessages(package)
-        MenuManager.messageFadeFlag = True
+        MessageManager.messageFadeFlag = True
         MessageManager.who = sender
         MessageManager.delay = int(package["delay"])
 
@@ -427,8 +424,6 @@ class Camera:
         self.camera_offset = -self.focus_object.pos
         newOffset = self.camera_offset + self.cameraCenterOffset
         newOffset = self.get_checks_for_background_bounds(window, newOffset)
-
-
 
         if abs(self.previousOffset.x-newOffset.x)>100 and not self.beginFlag:
             self.lerpBgFlagX = True
