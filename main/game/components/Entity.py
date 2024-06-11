@@ -27,11 +27,7 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
 
         self.spriteChange = False
         self.foreground = foreground
-        self.animationDelayConst = 15
-        self.animationDelay = 0
-        self.animationFrame = -1
-        self.animationFrameList = []
-        self.flip = -1
+
          # definiowanie elementow obiektu
         self.area = pygame.Surface((self.WIDTH, self.HEIGHT), pygame.SRCALPHA, 32)
         if sprite!=None and sprite!="None":
@@ -67,13 +63,6 @@ class Entity(pygame.sprite.Sprite): # dziedziczenie po sprite
         return self.area.get_height()
     def get_width(self):
         return self.area.get_width()
-
-    def animate(self):
-        if self.animationFrame>-1:
-            if self.animationDelay >= self.animationDelayConst:
-                self.changeSprite(self.animationFrameList[self.animationFrame])
-                self.animationDelay = -1
-            self.animationDelay+=1
 
     def changeSprite(self, spriteDir):
         self.spriteChange = True

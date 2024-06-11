@@ -407,7 +407,7 @@ class EnemyPlaceholder(Box):
       if id=="None":
          self.id=None
       self.type = _enemyType
-      spriteName = self.type + "_idle.png"
+      spriteName = self.type + "_left0.png"
       spriteLocation = path.join(SPRITES_DIR, spriteName)
       img = Image.open(spriteLocation)
       img = img.resize((self.width,self.height))
@@ -420,7 +420,7 @@ class EnemyPlaceholder(Box):
       self.height = newHeight
       filename=self.spriteLoc
       if sprite!=None:
-         filename = self.type + "_idle.png"
+         filename = self.type + "_left0.png"
       spriteLocation = path.join(SPRITES_DIR,filename)
       img = Image.open(spriteLocation)
       radio = tileViewSize/TILE_SIZE
