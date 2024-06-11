@@ -55,7 +55,7 @@ class PhysicsComponent:
                     col_entity.pos.x+=2
                     col_entity.changeSprite("drzwi_" + col_entity.keyColor + ".png")
             return check
-        def checkIfPlayer(col_entity):
+        def checksForPlayer(col_entity):
             check = True
             removeFlag = False
             if col_entity.type=="key":
@@ -88,7 +88,7 @@ class PhysicsComponent:
             if upperBound and lowerBound and rightBound and leftBound:
                 check = self.entity.type=="player"
                 if check:
-                    temp = checkIfPlayer(col_entity)
+                    temp = checksForPlayer(col_entity)
                     removeFlag = temp[0]
                     check = temp[1]
                 if not check:
