@@ -10,7 +10,12 @@ class MessageManager:
     messageVisibility = False
     messageLifespan = 0
     messageSizeFade = 0
-    
+    @staticmethod
+    def passMessage(package, sender):
+        MessageManager.appendMessages(package)
+        MessageManager.messageFadeFlag = True
+        MessageManager.who = sender
+        MessageManager.delay = int(package["delay"])
     @staticmethod
     def appendMessages(package):
         MessageManager.messageBoxes.append(package)

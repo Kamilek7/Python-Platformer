@@ -2,8 +2,17 @@
  # wszystkie definicje i wstepne wartosci
  # meow
 
-from os import *
-from game_components import *
+from components.InputComponent import *
+from components.SpriteManager import *
+from components.MessageManager import *
+from components.MenuManager import *
+from components.BackgroundManager import *
+from components.Entity import *
+from components.Enemy import *
+from components.Player import *
+from components.Camera import *
+from components.Grounds import *
+from components.SystemComponent import *
 
 pygame.init()
 pygame.font.init()
