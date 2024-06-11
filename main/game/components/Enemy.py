@@ -94,7 +94,7 @@ class Enemy(Entity):
                 self.direction.y = 0
                 if self.direction.x!=0:
                     self.direction.x = self.direction.x/abs(self.direction.x)*self.speed*3
-                    if self.direction.x != self.directionTemp:
+                    if self.direction.x/abs(self.direction.x) != self.directionTemp/abs(self.directionTemp):
                         self.flipFlag = True
                 self.physics_component.move(self.direction)
             else:

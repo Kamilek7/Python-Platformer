@@ -1,6 +1,5 @@
 
  # wszystkie definicje i wstepne wartosci
- # meow
 
 from components.InputComponent import *
 from components.SpriteManager import *
