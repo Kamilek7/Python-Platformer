@@ -1,4 +1,5 @@
 from components.Entity import *
+from components.Animation import *
 
 class Player(Entity): # dziedziczenie po entity
     def __new__(cls, _window, posX, posY):
@@ -9,7 +10,7 @@ class Player(Entity): # dziedziczenie po entity
     def __init__(self,window,_x,_y, in_width = 36, in_height = 75):
          # X, Y, WYSOKOSC, SZEROKOSC, KOLOR, PED PRZY RUCHU, TARCIE, RUCHOME, MOZNA STEROWAC
                  #grawitacja
-        super().__init__(window,_x, _y, in_width, in_height, True, True, type="player",sprite="protag_idle.png")
+        super().__init__(window,_x, _y, in_width, in_height, True, True, type="player",sprite="player_left0.png")
 
         self.blockedMovement = False
          # inventory
@@ -19,6 +20,12 @@ class Player(Entity): # dziedziczenie po entity
         self.destroyed = False
         self.type= "player"
         self.keys = {"red":0,"purple":0,"green":0}
+
+        animPackage = {"type": "player", "width": self.WIDTH, "height": self.HEIGHT}
+        self.animation = Animation(animPackage)
+        self.flipFlag = True
+        self.directionTemp = 1
+
     def getKey(self,type):
         self.keys[type]+=1
 
@@ -39,6 +46,9 @@ class Player(Entity): # dziedziczenie po entity
         if self.zdrowie <= 0:
             self.zniszcz()
 
+    def animate(self):
+        self.area = self.animation.animate()
+
     def update(self, in_other_entities = [], in_other_moveables = []):
         prev_pos = vector2d(self.pos.x, self.pos.y)
         if not self.blockedMovement:
@@ -48,3 +58,13 @@ class Player(Entity): # dziedziczenie po entity
         self.last_movement = self.pos - prev_pos
         if self.coolDown>0:
             self.coolDown-=1
+
+        if self.last_movement.x!=0:
+            if self.directionTemp != self.last_movement.x/abs(self.last_movement.x):
+                self.flipFlag = True
+        if self.flipFlag:
+            self.animation.flip_img()
+            self.flipFlag = False
+        if self.last_movement.x!=0:
+            self.directionTemp = self.last_movement.x/abs(self.last_movement.x)
+        self.animate()
