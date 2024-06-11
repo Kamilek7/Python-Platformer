@@ -2,7 +2,7 @@ from components.Entity import *
 from components.Animation import *
 
 class Enemy(Entity):
-    specsChart = {"szczur" : {"width":60,"height":20,"speed":0.20},"roboSzczur" : {"width":60,"height":20,"speed":0.20},"zombieSzczur" : {"width":60,"height":20,"speed":0.20},"szczurBoss" : {"width":180,"height":60,"speed":0.05}, "matkaKacpra" : {"width":40,"height":80,"speed":0.10}}
+    specsChart = {"szczur" : {"width":60,"height":20,"speed":0.20},"roboSzczur" : {"width":60,"height":20,"speed":0.20},"zombieSzczur" : {"width":60,"height":20,"speed":0.20},"szczurBoss" : {"width":120,"height":80,"speed":0.10}, "matkaKacpra" : {"width":40,"height":80,"speed":0.10}}
     def __init__(self, okno, x, y, type="szczur", id=None):
         super().__init__(okno, x, y,Enemy.specsChart[type]["width"],Enemy.specsChart[type]["height"],False, True, type="enemy")
         self.type = "enemy"
@@ -25,24 +25,38 @@ class Enemy(Entity):
         self.steps_taken = 0  # Licznik kroków
         self.wait = True
         self.coolDown = 0
+        self.movementLength = 75
+        self.playerNoticeDistance = 200
+        if self.enemType == "szczurBoss":
+            self.playerNoticeDistance *= 3
+            self.movementLength *= 4
+            self.zdrowie = 5
         animPackage = {"type": self.enemType, "width": self.WIDTH, "height": self.HEIGHT}
         self.animation = Animation(animPackage)
         self.flipFlag = True
         self.directionTemp = 1
 
-    def zniszcz(self):
+    def zniszcz(self, destroyer = None):
+        if self.enemType=="szczurBoss":
+            destroyer.getKey("red")
         self.destroyed=True
 
-    def takeDamage(self, obrazenia=1):
+    def takeDamage(self, obrazenia=1, destroyer=None):
         if self.coolDown<=0:
             self.zdrowie -= obrazenia
             self.coolDown=100
         if self.zdrowie <= 0:
-            self.zniszcz()
+            self.zniszcz(destroyer=destroyer)
     
+    def checkCoolDown(self):
+        if self.coolDown<=0:
+            return True
+        else:
+            return False
+
     def animate(self):
         self.area = self.animation.animate()
-    
+
     def triggerPass(self, triggerMovement, sender):
         def decompress(tekst):
             temp=""
@@ -88,18 +102,18 @@ class Enemy(Entity):
         if self.movementToMake!=None:
             self.triggerManagement()
         else:
-            if player_pos and self.pos.distance_to(player_pos) < 200 and self.enemType!="matkaKacpra":
+            if player_pos and self.pos.distance_to(player_pos) < self.playerNoticeDistance and self.enemType!="matkaKacpra":
                 # Jeśli gracz jest w odległości mniejszej niż 75, zmień kierunek ruchu na kierunek gracza
                 self.direction = player_pos - self.pos
                 self.direction.y = 0
-                if self.direction.x!=0:
-                    self.direction.x = self.direction.x/abs(self.direction.x)*self.speed*3
+                if self.direction.x!=0 and self.directionTemp!=0:
+                    self.direction.x = self.direction.x/abs(self.direction.x)*self.speed*4
                     if self.direction.x/abs(self.direction.x) != self.directionTemp/abs(self.directionTemp):
                         self.flipFlag = True
                 self.physics_component.move(self.direction)
             else:
                 # W przeciwnym razie kontynuuj zwykły schemat ruchu
-                if self.steps_taken < 75:
+                if self.steps_taken < self.movementLength:
                     if not self.wait:
                         if self.direction.x>self.speed:
                             self.direction.x = self.speed

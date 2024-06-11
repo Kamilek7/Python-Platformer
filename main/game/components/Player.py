@@ -68,3 +68,11 @@ class Player(Entity): # dziedziczenie po entity
         if self.last_movement.x!=0:
             self.directionTemp = self.last_movement.x/abs(self.last_movement.x)
         self.animate()
+    
+    def knockBack(self, size, direction=False):
+        if direction:
+            knockbackDirection =  direction.normalize()
+            knockbackDirection.y += -0.1
+            self.physics_component.move(knockbackDirection*(size/5))
+        else:
+            self.physics_component.move(vector2d(0,-size/3.5))
