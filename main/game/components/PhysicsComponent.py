@@ -12,7 +12,7 @@ class PhysicsComponent:
         self.is_on_ground = False
 
     def check_colision(self, moved_by_vec, other_entities = [], others=[]):
-        def iEq0(col_entity, pos_to_check, temp_moved_vec):
+        def verticalAdjustment(col_entity, pos_to_check, temp_moved_vec):
             key = pygame.key.get_pressed()
             if self.entity.type!="enemy" and (col_entity.type=="plat" or col_entity.type=="ladder" or col_entity.type=="enemy"):
                 if self.speed.y>0 and pos_to_check.y<col_entity.pos.y-col_entity.get_height() and not (key[K_DOWN] or key[K_s] or key[K_SEMICOLON]):
@@ -38,7 +38,7 @@ class PhysicsComponent:
                         self.entity.move_to_pos(vector2d(self.entity.pos.x, col_entity.pos.y - self.entity.get_height()))
                     else:
                         self.entity.move_to_pos(vector2d(self.entity.pos.x, col_entity.pos.y + col_entity.get_height()))
-        def iEq1(col_entity, temp_moved_vec):
+        def horizontalAdjustment(col_entity, temp_moved_vec):
             if col_entity.type!="plat" and col_entity.type!="enemy" and col_entity.type!="ladder":
                 self.speed.x = 0
                 if temp_moved_vec.x > 0:
@@ -95,9 +95,9 @@ class PhysicsComponent:
                     if col_entity.type=="key" or col_entity.type=="background" or col_entity.type=="trigger" or col_entity=="player":
                         pass
                     elif i == 0:
-                        iEq0(col_entity, pos_to_check, temp_moved_vec)
+                        verticalAdjustment(col_entity, pos_to_check, temp_moved_vec)
                     elif i == 1:
-                        iEq1(col_entity, temp_moved_vec)
+                        horizontalAdjustment(col_entity, temp_moved_vec)
             return removeFlag
         self.is_on_ground = False
         for col_entity in other_entities:
