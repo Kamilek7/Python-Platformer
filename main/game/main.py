@@ -25,7 +25,8 @@ APP_WIDTH = 800
 MAX_FPS = 60
  # definicje dla okna
 current_fps = pygame.time.Clock()
-window = pygame.display.set_mode((APP_WIDTH, APP_HEIGHT), RESIZABLE)
+flags = RESIZABLE | DOUBLEBUF | SCALED
+window = pygame.display.set_mode((APP_WIDTH, APP_HEIGHT), flags)
 pygame.display.set_caption("MATKA KACPRA - THE GAME")
 mainMenu = True
 
