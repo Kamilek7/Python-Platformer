@@ -11,11 +11,6 @@ class MenuManager:
     gameOverFlag = False
     
     @staticmethod
-    def scaleMenu(window):
-        if MenuManager.menu:
-            MenuManager.menu = pygame.transform.scale(MenuManager.menu, (window.get_width(), window.get_height()))
-    
-    @staticmethod
     def manageMenu(window):
         if MenuManager.messageLifespan <= 0 and not MenuManager.menuFadeFlag:
             MenuManager.backgroundAlpha = 255

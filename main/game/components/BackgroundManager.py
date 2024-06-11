@@ -10,11 +10,6 @@ class BackgroundManager:
     currentBGsize = vector2d((0, 0))
     
     @staticmethod
-    def scaleBackground(window):
-        if BackgroundManager.tempBG1:
-            BackgroundManager.tempBG1 = pygame.transform.scale(BackgroundManager.tempBG1, (window.get_width(), window.get_height()))
-    
-    @staticmethod
     def manageBackground(window):
         if len(BackgroundManager.backgrounds) == 2:
             if BackgroundManager.tempBG2 is None:

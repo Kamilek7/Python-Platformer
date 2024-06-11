@@ -40,8 +40,6 @@ while mainMenu:
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.quit()
-        elif event.type == VIDEORESIZE:
-            MenuManager.scaleMenu(window)
     MenuManager.manageMenu(window)
     pygame.display.update()
     current_fps.tick(MAX_FPS)
@@ -67,9 +65,6 @@ while True:
                 pygame.quit()
             elif event.type == VIDEORESIZE:
                 main_camera.update(window, force=True)
-                BackgroundManager.scaleBackground(window)
-                if MenuManager.menuFlag:
-                    MenuManager.scaleMenu(window)
         
         BackgroundManager.manageBackground(window)
         
@@ -107,8 +102,6 @@ while True:
             for event in pygame.event.get():
                 if event.type == QUIT:
                     pygame.quit()
-                elif event.type == VIDEORESIZE:
-                    MenuManager.scaleMenu(window)
             key = pygame.key.get_pressed()
             if key[K_RETURN]:
                 MenuManager.menuFadeFlag=True
