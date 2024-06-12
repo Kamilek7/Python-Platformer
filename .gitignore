@@ -31,12 +31,3 @@ main/game/components/__pycache__/PhysicsComponent.cpython-312.pyc
 main/game/components/__pycache__/Player.cpython-312.pyc
 main/game/components/__pycache__/SpriteManager.cpython-312.pyc
 main/game/__pycache__/game_components.cpython-311.pyc
-main/mapEditor/components/__pycache__/Background.cpython-312.pyc
-main/mapEditor/components/__pycache__/Box.cpython-312.pyc
-main/mapEditor/components/__pycache__/EditorConstants.cpython-312.pyc
-main/mapEditor/components/__pycache__/Enemy.cpython-312.pyc
-main/mapEditor/components/__pycache__/GameConstants.cpython-312.pyc
-main/mapEditor/components/__pycache__/Grounds.cpython-312.pyc
-main/mapEditor/components/__pycache__/Menu.cpython-312.pyc
-main/mapEditor/components/__pycache__/MenuFuncs.cpython-312.pyc
-main/mapEditor/components/__pycache__/Trigger.cpython-312.pyc
