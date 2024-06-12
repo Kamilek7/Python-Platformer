@@ -16,7 +16,7 @@ def addTerrain(type):
       elif type=="ladder":
          EditorComponents.grounds.append(Grounds(ratio*EditorComponents.windowOffset[0],ratio*EditorComponents.windowOffset[1],40,40,type, sprite="ladder.png"))
       elif type=="spawn":
-         EditorComponents.grounds.append(Grounds(ratio*EditorComponents.windowOffset[0],ratio*EditorComponents.windowOffset[1],40,80,type))
+         EditorComponents.grounds.append(Grounds(ratio*EditorComponents.windowOffset[0],ratio*EditorComponents.windowOffset[1],40,80,type, sprite="player_left0.png"))
       elif type=="background":
          EditorComponents.grounds.append(Background(ratio*EditorComponents.windowOffset[0],ratio*EditorComponents.windowOffset[1],80,80))
       elif type=="trigger":
@@ -98,7 +98,7 @@ fileMenu.add_command(label="Exit", command=App.root.quit)
 menu.add_cascade(label="File", menu=fileMenu)
 
  # zakladka edit
- 
+
 editMenu = Menu(menu, tearoff=0)
 editMenu.add_command(label="Undo", command=MenuFuncs.donothing)
 editMenu.add_separator()

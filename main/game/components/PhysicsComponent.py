@@ -15,7 +15,7 @@ class PhysicsComponent:
         def verticalAdjustment(col_entity, pos_to_check, temp_moved_vec):
             key = pygame.key.get_pressed()
             if self.entity.type!="enemy" and (col_entity.type=="plat" or col_entity.type=="ladder" or col_entity.type=="enemy"):
-                if self.speed.y>0 and pos_to_check.y<=col_entity.pos.y-col_entity.get_height()+10 and not (key[K_DOWN] or key[K_s] or key[K_SEMICOLON]):
+                if self.speed.y>0 and pos_to_check.y<=col_entity.pos.y-col_entity.get_height()+10 and not (key[K_DOWN] or key[K_s] or key[K_SEMICOLON]) and col_entity.type!="ladder":
                     self.speed.y = 0
                     self.is_on_ground = True
                     upFlag = True
@@ -33,7 +33,7 @@ class PhysicsComponent:
                     elif key[K_DOWN] or key[K_s] or key[K_SEMICOLON]:
                         self.speed.y = 0
                     else:
-                        self.speed.y = 7
+                        self.speed.y = -3
                 elif col_entity.type=="enemy" and col_entity.enemType!="matkaKacpra":
                     self.entity.takeDamage()
                     self.entity.knockBack(col_entity.get_height(), direction = self.entity.pos - col_entity.pos)
