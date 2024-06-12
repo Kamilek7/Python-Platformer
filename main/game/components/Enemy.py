@@ -35,6 +35,7 @@ class Enemy(Entity):
         self.animation = Animation(animPackage)
         self.flipFlag = True
         self.directionTemp = 1
+        self.currentBG = None
 
     def zniszcz(self, destroyer = None):
         if self.enemType=="szczurBoss":
@@ -96,43 +97,44 @@ class Enemy(Entity):
                     self.movementToMake = None
                     self.who.catchEndOfAction()
 
-    def update(self, in_other_entities=[], player_pos=None):
-        prev_pos = vector2d(self.pos.x, self.pos.y)
-        # Sprawdź odległość między graczem a wrogiem
-        if self.movementToMake!=None:
-            self.triggerManagement()
-        else:
-            if player_pos and self.pos.distance_to(player_pos) < self.playerNoticeDistance and self.enemType!="matkaKacpra":
-                # Jeśli gracz jest w odległości mniejszej niż 75, zmień kierunek ruchu na kierunek gracza
-                self.direction = player_pos - self.pos
-                self.direction.y = 0
-                if self.direction.x!=0 and self.directionTemp!=0:
-                    self.direction.x = self.direction.x/abs(self.direction.x)*self.speed*4
-                    if self.direction.x/abs(self.direction.x) != self.directionTemp/abs(self.directionTemp):
-                        self.flipFlag = True
-                self.physics_component.move(self.direction)
+    def update(self, in_other_entities=[], player_pos=None, playerBG=None):
+        if (self.pos.distance_to(player_pos) < 500 and self.currentBG==playerBG) or self.currentBG==None:
+            prev_pos = vector2d(self.pos.x, self.pos.y)
+            # Sprawdź odległość między graczem a wrogiem
+            if self.movementToMake!=None:
+                self.triggerManagement()
             else:
-                # W przeciwnym razie kontynuuj zwykły schemat ruchu
-                if self.steps_taken < self.movementLength:
-                    if not self.wait:
-                        if self.direction.x>self.speed:
-                            self.direction.x = self.speed
-                        self.physics_component.move(self.direction)
-                    self.steps_taken += 1
+                if player_pos and self.pos.distance_to(player_pos) < self.playerNoticeDistance and self.enemType!="matkaKacpra":
+                    # Jeśli gracz jest w odległości mniejszej niż 75, zmień kierunek ruchu na kierunek gracza
+                    self.direction = player_pos - self.pos
+                    self.direction.y = 0
+                    if self.direction.x!=0 and self.directionTemp!=0:
+                        self.direction.x = self.direction.x/abs(self.direction.x)*self.speed*4
+                        if self.direction.x/abs(self.direction.x) != self.directionTemp/abs(self.directionTemp):
+                            self.flipFlag = True
+                    self.physics_component.move(self.direction)
                 else:
-                    if self.wait:
-                        self.direction.x *= -1  # Zmień kierunek ruchu
-                        self.flipFlag = True
-                    self.wait = not self.wait
-                    self.steps_taken = 0  # Zresetuj licznik kroków
-        self.directionTemp = self.direction.x
-        if self.flipFlag:
-            self.animation.flip_img()
-            self.flipFlag = False
-        self.animate()
-        
-        if self.coolDown>0:
-            self.coolDown-=1
-        self.physics_component.update_pos(in_other_entities)
-        self.last_movement = self.pos - prev_pos
+                    # W przeciwnym razie kontynuuj zwykły schemat ruchu
+                    if self.steps_taken < self.movementLength:
+                        if not self.wait:
+                            if self.direction.x>self.speed:
+                                self.direction.x = self.speed
+                            self.physics_component.move(self.direction)
+                        self.steps_taken += 1
+                    else:
+                        if self.wait:
+                            self.direction.x *= -1  # Zmień kierunek ruchu
+                            self.flipFlag = True
+                        self.wait = not self.wait
+                        self.steps_taken = 0  # Zresetuj licznik kroków
+            self.directionTemp = self.direction.x
+            if self.flipFlag:
+                self.animation.flip_img()
+                self.flipFlag = False
+            self.animate()
+            
+            if self.coolDown>0:
+                self.coolDown-=1
+            self.physics_component.update_pos(in_other_entities)
+            self.last_movement = self.pos - prev_pos
     

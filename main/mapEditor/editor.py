@@ -73,7 +73,8 @@ class Trigger(Box):
       temp.set("cutsceneInfo",str(self.cutsceneInfo))
 
    def resetZ(self):
-      temp = Trigger(windowOffset[0],windowOffset[1],self.width,self.height, cutsceneInfo=self.cutsceneInfo)
+      ratio = TILE_SIZE/tileViewSize
+      temp = Trigger(ratio*windowOffset[0],ratio*windowOffset[1],self.width,self.height, cutsceneInfo=self.cutsceneInfo)
       return temp
    
    def specialWindow(self,filewin):
@@ -279,8 +280,9 @@ class Background(Box):
       self.background = background
 
    def resetZ(self):
+      ratio = TILE_SIZE/tileViewSize
       background = self.background
-      return Background(windowOffset[0],windowOffset[1],self.width,self.height, background = background)
+      return Background(ratio*windowOffset[0],ratio*windowOffset[1],self.width,self.height, background = background)
    
    def representXML(self, map):
       temp = ET.SubElement(map, "background")
@@ -347,10 +349,11 @@ class Grounds(Box):
             self.spriteLoc="None"
 
    def resetZ(self):
+      ratio = TILE_SIZE/tileViewSize
       sprite = self.sprite
       if self.sprite!=None:
          sprite = self.spriteLoc
-      return Grounds(windowOffset[0],windowOffset[1],self.width,self.height,self.type, sprite = sprite)
+      return Grounds(ratio*windowOffset[0],ratio*windowOffset[1],self.width,self.height,self.type, sprite = sprite)
    
    def representXML(self, map):
       temp = ET.SubElement(map, self.type)
@@ -434,7 +437,8 @@ class EnemyPlaceholder(Box):
       label1.pack()
 
    def resetZ(self):
-      return EnemyPlaceholder(windowOffset[0],windowOffset[1],self.type)
+      ratio = TILE_SIZE/tileViewSize
+      return EnemyPlaceholder(ratio*windowOffset[0],ratio*windowOffset[1],self.type)
    
    def representXML(self, map):
       temp = ET.SubElement(map, "enemy")
@@ -541,26 +545,27 @@ def load():
    button.pack()
 
 def addTerrain(type):
+      ratio = TILE_SIZE/tileViewSize
       if type=="block":
-         grounds.append(Grounds(windowOffset[0],windowOffset[1],40,40,type, sprite="floor.png"))
+         grounds.append(Grounds(ratio*windowOffset[0],ratio*windowOffset[1],40,40,type, sprite="floor.png"))
       elif type=="plat":
-         grounds.append(Grounds(windowOffset[0],windowOffset[1],40,40,type, sprite="floor.png"))
+         grounds.append(Grounds(ratio*windowOffset[0],ratio*windowOffset[1],40,40,type, sprite="floor.png"))
       elif type=="decor":
-         grounds.append(Grounds(windowOffset[0],windowOffset[1],120,40,type, sprite="lawka.png"))
+         grounds.append(Grounds(ratio*windowOffset[0],ratio*windowOffset[1],120,40,type, sprite="lawka.png"))
       elif type=="key":
-         grounds.append(Grounds(windowOffset[0],windowOffset[1],40,40,type, sprite="key_red.png"))
+         grounds.append(Grounds(ratio*windowOffset[0],ratio*windowOffset[1],40,40,type, sprite="key_red.png"))
       elif type=="door":
-         grounds.append(Grounds(windowOffset[0],windowOffset[1],20,80,type, sprite="door_side_red.png"))
+         grounds.append(Grounds(ratio*windowOffset[0],ratio*windowOffset[1],20,80,type, sprite="door_side_red.png"))
       elif type=="ladder":
-         grounds.append(Grounds(windowOffset[0],windowOffset[1],40,40,type, sprite="ladder.png"))
+         grounds.append(Grounds(ratio*windowOffset[0],ratio*windowOffset[1],40,40,type, sprite="ladder.png"))
       elif type=="spawn":
-         grounds.append(Grounds(windowOffset[0],windowOffset[1],40,80,type))
+         grounds.append(Grounds(ratio*windowOffset[0],ratio*windowOffset[1],40,80,type))
       elif type=="background":
-         grounds.append(Background(windowOffset[0],windowOffset[1],80,80))
+         grounds.append(Background(ratio*windowOffset[0],ratio*windowOffset[1],80,80))
       elif type=="trigger":
-         grounds.append(Trigger(windowOffset[0],windowOffset[1],40,40))
+         grounds.append(Trigger(ratio*windowOffset[0],ratio*windowOffset[1],40,40))
       elif type=="enemy":
-         grounds.append(EnemyPlaceholder(windowOffset[0],windowOffset[1]))
+         grounds.append(EnemyPlaceholder(ratio*windowOffset[0],ratio*windowOffset[1]))
 
 def copy():
    global copyboard

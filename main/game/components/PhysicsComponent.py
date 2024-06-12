@@ -71,6 +71,7 @@ class PhysicsComponent:
                 removeFlag=True
             elif col_entity.type=="background":
                 BackgroundManager.changeBackground(col_entity)
+                self.entity.currentBG = col_entity.background
             elif col_entity.type=="trigger":
                 col_entity.manageTrigger(others, self.entity)
             else:
@@ -99,8 +100,10 @@ class PhysicsComponent:
                     removeFlag = temp[0]
                     check = temp[1]
                 if not check:
-                    if col_entity.type=="key" or col_entity.type=="background" or col_entity.type=="trigger" or col_entity=="player":
+                    if col_entity.type=="key" or col_entity.type=="trigger" or col_entity=="player":
                         pass
+                    elif col_entity.type=="background":
+                        self.entity.currentBG = col_entity.background
                     elif i == 0:
                         verticalAdjustment(col_entity, pos_to_check, temp_moved_vec)
                     elif i == 1:

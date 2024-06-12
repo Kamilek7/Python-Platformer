@@ -71,7 +71,7 @@ while True:
         for entity in moveables:
             if not entity.destroyed:
                 if isinstance(entity, Enemy):
-                    entity.update(platforms, player.pos)
+                    entity.update(platforms, player.pos, player.currentBG)
                 else:
                     entity.update(platforms, moveables)
             else:
@@ -94,9 +94,8 @@ while True:
                 MenuManager.manageMenu(window)
         if MenuManager.gameOverFlag:
             MenuManager.manageGameOver(window)
-        pygame.display.update()
-        current_fps.tick(MAX_FPS)
-        
+        SpriteManager.drawHearts(window,player.zdrowie)
+    
         while player.zdrowie <= 0:
             for event in pygame.event.get():
                 if event.type == QUIT:
@@ -109,3 +108,5 @@ while True:
             MenuManager.manageGameOver(window)
             pygame.display.update()
             current_fps.tick(MAX_FPS)
+        pygame.display.update()
+        current_fps.tick(MAX_FPS)

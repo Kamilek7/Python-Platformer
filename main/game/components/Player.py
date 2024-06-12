@@ -16,10 +16,11 @@ class Player(Entity): # dziedziczenie po entity
          # inventory
         self.id = "player"
         self.coolDown = 0
-        self.zdrowie = 4
+        self.zdrowie = 6
         self.destroyed = False
         self.type= "player"
         self.keys = {"red":0,"purple":0,"green":0}
+        self.currentBG = None
 
         animPackage = {"type": "player", "width": self.WIDTH, "height": self.HEIGHT}
         self.animation = Animation(animPackage)
