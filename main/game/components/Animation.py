@@ -1,7 +1,7 @@
 from components.GameConstants import *
 
 class Animation(pygame.sprite.Sprite):
-    frameAmountDict = {"szczur": 3, "matkaKacpra" : 1, "player" : 8, "roboSzczur": 5, "szczurBoss": 4, "zombieSzczur": 6 }
+    frameAmountDict = {"szczur": 3, "matkaKacpra" : 4, "player" : 8, "roboSzczur": 5, "szczurBoss": 4, "zombieSzczur": 6 }
     def __init__(self, package):
         self.flip = False
         self.animationDelayConst = 10
