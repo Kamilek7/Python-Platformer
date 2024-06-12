@@ -56,4 +56,5 @@ class Grounds(Entity):
                             i.zniszcz()
                 self.catchEndOfAction()
         else:
-            self.player.blockedMovement = False
+            if self.player!=None:
+                self.player.blockedMovement = False
