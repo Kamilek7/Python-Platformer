@@ -75,7 +75,7 @@ class Grounds(Box):
          for i in sprites.curselection():
             selection = sprites.get(i)
          state = False
-         if checkbutton.instate(['EditorComponents.selected']):
+         if checkbutton.instate(['selected']):
             state=True
          test = check.get()
          self.resize(self.width, self.height, sprite=selection, foreground=state)

@@ -1,4 +1,5 @@
 from components.box import *
+from components.applicationBuild import *
 
 class Trigger(Box):
    def __init__(self, _x, _y, _width, _height, cutsceneInfo="[]"):
@@ -30,7 +31,7 @@ class Trigger(Box):
       for i in range(len(trigTypes)):
          actions.insert(i, trigTypes[i])
       def showActionTypes(editFlag):
-         nextWindow = Toplevel(EditorComponents.root)
+         nextWindow = Toplevel(App.root)
          actionsType = ["messageBox", "moveEntity", "killEntity", "endGame"]
          actionTypes = Listbox(nextWindow)
          selectionID = 0
@@ -45,7 +46,7 @@ class Trigger(Box):
             selectionType = selectionType["type"]
          actionTypes.select_set(actionsType.index(selectionType))
          def getToEditWindow(editflag):
-            nextWindowNext = Toplevel(EditorComponents.root)
+            nextWindowNext = Toplevel(App.root)
             selection = {}
             movement_or_text = ""
             icon_or_id = 0
@@ -206,7 +207,7 @@ class Trigger(Box):
          button = Button(nextWindow, text="Proceed", command=lambda: getToEditWindow(editFlag))
          actionTypes.pack()
          button.pack()
-      button = Button(filewin, text="Edit EditorComponents.selected", command=lambda: showActionTypes(True))
+      button = Button(filewin, text="Edit selected", command=lambda: showActionTypes(True))
       button1 = Button(filewin, text="Add new", command=lambda: showActionTypes(False))
       if len(trigTypes)==0:
          button["state"] = DISABLED

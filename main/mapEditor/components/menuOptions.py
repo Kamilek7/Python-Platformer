@@ -1,12 +1,12 @@
-from components.editorComponents import *
 from components.trigger import *
 from components.background import *
 from components.grounds import *
 from components.enemy import *
+from components.applicationBuild import *
 
 class MenuFuncs:
     def donothing():
-        filewin = Toplevel(EditorComponents.root)
+        filewin = Toplevel(App.root)
         button = Button(filewin, text="Do nothing button")
         button.pack()
 
@@ -29,7 +29,7 @@ class MenuFuncs:
         EditorComponents.loadedFilename = filename
 
     def load(canvas):
-        filewin = Toplevel(EditorComponents.root)
+        filewin = Toplevel(App.root)
         label = Label(filewin, text="Type in the filename")
         filename = Text(filewin, height = 1,  width = 20) 
         button = Button(filewin, text="Load", command= lambda: MenuFuncs.loadfile(filename,filewin, canvas))
@@ -61,7 +61,7 @@ class MenuFuncs:
                     EditorComponents.grounds.append(Grounds(int(child.getAttribute("x")),int(child.getAttribute("y")),int(child.getAttribute("width")),int(child.getAttribute("height")),child.tagName, sprite=child.getAttribute("sprite"), foreground=child.getAttribute("foreground")))
             filewin.destroy()
         else:
-            filewin = Toplevel(EditorComponents.root)
+            filewin = Toplevel(App.root)
             label = Label(filewin, text="ERROR: Wrong filename")
             label.pack()
 

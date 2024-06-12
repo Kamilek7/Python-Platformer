@@ -16,7 +16,6 @@ BACKGROUNDS_DIR = path.join(RESOURCES,"backgrounds")
 AVATARS_DIR = path.join(RESOURCES,"avatars")
 
 class EditorComponents:
-    root = Tk()
     grounds = []
     mapSize = (80,60)
     tileViewSize = TILE_SIZE
@@ -26,3 +25,4 @@ class EditorComponents:
     loadedFilename = False
     selected = False
     keyFlags = {"Shift": False, "Ctrl": False}
+    mouseTimer = False
