@@ -1,10 +1,12 @@
 from components.GameConstants import *
 
 class Animation(pygame.sprite.Sprite):
-    frameAmountDict = {"szczur": 3, "matkaKacpra" : 1, "player" : 1, "roboSzczur": 5, "szczurBoss": 4, "zombieSzczur": 6 }
+    frameAmountDict = {"szczur": 3, "matkaKacpra" : 1, "player" : 8, "roboSzczur": 5, "szczurBoss": 4, "zombieSzczur": 6 }
     def __init__(self, package):
         self.flip = False
         self.animationDelayConst = 10
+        if package["type"]=="player":
+            self.animationDelayConst=5
         self.width = package["width"]
         self.height = package["height"]
         self.type = package["type"]
@@ -22,13 +24,18 @@ class Animation(pygame.sprite.Sprite):
                 self.animationFrameList[i]= pygame.transform.flip(self.animationFrameList[i], True, False)
             self.animationFrameList[i] = pygame.transform.scale(self.animationFrameList[i], (self.width, self.height))
 
-    def animate(self):
-        if self.animationDelay >= self.animationDelayConst:
-            self.animationFrame = (self.animationFrame + 1) % Animation.frameAmountDict[self.type]
-            self.animationDelay = 0
+    def animate(self, idle=False):
+        if idle:
+            self.animationDelay=0
+            self.animationFrame = 0
+            return self.animationFrameList[0]
         else:
-            self.animationDelay += 1
-        return self.animationFrameList[self.animationFrame]
+            if self.animationDelay >= self.animationDelayConst:
+                self.animationFrame = (self.animationFrame + 1) % Animation.frameAmountDict[self.type]
+                self.animationDelay = 0
+            else:
+                self.animationDelay += 1
+            return self.animationFrameList[self.animationFrame]
 
     def flip_img(self):
         self.flip = not self.flip

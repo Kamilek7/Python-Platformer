@@ -46,8 +46,8 @@ class Player(Entity): # dziedziczenie po entity
         if self.zdrowie <= 0:
             self.zniszcz()
 
-    def animate(self):
-        self.area = self.animation.animate()
+    def animate(self, idle=False):
+        self.area = self.animation.animate(idle=idle)
 
     def update(self, in_other_entities = [], in_other_moveables = []):
         prev_pos = vector2d(self.pos.x, self.pos.y)
@@ -67,7 +67,10 @@ class Player(Entity): # dziedziczenie po entity
             self.flipFlag = False
         if self.last_movement.x!=0:
             self.directionTemp = self.last_movement.x/abs(self.last_movement.x)
-        self.animate()
+        if abs(self.last_movement.x)<0.1:
+            self.animate(idle=True)
+        else:
+            self.animate()
     
     def knockBack(self, size, direction=False):
         if direction:
