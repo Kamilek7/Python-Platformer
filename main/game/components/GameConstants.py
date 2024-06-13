@@ -11,4 +11,5 @@ MAPS_DIR = path.join(RESOURCES,"maps")
 AVATARS_DIR = path.join(RESOURCES,"avatars")
 APP_HEIGHT = 600
 APP_WIDTH = 800
+MAX_FPS = 60
 vector2d = pygame.math.Vector2
