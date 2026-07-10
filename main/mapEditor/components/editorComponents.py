@@ -1,6 +1,6 @@
 from tkinter import *
 from tkinter.ttk import *
-from PIL import Image,ImageTk
+from PIL import Image, ImageTk
 from os import *
 import xml.etree.cElementTree as ET
 from xml.dom import minidom
